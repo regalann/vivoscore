@@ -8,12 +8,12 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0d1117; --bg2: #131920; --surface: #161b22; --surface2: #1c2230;
-  --border: #21262d; --border2: #30363d; --brand: #3b82f6; --brand-dim: rgba(59,130,246,0.12);
-  --green: #22c55e; --green-dim: rgba(34,197,94,0.12); --red: #ef4444; --red-dim: rgba(239,68,68,0.12);
-  --yellow: #eab308; --yellow-dim: rgba(234,179,8,0.12); --orange: #f97316;
-  --text: #e6edf3; --text2: #8b949e; --text3: #484f58;
-  --radius: 12px; --radius-sm: 8px; --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+--bg: #0d1117; --bg2: #131920; --surface: #161b22; --surface2: #1c2230;
+--border: #21262d; --border2: #30363d; --brand: #3b82f6; --brand-dim: rgba(59,130,246,0.12);
+--green: #22c55e; --green-dim: rgba(34,197,94,0.12); --red: #ef4444; --red-dim: rgba(239,68,68,0.12);
+--yellow: #eab308; --yellow-dim: rgba(234,179,8,0.12); --orange: #f97316;
+--text: #e6edf3; --text2: #8b949e; --text3: #484f58;
+--radius: 12px; --radius-sm: 8px; --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; -webkit-font-smoothing: antialiased; }
@@ -32,11 +32,11 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .nav-label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--text3); padding: 0 10px; margin-bottom: 8px; letter-spacing: 1px; margin-top:15px; }
 
 /* SPORT ITEMS */
-.sport-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; transition: var(--transition); margin-bottom: 2px;}
+.sport-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; transition: var(--transition); margin-bottom: 2px;}
 .sport-item:hover { background: var(--surface2); color: var(--text); } .sport-item.active { background: var(--brand-dim); color: var(--brand); }
 .sport-item .flag { font-size: 16px; width: 22px; text-align: center; } 
 
-/* MAIN UI */
+/* MAIN */
 .main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg); }
 .topbar { display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--bg2); gap: 12px; }
 .date-nav { display: flex; align-items: center; gap: 4px; background: var(--surface); border-radius: var(--radius); padding: 3px; border: 1px solid var(--border); transition: 0.3s; }
@@ -45,10 +45,14 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .date-btn:hover { background: var(--surface2); color: var(--text); } .date-btn.active { background: var(--brand); color: white; }
 .date-btn .day { display: block; font-size: 10px; color: var(--text3); margin-top: 1px; } .date-btn.active .day { color: rgba(255,255,255,0.7); }
 .date-arrow { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text2); font-size: 14px; cursor: pointer; transition: var(--transition); }
+.date-arrow:hover { background: var(--surface2); color: var(--text); }
 
+/* TOGGLE BUTTONS */
 .btn-toggle { padding: 8px 16px; border-radius: var(--radius-sm); background: transparent; color: var(--text2); font-size: 12px; font-weight: 700; transition: var(--transition); display:flex; align-items:center; gap:6px; cursor: pointer; border: 1px solid transparent; }
 .btn-toggle:hover { color: var(--text); background:var(--surface2); } 
+.live-toggle { margin-left: 8px; border: 1px solid var(--border); }
 .live-toggle.active { background: var(--red-dim); color: var(--red); border-color: var(--red); }
+.fav-toggle { border: 1px solid var(--border); }
 .fav-toggle.active { background: var(--yellow-dim); color: var(--yellow); border-color: var(--yellow); }
 .pulse-dot-btn { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--text3); margin-right:2px; }
 .live-toggle.active .pulse-dot-btn { background:var(--red); animation: pulse-live 1.5s infinite; }
@@ -56,329 +60,225 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 
 .match-scroll { flex: 1; overflow-y: auto; padding: 16px 20px; padding-bottom: 150px; } 
 
-/* MATCH CARDS */
+/* LEAGUE GROUP */
 .league-group { margin-bottom: 20px; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 .league-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 13px; font-weight: 700; color: var(--text); background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; border: 1px solid var(--border); border-bottom: none; }
+.league-header img { width: 20px; height: 20px; border-radius: 3px; object-fit: contain; background: #fff; padding: 1px; }
+
+/* MATCH CARD (Inline Tasarım) */
+/* MATCH CARD */
 .match-card { display: flex; align-items: center; padding: 12px 14px; background: var(--surface); border-left: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transition: var(--transition); position: relative; }
-.match-card.hide-this-score .score-num { filter: blur(5px); opacity: 0.6; }
+.match-card:last-child { border-radius: 0 0 var(--radius) var(--radius); } .match-card:hover { background: var(--surface2); }
+.match-card.selected { background: var(--brand-dim); border-left-color: var(--brand); } .match-card.live-card { border-left: 2px solid var(--green); }
+@@ -88,7 +88,6 @@
+.hide-single-btn:hover { color: var(--text); }
+.match-card.hide-this-score .score-num { filter: blur(5px); opacity: 0.6; transition: 0.3s; }
 .match-card.hide-this-score .score-num:hover { filter: blur(0); opacity: 1; }
-.match-teams { flex: 0 0 230px; padding: 0 12px; border-right: 1px solid var(--border); }
-.match-odds-wrapper { flex: 1; display: flex; gap: 8px; align-items: center; padding-left: 16px; overflow-x: auto; }
-.odds-group { display: flex; gap: 2px; background: var(--bg2); padding: 8px 4px 4px; border-radius: 6px; border: 1px solid var(--border); position: relative; }
-.odds-group-title { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); font-size: 8px; font-weight: 800; color: var(--text3); background: var(--surface); padding: 0 4px; border-radius: 4px; white-space: nowrap; }
-.odd-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 4px 6px; text-align: center; min-width: 38px; cursor: pointer; transition: 0.2s; }
-.odd-btn.selected { background: var(--brand); border-color: var(--brand); color: #fff; }
-.match-score-wrap { display: flex; align-items: center; margin-left: auto; gap: 12px; }
-.score-num { font-size: 14px; font-weight: 800; }
-.match-fav { cursor: pointer; font-size: 16px; color: var(--text3); }
-.match-fav.faved { color: var(--yellow); }
 
-/* PITCH & LINEUPS */
-.detail-panel { width: 400px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; z-index:20;}
-.pitch-container { background: #2a3c24 url('data:image/svg+xml;utf8,<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/><line x1="0" y1="50%" x2="100%" y2="50%" stroke="rgba(255,255,255,0.15)" stroke-width="2"/><circle cx="50%" cy="50%" r="40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/></svg>') no-repeat center center; border-radius: 8px; padding: 20px 0; display: flex; flex-direction: column; gap: 20px; border: 2px solid #3d5a35; margin-bottom: 20px; }
-.pitch-row { display: flex; justify-content: center; gap: 12px; }
-.pitch-player { display: flex; flex-direction: column; align-items: center; width: 60px; cursor: pointer; }
-.pitch-player img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; background: var(--bg2); object-fit: cover; }
-.p-rating { color: #000; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: -6px; border: 1px solid #fff; z-index: 2; }
-.rating-high { background:var(--green) !important; } .rating-mid { background:var(--yellow) !important; } .rating-low { background:var(--text3) !important; color:#fff !important; }
-.player-fav { cursor: pointer; color: var(--text3); font-size: 15px; margin-left: 8px; }
-.player-fav.faved { color: var(--yellow) !important; }
+.match-fav { width: 28px; flex-shrink: 0; text-align: center; font-size: 16px; color: var(--text3); cursor: pointer; transition: var(--transition); }
+.match-fav:hover, .match-fav.faved { color: var(--yellow); }
 
-/* MODAL & INCIDENTS */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); }
-.player-modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 400px; max-height: 80vh; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); display: flex; flex-direction: column; position: relative;}
-.bs-header { background: var(--brand-dim); color: var(--brand); padding: 12px 16px; font-weight: 800; display: flex; justify-content: space-between; border-bottom: 1px solid var(--brand); }
-.bet-slip { position: fixed; bottom: 20px; left: 240px; width: 320px; background: var(--surface); border: 1px solid var(--brand); border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 50; display: none; flex-direction: column; overflow: hidden; }
+@@ -149,7 +148,7 @@
+.stat-bar-track { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: var(--surface2); gap: 2px; }
+.stat-bar-home { height:100%; border-radius:3px; background:var(--brand); transition:width 0.6s ease; } .stat-bar-away { height:100%; border-radius:3px; background:var(--orange); transition:width 0.6s ease; margin-left:auto; }
 
-/* REVISED INCIDENTS */
-.incident-row { display: flex; align-items: center; background: var(--surface2); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-bottom: 8px; }
-.incident-time { font-weight: 800; width: 40px; color: var(--text2); }
-.incident-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 12px; }
-</style>
-</head>
-<body>
-<div class="app" id="app">
-  <aside class="sidebar">
-    <div class="sidebar-header"><div class="logo"><span class="v">Vivo</span><span class="s">Score</span><div class="dot"></div></div></div>
-    <nav class="sidebar-nav"><div class="nav-section"><div class="nav-label">SPOR DALLARI</div><div id="sportList"></div></div></nav>
-  </aside>
-  <main class="main">
-    <div class="topbar">
-      <button class="date-arrow" onclick="V.shiftDate(-1)">◀</button><div class="date-nav" id="dateNav"></div><button class="date-arrow" onclick="V.shiftDate(1)">▶</button>
-      <button class="btn-toggle live-toggle" id="liveToggleBtn" onclick="V.toggleLive()"><span class="pulse-dot-btn"></span> Canlı</button>
-      <button class="btn-toggle fav-toggle" id="favToggleBtn" onclick="V.toggleFavView()">⭐ Favoriler</button>
-      <div class="right-actions"><button class="btn-toggle" id="hideScoresBtn" onclick="V.toggleHideScores()" style="border:1px solid var(--border)">🙈 Skorları Gizle</button></div>
-    </div>
-    <div class="match-scroll" id="matchScroll"></div>
-  </main>
-  <aside class="detail-panel" id="detailPanel"><div class="detail-empty">⚽ Detaylar için maça tıklayın</div></aside>
-</div>
+/* ─── YENİ EKLENEN: KADRO SAHA GÖRÜNÜMÜ & YEDEKLER LİSTESİ ─── */
+/* SAHA GÖRÜNÜMÜ & YEDEKLER LİSTESİ */
+.team-lineup-wrapper { margin-bottom: 30px; }
+.team-lineup-header { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 12px; text-align: center; background: var(--bg2); padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border);}
+.formation-label { text-align:center; font-size:12px; font-weight:700; color:var(--brand); margin-bottom:12px; }
+@@ -163,7 +162,6 @@
+.pitch-player .p-rating { color: #000; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: -6px; z-index: 2; border: 1px solid #fff; }
+.pitch-player .p-name { font-size: 10px; color: #fff; font-weight: 700; margin-top: 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px; text-shadow: 1px 1px 2px #000; }
+.rating-high { background:var(--green) !important; color:#000 !important; } .rating-mid { background:var(--yellow) !important; color:#000 !important; } .rating-low { background:var(--text3) !important; color:#fff !important; }
 
-<div class="bet-slip" id="betSlip">
-  <div class="bs-header"><span>Kupon Hesaplayıcı</span><span onclick="V.clearBetSlip()" style="cursor:pointer">Temizle</span></div>
-  <div id="bsContent" style="padding:10px; max-height:200px; overflow-y:auto"></div>
-  <div style="padding:15px; background:var(--bg2); border-top:1px solid var(--border)">Toplam Oran: <span id="bsTotalOdds" style="color:var(--green); font-weight:800">1.00</span></div>
-</div>
+.lineup-section-title { font-size:12px; font-weight:800; color:var(--text); margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+.lineup-list { display: flex; flex-direction: column; gap: 4px; }
+.ll-item { display: flex; align-items: center; background: var(--bg2); padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: var(--transition); border: 1px solid transparent;}
+@@ -193,14 +191,13 @@
+.pm-stat-lbl { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; }
+.pm-stat-val { font-size: 14px; font-weight: 800; color: var(--brand); }
 
-<div class="modal-overlay" id="playerModalOverlay" onclick="V.closePlayerModal(event)">
-  <div class="player-modal">
-    <div style="position:absolute; top:12px; right:12px; cursor:pointer" onclick="V.closePlayerModal()">✕</div>
-    <div class="pm-header" style="display:flex; align-items:center; gap:16px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:16px;">
-      <img id="pmImg" src="" style="width:64px; height:64px; border-radius:50%; border:2px solid var(--border)">
-      <div><div id="pmName" style="font-size:18px; font-weight:800"></div><div id="pmPos" style="color:var(--text2); font-size:12px"></div><div id="pmRating" class="p-rating"></div></div>
-    </div>
-    <div id="pmStatsGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; overflow-y:auto"></div>
-  </div>
-</div>
+/* OLAYLAR KISMI */
+/* YENİLENMİŞ OLAYLAR (INCIDENTS) SVG TASARIMI */
+.incident-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
+.incident-row { display: flex; align-items: center; background: var(--surface2); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.incident-time { font-weight: 800; font-size: 13px; width: 40px; color: var(--text2); flex-shrink: 0; }
+.incident-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 14px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; }
+.incident-icon.goal { background: var(--green-dim); } .incident-icon.card-y { background: var(--yellow-dim); } .incident-icon.card-r { background: var(--red-dim); } .incident-icon.sub { background: var(--brand-dim); } .incident-icon.period { background: transparent; border: 1px dashed var(--text3); }
+.incident-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0; }
+.incident-details { flex: 1; min-width: 0; }
+.incident-player { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.incident-player { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height:1.4;}
+.incident-desc { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.incident-score { font-size: 14px; font-weight: 800; background: var(--bg); padding: 4px 10px; border-radius: 6px; color: var(--brand); margin-left: 12px; flex-shrink: 0; border: 1px solid var(--border); }
+
+@@ -290,7 +287,7 @@
 
 <script>
+// =============================================
+//  VIVOSCORE APP v7.5 (MÜHENDİSLİK DÜZELTMESİ)
+//  VIVOSCORE APP v8.0 (TEK SEÇİM & KUSURSUZ ÖZET)
+// =============================================
+
 var safeStorage = {
-  get: function(key, fallback) { try { var v = window.localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } },
-  set: function(key, val) { try { window.localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
-};
+@@ -345,21 +342,32 @@
+this.updateHideScoresBtn();
+},
 
-var SPORTS = [
-  { id: 'football', name: 'Futbol', icon: '⚽' }, { id: 'basketball', name: 'Basketbol', icon: '🏀' }, { id: 'tennis', name: 'Tenis', icon: '🎾' }, 
-  { id: 'esports', name: 'Espor', icon: '🎮' }, { id: 'volleyball', name: 'Voleybol', icon: '🏐' }, { id: 'ice-hockey', name: 'Buz Hokeyi', icon: '🏒' }, 
-  { id: 'american-football', name: 'Amerikan Futbolu', icon: '🏈' }
-];
+  /* ── KUPON: MAÇ BAŞINA TEK SEÇİM KİLİDİ EKLENDİ ── */
+toggleOdd: function(matchId, matchNameRaw, market, selection, oddVal, btnElement, ev) {
+if (ev) ev.stopPropagation();
 
-var STAT_DICT = { goals: 'Gol', assists: 'Asist', totalShots: 'Şut', yellowCards: 'Sarı Kart', redCards: 'Kırmızı Kart', rating: 'Reyting', accuratePasses: 'Pas İsabeti', saves: 'Kurtarış' };
-
-var V = {
-  state: {
-    page: 'matches', selectedSport: 'football', dateOffset: 0, isLiveOnly: false,
-    selectedMatch: null, detailTab: 'summary', matchCache: {},
-    favorites: safeStorage.get('vivo_favs', []), favPlayers: safeStorage.get('vivo_fav_players', []),
-    hideScores: safeStorage.get('vivo_hide_scores', false), hiddenMatchScores: safeStorage.get('vivo_hidden_matches', {}),
-    betSlip: []
-  },
-
-  init: function() { 
-    this.renderSports(); this.renderDateNav(); this.loadMatches(); 
-    if(this.state.hideScores) document.body.classList.add('hide-scores');
-  },
-
-  toggleOdd: function(matchId, matchNameRaw, market, selection, oddVal, btnElement, ev) {
-    if (ev) ev.stopPropagation();
-    var matchName = decodeURIComponent(matchNameRaw);
+var matchName = decodeURIComponent(matchNameRaw);
+    var existingIdx = this.state.betSlip.findIndex(function(b){ return b.matchId == matchId && b.market == market; });
+    // Sadece MatchId'ye göre arıyoruz. Bir maçtan sadece 1 seçim olabilir.
     var existingIdx = this.state.betSlip.findIndex(function(b){ return b.matchId == matchId; });
+    var wrapper = btnElement.closest('.match-odds-wrapper');
+
+    if (existingIdx >= 0 && this.state.betSlip[existingIdx].selection === selection) {
+      this.state.betSlip.splice(existingIdx, 1);
+      btnElement.classList.remove('selected');
     if (existingIdx >= 0) {
-      if (this.state.betSlip[existingIdx].selection === selection && this.state.betSlip[existingIdx].market === market) {
-        this.state.betSlip.splice(existingIdx, 1); btnElement.classList.remove('selected');
+      var existing = this.state.betSlip[existingIdx];
+      // Zaten seçili olana tıklandıysa İPTAL ET
+      if (existing.selection === selection && existing.market === market) {
+        this.state.betSlip.splice(existingIdx, 1);
+        btnElement.classList.remove('selected');
       } else {
+        // Maça ait başka bir orana tıklandıysa ESKİSİNİ SİL, YENİSİNİ EKLE
         this.state.betSlip.splice(existingIdx, 1);
         this.state.betSlip.push({ matchId: matchId, matchName: matchName, market: market, selection: selection, odd: parseFloat(oddVal) });
-        var wrapper = btnElement.closest('.match-odds-wrapper');
         if(wrapper) wrapper.querySelectorAll('.odd-btn').forEach(function(b){ b.classList.remove('selected'); });
         btnElement.classList.add('selected');
       }
-    } else {
-      this.state.betSlip.push({ matchId: matchId, matchName: matchName, market: market, selection: selection, odd: parseFloat(oddVal) });
-      btnElement.classList.add('selected');
-    }
-    this.renderBetSlip();
-  },
+} else {
+      if(existingIdx >= 0) this.state.betSlip.splice(existingIdx, 1); 
+      // Maçtan hiç seçim yoksa DOĞRUDAN EKLE
+this.state.betSlip.push({ matchId: matchId, matchName: matchName, market: market, selection: selection, odd: parseFloat(oddVal) });
+      
+      var group = btnElement.closest('.odds-group');
+      if(group) group.querySelectorAll('.odd-btn').forEach(function(b){ b.classList.remove('selected'); });
+      if(wrapper) wrapper.querySelectorAll('.odd-btn').forEach(function(b){ b.classList.remove('selected'); });
+btnElement.classList.add('selected');
+}
 
-  renderBetSlip: function() {
-    var container = document.getElementById('betSlip'); var content = document.getElementById('bsContent'); var totalEl = document.getElementById('bsTotalOdds');
-    if(this.state.betSlip.length === 0) { container.style.display = 'none'; return; }
-    container.style.display = 'flex'; var html = ''; var totalOdds = 1.0;
-    this.state.betSlip.forEach(function(item) {
-      totalOdds *= item.odd;
-      html += '<div style="background:var(--bg2); padding:8px; border-radius:6px; margin-bottom:5px; font-size:11px"><b>'+item.matchName+'</b><br>'+item.market+': '+item.selection+' ('+item.odd.toFixed(2)+')</div>';
-    });
-    content.innerHTML = html; totalEl.textContent = totalOdds.toFixed(2);
-  },
+@@ -385,19 +393,19 @@
+totalOdds *= item.odd;
+html += '<div class="bs-item">' +
+'<div><div class="bs-match-name">' + item.matchName + '</div><div class="bs-market">' + item.market + ' - ' + item.selection + '</div></div>' +
+        '<div class="bs-val-box"><div class="bs-odd-val">' + item.odd.toFixed(2) + '</div><div class="bs-remove" onclick="V.removeBetItem(\''+item.matchId+'\', \''+item.market+'\')">✕</div></div>' +
+        '<div class="bs-val-box"><div class="bs-odd-val">' + item.odd.toFixed(2) + '</div><div class="bs-remove" onclick="V.removeBetItem(\''+item.matchId+'\')">✕</div></div>' +
+'</div>';
+}
 
-  clearBetSlip: function() { this.state.betSlip = []; document.querySelectorAll('.odd-btn.selected').forEach(function(b){ b.classList.remove('selected'); }); this.renderBetSlip(); },
-  toggleLive: function() { this.state.isLiveOnly = !this.state.isLiveOnly; document.getElementById('liveToggleBtn').classList.toggle('active'); this.loadMatches(); },
-  toggleFavView: function() { this.state.page = (this.state.page === 'favorites') ? 'matches' : 'favorites'; document.getElementById('favToggleBtn').classList.toggle('active'); if(this.state.page === 'favorites') this.loadFavorites(); else this.loadMatches(); },
-  toggleHideScores: function() { this.state.hideScores = !this.state.hideScores; document.body.classList.toggle('hide-scores'); },
-  
-  getDateStr: function(offset) {
-    var d = new Date(); d.setDate(d.getDate() + (offset || 0) + this.state.dateOffset);
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  },
-  renderDateNav: function() {
-    var nav = document.getElementById('dateNav'); if (!nav) return;
-    var parts = [];
-    for (var i = -2; i <= 2; i++) {
-      var d = new Date(); d.setDate(d.getDate() + i + this.state.dateOffset);
-      var cls = i === 0 ? 'date-btn active' : 'date-btn';
-      parts.push('<button class="'+cls+'" onclick="V.goToDate('+i+')">'+d.getDate()+'<span class="day">'+['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'][d.getDay()]+'</span></button>');
-    }
-    nav.innerHTML = parts.join('');
-  },
-  goToDate: function(rel) { this.state.dateOffset += rel; this.renderDateNav(); this.loadMatches(); },
-  shiftDate: function(dir) { this.state.dateOffset += dir; this.renderDateNav(); this.loadMatches(); },
+content.innerHTML = html;
+totalEl.textContent = totalOdds.toFixed(2);
+},
 
-  renderSports: function() {
-    var el = document.getElementById('sportList'); var html = '';
-    SPORTS.forEach(function(s) {
-      html += '<div class="sport-item '+(s.id===V.state.selectedSport?'active':'')+'" onclick="V.selectSport(\''+s.id+'\')"><span>'+s.icon+'</span><span>'+s.name+'</span></div>';
-    });
-    el.innerHTML = html;
-  },
+  removeBetItem: function(matchId, market) {
+    var idx = this.state.betSlip.findIndex(function(b){ return b.matchId == matchId && b.market == market; });
+  removeBetItem: function(matchId) {
+    var idx = this.state.betSlip.findIndex(function(b){ return b.matchId == matchId; });
+if(idx >= 0) this.state.betSlip.splice(idx, 1);
 
-  selectSport: function(id) { this.state.selectedSport = id; this.renderSports(); this.loadMatches(); },
+    var btn = document.querySelector('.odd-btn.selected[data-mid="'+matchId+'"][data-mark="'+market+'"]');
+    var btn = document.querySelector('.odd-btn.selected[data-mid="'+matchId+'"]');
+if(btn) btn.classList.remove('selected');
 
-  loadMatches: function() {
-    var el = document.getElementById('matchScroll'); el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-    var url = this.state.isLiveOnly ? '/api/live/'+this.state.selectedSport : '/api/schedule/'+this.state.selectedSport+'/'+this.getDateStr(0);
-    fetch(url).then(function(r){ return r.json(); }).then(function(data) {
-      if(!data.groups || Object.keys(data.groups).length === 0) { el.innerHTML = '<div class="empty-state">Maç bulunamadı</div>'; return; }
-      var html = ''; 
-      Object.keys(data.groups).forEach(function(k) { html += T.leagueGroup(data.groups[k].name, k, data.groups[k].matches); });
-      el.innerHTML = html;
-      V.loadOddsForAll();
-    });
-  },
+this.renderBetSlip();
+@@ -851,7 +859,7 @@
+return html || this.empty('Detaylı istatistik mevcut değil');
+},
 
-  loadOddsForAll: function() {
-    document.querySelectorAll('.match-odds-wrapper[data-matchid]').forEach(function(container) {
-      var mid = container.getAttribute('data-matchid');
-      var mname = container.getAttribute('data-mname');
-      fetch('/api/odds/' + mid).then(function(r){return r.json()}).then(function(odds) {
-        var h = '<div class="odds-group"><div class="odds-group-title">MS</div>' +
-                '<div class="odd-btn" onclick="V.toggleOdd(\''+mid+'\', \''+mname+'\', \'MS\', \'1\', '+odds.match.home+', this, event)"><div class="odd-lbl">1</div><div class="odd-val">'+odds.match.home+'</div></div>' +
-                '<div class="odd-btn" onclick="V.toggleOdd(\''+mid+'\', \''+mname+'\', \'MS\', \'X\', '+odds.match.draw+', this, event)"><div class="odd-lbl">X</div><div class="odd-val">'+odds.match.draw+'</div></div>' +
-                '<div class="odd-btn" onclick="V.toggleOdd(\''+mid+'\', \''+mname+'\', \'MS\', \'2\', '+odds.match.away+', this, event)"><div class="odd-lbl">2</div><div class="odd-val">'+odds.match.away+'</div></div></div>';
-        container.innerHTML = h;
-      });
-    });
-  },
+  /* ── YENİ EKLENEN SAHA GÖRÜNÜMÜ DÜZELTMESİ (PITCH VIEW) ── */
+  /* ── YENİ SAHA GÖRÜNÜMÜ & LİSTE (KADROLAR) ── */
+lineups: function(data) {
+if (!data) return this.empty('Kadro bilgisi henüz açıklanmadı');
+var hp = (data.home && data.home.players) ? data.home.players : []; 
+@@ -943,45 +951,70 @@
+return html;
+},
 
-  showDetail: function(id) {
-    var panel = document.getElementById('detailPanel'); panel.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-    fetch('/api/event/'+id).then(function(r){return r.json()}).then(function(data) {
-      V.state.matchCache[id] = data.event;
-      var m = data.event;
-      var h = '<div class="detail-header"><div style="display:flex; justify-content:center; align-items:center; gap:20px">' +
-              '<div><img src="'+m.homeTeam.img+'" width="40"><div style="font-size:12px; font-weight:800">'+m.homeTeam.shortName+'</div></div>' +
-              '<div style="font-size:24px; font-weight:800">'+(m.homeScore??'0')+' - '+(m.awayScore??'0')+'</div>' +
-              '<div><img src="'+m.awayTeam.img+'" width="40"><div style="font-size:12px; font-weight:800">'+m.awayTeam.shortName+'</div></div>' +
-              '</div></div>' +
-              '<div class="detail-tabs" style="display:flex; border-bottom:1px solid var(--border)">' +
-              '<div class="detail-tab active" onclick="V.loadTab(\'summary\','+id+')">Özet</div>' +
-              '<div class="detail-tab" onclick="V.loadTab(\'lineups\','+id+')">Kadro</div></div>' +
-              '<div id="detailContent" style="padding:15px; overflow-y:auto"></div>';
-      panel.innerHTML = h; V.loadTab('summary', id);
-    });
-  },
+  /* ── KUSURSUZ SVG İKONLU MAÇ ÖZETİ (INCIDENTS) ── */
+incidents: function(incidents) {
+if (!incidents || incidents.length === 0) return this.empty('Maç olayları henüz mevcut değil');
+var html = '<div class="incident-list">';
+    
+    // Gelişmiş SVG İkonlar
+    var svgGoal = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 12l3-2.5m-3 2.5l-3-2.5m3 2.5v3.5m0-3.5l4.5 1.5m-4.5-1.5l-4.5 1.5m6.5-6.5l2-3.5m-8 3.5l-2-3.5m2 8.5l-1.5 4m8.5-4l1.5 4"></path></svg>';
+    var svgSub = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 21h5v-5M10 3L3 10M21 14l-7 7M3 10v5M21 14V9"/></svg>';
+    var svgWhistle = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 6v6l4 2"></path></svg>';
+    var svgVar = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>';
 
-  loadTab: function(tab, id) {
-    var content = document.getElementById('detailContent'); content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-    if(tab === 'lineups') {
-      fetch('/api/event/'+id+'/lineups').then(function(r){return r.json()}).then(function(data) { content.innerHTML = T.lineups(data); });
-    } else {
-      fetch('/api/event/'+id+'/incidents').then(function(r){return r.json()}).then(function(data) { content.innerHTML = T.incidents(data.incidents); });
-    }
-  },
+for (var i = 0; i < incidents.length; i++) {
+var inc = incidents[i]; 
+      var icon = '', ic = '', detail = '';
+      var icon = '', detail = '';
+      var playerNameHtml = inc.playerName ? '<div class="incident-player">' + inc.playerName + '</div>' : '';
 
-  toggleFavPlayer: function(pDataStr, ev) {
-    if (ev) ev.stopPropagation();
-    var p = JSON.parse(decodeURIComponent(pDataStr));
-    var idx = this.state.favPlayers.findIndex(function(fp){ return String(fp.id) === String(p.id); });
-    if(idx >= 0) this.state.favPlayers.splice(idx, 1); else this.state.favPlayers.push(p);
-    safeStorage.set('vivo_fav_players', this.state.favPlayers);
-    document.querySelectorAll('.player-fav[data-pid="'+p.id+'"]').forEach(function(s){ s.classList.toggle('faved'); });
-    if(this.state.page === 'favorites') this.loadFavorites();
-  },
+if (inc.type === 'goal') { 
+        icon = '\u26BD'; ic = 'goal'; 
+        detail = inc.incidentClass === 'penalty' ? 'Penaltı' : (inc.incidentClass === 'ownGoal' ? 'Kendi Kalesine' : 'Gol'); 
+        icon = svgGoal; 
+        detail = inc.incidentClass === 'penalty' ? '(Penaltı)' : (inc.incidentClass === 'ownGoal' ? '(Kendi Kalesine)' : ''); 
+        playerNameHtml = '<div class="incident-player" style="color:var(--brand); font-weight:800;">' + (inc.playerName || 'Gol') + ' ' + detail + '</div>';
+        detail = '';
+}
+else if (inc.type === 'card') {
+        if (inc.incidentClass === 'yellow') { icon = ''; ic = 'card-y'; detail = 'Sarı Kart'; }
+        else if (inc.incidentClass === 'red') { icon = ''; ic = 'card-r'; detail = 'Kırmızı Kart'; }
+        else { icon = ''; ic = 'card-r'; detail = 'İkinci Sarı'; }
+        if (inc.incidentClass === 'yellow') { 
+            icon = '<div style="width:12px;height:16px;background:var(--yellow);border-radius:2px;box-shadow:0 0 2px rgba(0,0,0,0.5);"></div>'; 
+            detail = 'Sarı Kart'; 
+        }
+        else if (inc.incidentClass === 'red') { 
+            icon = '<div style="width:12px;height:16px;background:var(--red);border-radius:2px;box-shadow:0 0 2px rgba(0,0,0,0.5);"></div>'; 
+            detail = 'Kırmızı Kart'; 
+        }
+        else { 
+            icon = '<div style="position:relative;width:16px;height:16px;"><div style="position:absolute;top:0;left:0;width:12px;height:16px;background:var(--yellow);border-radius:2px;z-index:1;"></div><div style="position:absolute;top:3px;left:4px;width:12px;height:16px;background:var(--red);border-radius:2px;z-index:2;box-shadow:-1px -1px 2px rgba(0,0,0,0.3);"></div></div>'; 
+            detail = '2. Sarıdan Kırmızı'; 
+        }
+}
+else if (inc.type === 'substitution') { 
+        icon = '\uD83D\uDD04'; ic = 'sub'; 
+        detail = (inc.playerIn || '?') + ' \u2194 ' + (inc.playerOut || '?'); 
+        icon = svgSub; 
+        playerNameHtml = '<div class="incident-player"><span style="color:var(--green)">▲ ' + (inc.playerIn || '?') + '</span></div>';
+        detail = '<span style="color:var(--red)">▼ ' + (inc.playerOut || '?') + '</span>'; 
+}
+else if (inc.type === 'period') { 
+        icon = '\uD83C\uDFC1'; ic = 'period'; 
+        detail = inc.text || ''; 
+        icon = svgWhistle; 
+        playerNameHtml = '<div class="incident-player" style="color:var(--text2)">' + (inc.text || 'Devre / Maç Sonu') + '</div>'; 
+      }
+      else if (inc.type === 'varDecision') {
+        icon = svgVar;
+        playerNameHtml = '<div class="incident-player" style="color:var(--brand)">VAR Kararı</div>';
+        detail = inc.text || inc.description || '';
+}
+else { 
+        icon = '\uD83D\uDCCB'; ic = 'period'; 
+        icon = svgWhistle; 
+detail = inc.text || inc.description || ''; 
+}
 
-  showPlayerModal: function(pDataStr) {
-    var p = JSON.parse(decodeURIComponent(pDataStr));
-    document.getElementById('pmImg').src = p.img; document.getElementById('pmName').textContent = p.name;
-    document.getElementById('pmPos').textContent = p.pos;
-    var grid = document.getElementById('pmStatsGrid'); var html = '';
-    Object.keys(p.stats).forEach(function(k){ if(STAT_DICT[k]) html += '<div style="background:var(--bg2); padding:10px; border-radius:8px"><span>'+STAT_DICT[k]+'</span><br><b style="color:var(--brand)">'+p.stats[k]+'</b></div>'; });
-    grid.innerHTML = html || 'İstatistik bulunamadı'; document.getElementById('playerModalOverlay').style.display = 'flex';
-  },
+var scoreBadge = (inc.homeScore !== undefined && inc.awayScore !== undefined && inc.type === 'goal') 
+? '<div class="incident-score">' + inc.homeScore + ' - ' + inc.awayScore + '</div>' : '';
 
-  closePlayerModal: function() { document.getElementById('playerModalOverlay').style.display = 'none'; },
+var timeStr = (inc.time !== undefined) ? inc.time + '\'' : '';
+      var playerName = inc.playerName ? '<div class="incident-player">' + inc.playerName + '</div>' : '';
 
-  loadFavorites: function() {
-    var el = document.getElementById('matchScroll');
-    var hasFavP = this.state.favPlayers.length > 0;
-    if(!hasFavP) { el.innerHTML = '<div class="empty-state">Favori oyuncu yok</div>'; return; }
-    var html = '<div class="league-group"><div class="league-header">⭐ Favori Oyuncular</div><div class="fav-players-grid" style="display:flex; gap:10px; flex-wrap:wrap; padding:15px;">';
-    this.state.favPlayers.forEach(function(fp){
-      var pData = encodeURIComponent(JSON.stringify(fp));
-      html += '<div class="sport-item active" style="width:180px"><span>★</span><div onclick="V.showPlayerModal(\''+pData+'\')">'+fp.name+'</div></div>';
-    });
-    el.innerHTML = html + '</div></div>';
-  }
-};
-
-var T = {
-  leagueGroup: function(name, id, matches) {
-    var h = '<div class="league-group"><div class="league-header"><span>'+name+'</span></div>';
-    matches.forEach(function(m){ h += T.matchCard(m); });
-    return h + '</div>';
-  },
-
-  matchCard: function(m) {
-    var mNameEnc = encodeURIComponent(m.homeTeam.shortName + ' - ' + m.awayTeam.shortName);
-    return '<div class="match-card" data-match="'+m.id+'">' +
-           '<div class="match-time">'+m.time+'</div>' +
-           '<div class="match-info-area" onclick="V.showDetail('+m.id+')">' +
-           '<div class="match-teams"><div class="team-row"><img src="'+m.homeTeam.img+'" class="team-logo"><span>'+m.homeTeam.shortName+'</span></div><div class="team-row"><img src="'+m.awayTeam.img+'" class="team-logo"><span>'+m.awayTeam.shortName+'</span></div></div>' +
-           '<div class="match-odds-wrapper" data-matchid="'+m.id+'" data-mname="'+mNameEnc+'"></div>' +
-           '<div class="match-score-wrap"><div class="score-num">'+(m.homeScore??'0')+'</div><div class="score-num">'+(m.awayScore??'0')+'</div></div></div>' +
-           '</div>';
-  },
-
-  lineups: function(data) {
-    var h = '<div class="team-lineup-header">KADROLAR</div>';
-    if(data.home) h += this.renderPitch(data.home.players);
-    if(data.home && data.home.players) h += this.renderList(data.home.players, 'Tüm Oyuncular');
-    return h;
-  },
-
-  renderPitch: function(players) {
-    var starters = players.filter(p => !p.substitute);
-    var h = '<div class="pitch-container"><div class="pitch-row">';
-    starters.forEach(p => { h += this.playerRow(p); });
-    return h + '</div></div>';
-  },
-
-  playerRow: function(p) {
-    var rc = '';
-    if (p.rating) {
-        var r = parseFloat(p.rating);
-        rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low');
-    }
-    var posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' };
-    var finalPos = posMap[p.position] || p.position || '';
-    var pDataStr = encodeURIComponent(JSON.stringify({ id: p.id, name: p.name, pos: finalPos, img: p.img, rating: p.rating, stats: p.stats || {} }));
-    var isFavP = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(p.id); });
-    var favIcon = '<div class="player-fav ' + (isFavP ? 'faved' : '') + '" data-pid="' + p.id + '" onclick="V.toggleFavPlayer(\'' + pDataStr + '\', event)">★</div>';
-
-    return '<div class="player-row" onclick="V.showPlayerModal(\'' + pDataStr + '\')">' +
-      '<div class="player-num">' + (p.number || '-') + '</div>' +
-      '<div class="player-info"><div class="player-name">' + p.name + '</div>' +
-      '<div class="player-pos">' + finalPos + '</div></div>' +
-      (p.rating ? '<div class="player-rating ' + rc + '">' + p.rating + '</div>' : '') + 
-      favIcon + '</div>';
-  },
-
-  renderList: function(players, title) {
-    var lHtml = '<div class="lineup-section-title">' + title + '</div><div class="lineup-list">';
-    players.forEach(function(p) { lHtml += T.playerRow(p); });
-    return lHtml + '</div>';
-  },
-
-  incidents: function(incidents) {
-    if (!incidents || incidents.length === 0) return '<div class="empty-state">Olay yok</div>';
-    var h = '<div class="incident-list">';
-    incidents.forEach(function(inc) {
-      h += '<div class="incident-row"><div class="incident-time">'+(inc.time||'')+'\'</div><div class="incident-details"><b>'+(inc.playerName||'')+'</b><br>'+(inc.text||'')+'</div></div>';
-    });
-    return h + '</div>';
-  }
-};
-
-V.init();
-</script>
-</body>
-</html>
+html += '<div class="incident-row">' +
+'<div class="incident-time">' + timeStr + '</div>' +
+        '<div class="incident-icon ' + ic + '">' + icon + '</div>' +
+        '<div class="incident-details">' + playerName + '<div class="incident-desc">' + detail + '</div></div>' +
+        '<div class="incident-icon">' + icon + '</div>' +
+        '<div class="incident-details">' + playerNameHtml + '<div class="incident-desc">' + detail + '</div></div>' +
+scoreBadge +
+'</div>';
+}
