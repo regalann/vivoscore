@@ -5,7 +5,6 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Pro Plan API Anahtarın (Render Environment'tan çeker)
 const RAPID_API_KEY = process.env.RAPID_API_KEY || "03947fd0b1mshc18ef7cc86815b9p1068cdjsnca79c2737b74";
 const BASE_URL = 'https://sportapi7.p.rapidapi.com/api/v1';
 
@@ -72,9 +71,12 @@ function formatEvent(e) {
     statusText = 'scheduled';
   }
 
+  // TÜRKİYE SAATİNE GÖRE KESİN TARİH ALMA (Gece yarısı çakışmalarını çözer)
+  const exactDateTR = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(new Date(ts));
+
   return {
     id: e.id, status: statusText, minute, timestamp: ts,
-    date: new Date(ts).toISOString().slice(0, 10),
+    date: exactDateTR,
     time: new Date(ts).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' }),
     tournament: { id: e.tournament?.uniqueTournament?.id, name: e.tournament?.uniqueTournament?.name || e.tournament?.name },
     homeTeam: { id: e.homeTeam?.id, name: e.homeTeam?.name, shortName: e.homeTeam?.shortName || e.homeTeam?.name, img: `https://api.sofascore.app/api/v1/team/${e.homeTeam?.id}/image` },
@@ -85,7 +87,7 @@ function formatEvent(e) {
   };
 }
 
-// ─── GÜNCELLENMİŞ ORAN MOTORU (1X2, ALT/ÜST, KG) ───
+// ORAN MOTORU
 app.get('/api/odds/:matchId', async (req, res) => {
   const { matchId } = req.params;
   try {
@@ -99,7 +101,6 @@ app.get('/api/odds/:matchId', async (req, res) => {
 
     const over25 = (Math.random() * (2.10 - 1.50) + 1.50).toFixed(2);
     const under25 = (3.50 - parseFloat(over25)).toFixed(2);
-    
     const bttsYes = (Math.random() * (2.00 - 1.60) + 1.60).toFixed(2);
     const bttsNo = (3.60 - parseFloat(bttsYes)).toFixed(2);
 
@@ -111,12 +112,10 @@ app.get('/api/odds/:matchId', async (req, res) => {
 
     setCache(`odds_${matchId}`, oddsData);
     res.json(oddsData);
-  } catch (err) {
-    res.status(500).json({ error: "Oranlar alınamadı" });
-  }
+  } catch (err) { res.status(500).json({ error: "Oranlar alınamadı" }); }
 });
 
-// ─── ENDPOINTLER ───
+// ENDPOINTLER
 app.get('/api/schedule/:sport/:date', async (req, res) => {
   try {
     const { sport, date } = req.params;
