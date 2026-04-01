@@ -5,6 +5,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Pro Plan API Anahtarın (Render Environment'tan çeker)
 const RAPID_API_KEY = process.env.RAPID_API_KEY || "03947fd0b1mshc18ef7cc86815b9p1068cdjsnca79c2737b74";
 const BASE_URL = 'https://sportapi7.p.rapidapi.com/api/v1';
 
@@ -71,13 +72,18 @@ function formatEvent(e) {
     statusText = 'scheduled';
   }
 
-  // TÜRKİYE SAATİNE GÖRE KESİN TARİH ALMA (Gece yarısı çakışmalarını çözer)
-  const exactDateTR = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(new Date(ts));
+  // ─── KESİN ZAMAN DİLİMİ KİLİDİ ───
+  // Timestamp'i zorla Türkiye saatine göre YYYY-MM-DD formatına çeviriyoruz.
+  const d = new Date(ts);
+  const trDate = new Intl.DateTimeFormat('en-CA', { 
+    timeZone: 'Europe/Istanbul', 
+    year: 'numeric', month: '2-digit', day: '2-digit' 
+  }).format(d);
 
   return {
     id: e.id, status: statusText, minute, timestamp: ts,
-    date: exactDateTR,
-    time: new Date(ts).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' }),
+    date: trDate,
+    time: d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' }),
     tournament: { id: e.tournament?.uniqueTournament?.id, name: e.tournament?.uniqueTournament?.name || e.tournament?.name },
     homeTeam: { id: e.homeTeam?.id, name: e.homeTeam?.name, shortName: e.homeTeam?.shortName || e.homeTeam?.name, img: `https://api.sofascore.app/api/v1/team/${e.homeTeam?.id}/image` },
     awayTeam: { id: e.awayTeam?.id, name: e.awayTeam?.name, shortName: e.awayTeam?.shortName || e.awayTeam?.name, img: `https://api.sofascore.app/api/v1/team/${e.awayTeam?.id}/image` },
@@ -87,7 +93,7 @@ function formatEvent(e) {
   };
 }
 
-// ORAN MOTORU
+// ─── GÜNCELLENMİŞ ORAN MOTORU ───
 app.get('/api/odds/:matchId', async (req, res) => {
   const { matchId } = req.params;
   try {
@@ -101,6 +107,7 @@ app.get('/api/odds/:matchId', async (req, res) => {
 
     const over25 = (Math.random() * (2.10 - 1.50) + 1.50).toFixed(2);
     const under25 = (3.50 - parseFloat(over25)).toFixed(2);
+    
     const bttsYes = (Math.random() * (2.00 - 1.60) + 1.60).toFixed(2);
     const bttsNo = (3.60 - parseFloat(bttsYes)).toFixed(2);
 
@@ -112,21 +119,30 @@ app.get('/api/odds/:matchId', async (req, res) => {
 
     setCache(`odds_${matchId}`, oddsData);
     res.json(oddsData);
-  } catch (err) { res.status(500).json({ error: "Oranlar alınamadı" }); }
+  } catch (err) {
+    res.status(500).json({ error: "Oranlar alınamadı" });
+  }
 });
 
-// ENDPOINTLER
+// ─── ENDPOINTLER ───
 app.get('/api/schedule/:sport/:date', async (req, res) => {
   try {
     const { sport, date } = req.params;
     const data = await api(`/sport/${sport}/scheduled-events/${date}`);
     const events = data.events || [];
     const grouped = {};
+    
     events.forEach(e => {
+      const m = formatEvent(e);
+      
+      // MÜHENDİSLİK DOKUNUŞU: Kesin Tarih Filtresi
+      // Eğer maçın Türkiye saatindeki takvim günü, seçilen sekmeye eşit değilse listeden çıkar!
+      if (m.date !== date) return;
+
       const tName = e.tournament?.uniqueTournament?.name || e.tournament?.name || 'Diğer Turnuvalar';
       const tId = e.tournament?.uniqueTournament?.id || 'other';
       if (!grouped[tId]) grouped[tId] = { name: tName, matches: [] };
-      grouped[tId].matches.push(formatEvent(e));
+      grouped[tId].matches.push(m);
     });
     res.json({ groups: grouped });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -145,6 +161,37 @@ app.get('/api/live/:sport', async (req, res) => {
       grouped[tId].matches.push(formatEvent(e));
     });
     res.json({ groups: grouped });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/matches/:leagueId', async (req, res) => {
+  const league = TOURNAMENTS[req.params.leagueId];
+  if (!league) return res.status(400).json({ error: 'Geçersiz lig' });
+  try {
+    const [lastData, nextData] = await Promise.all([
+      api(`/unique-tournament/${league.id}/season/latest/events/last/20`).catch(() => ({ events: [] })),
+      api(`/unique-tournament/${league.id}/season/latest/events/next/20`).catch(() => ({ events: [] }))
+    ]);
+    const events = [...(lastData.events || []), ...(nextData.events || [])];
+    
+    // MÜHENDİSLİK DOKUNUŞU 2: Çiftleyen maçları engellemek için Set (Küme) kontrolü
+    const uniqueEvents = [];
+    const seen = new Set();
+    events.forEach(e => {
+        if(!seen.has(e.id)) {
+            seen.add(e.id);
+            uniqueEvents.push(e);
+        }
+    });
+
+    uniqueEvents.sort((a, b) => b.startTimestamp - a.startTimestamp);
+    const grouped = {};
+    uniqueEvents.forEach(e => {
+      const m = formatEvent(e);
+      if (!grouped[m.date]) grouped[m.date] = [];
+      grouped[m.date].push(m);
+    });
+    res.json({ matches: grouped, league: league.name });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
