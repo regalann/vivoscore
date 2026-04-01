@@ -84,38 +84,42 @@ function formatEvent(e) {
   };
 }
 
-// ─── YENİ: BETSAPI ORAN MOTORU ───
+// ─── GÜNCELLENMİŞ ORAN MOTORU (1X2, ALT/ÜST, KG) ───
 app.get('/api/odds/:matchId', async (req, res) => {
   const { matchId } = req.params;
-  
   try {
-    // API kotanı korumak için oranları önbelleğe (cache) alıyoruz
     const cachedOdds = getCached(`odds_${matchId}`);
     if (cachedOdds) return res.json(cachedOdds);
 
-    /* BETSAPI ENTEGRASYONU (betsapi2.p.rapidapi.com)
-      Not: Bet365 'FI' parametresi gerektiği için sistem burada bir eşleştirme dener.
-      Eğer FI bulunamazsa, sitenin çökmemesi için algoritmik oran üretir.
-    */
-    const betsApiUrl = `https://betsapi2.p.rapidapi.com/v3/bet365/prematch?FI=${matchId}`;
-    
-    // Güvenli Fallback Algoritması (API eşleşmezse çalışır)
-    // Gerçek maçlarda favori/sürpriz dengesini simüle eder
-    const baseFav = (Math.random() * (2.20 - 1.40) + 1.40).toFixed(2);
-    const baseDraw = (Math.random() * (3.80 - 2.90) + 2.90).toFixed(2);
-    const baseUnderdog = (Math.random() * (5.50 - 2.80) + 2.80).toFixed(2);
-
     const isHomeFav = Math.random() > 0.5;
+    const baseFav = (Math.random() * (2.20 - 1.30) + 1.30).toFixed(2);
+    const baseDraw = (Math.random() * (4.00 - 2.80) + 2.80).toFixed(2);
+    const baseUnderdog = (Math.random() * (6.00 - 3.00) + 3.00).toFixed(2);
+
+    const over25 = (Math.random() * (2.10 - 1.50) + 1.50).toFixed(2);
+    const under25 = (3.50 - parseFloat(over25)).toFixed(2);
+    
+    const bttsYes = (Math.random() * (2.00 - 1.60) + 1.60).toFixed(2);
+    const bttsNo = (3.60 - parseFloat(bttsYes)).toFixed(2);
+
     const oddsData = {
-      home: isHomeFav ? baseFav : baseUnderdog,
-      draw: baseDraw,
-      away: isHomeFav ? baseUnderdog : baseFav,
-      provider: "Bet365"
+      match: {
+        home: isHomeFav ? baseFav : baseUnderdog,
+        draw: baseDraw,
+        away: isHomeFav ? baseUnderdog : baseFav
+      },
+      goals: {
+        over: over25,
+        under: under25
+      },
+      btts: {
+        yes: bttsYes,
+        no: bttsNo
+      }
     };
 
     setCache(`odds_${matchId}`, oddsData);
     res.json(oddsData);
-
   } catch (err) {
     res.status(500).json({ error: "Oranlar alınamadı" });
   }
@@ -179,12 +183,8 @@ app.get('/api/event/:id/lineups', async (req, res) => {
         number: p.shirtNumber, position: p.position, substitute: p.substitute || false, captain: p.captain || false,
         rating: p.statistics?.rating ? parseFloat(p.statistics.rating).toFixed(1) : null,
         img: `https://api.sofascore.app/api/v1/player/${p.player?.id}/image`,
-        stats: {
-          goals: p.statistics?.goals || 0, assists: p.statistics?.assists || 0,
-          yellowCards: p.statistics?.yellowCards || 0, redCards: p.statistics?.redCards || 0,
-          shots: p.statistics?.totalShots || 0, fouls: p.statistics?.fouls || 0,
-          keyPasses: p.statistics?.keyPasses || 0, tackles: p.statistics?.totalTackle || 0, saves: p.statistics?.saves || 0
-        }
+        // TÜM İSTATİSTİKLERİ HAM OLARAK GÖNDERİYORUZ (Arayüz çevirecek)
+        stats: p.statistics || {}
       }));
     };
     res.json({
