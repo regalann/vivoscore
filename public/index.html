@@ -58,7 +58,7 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .live-toggle.active .pulse-dot-btn { background:var(--red); animation: pulse-live 1.5s infinite; }
 .right-actions { margin-left: auto; display: flex; gap: 8px; }
 
-.match-scroll { flex: 1; overflow-y: auto; padding: 16px 20px; padding-bottom: 150px; } /* Kupon için alttan boşluk */
+.match-scroll { flex: 1; overflow-y: auto; padding: 16px 20px; padding-bottom: 150px; }
 
 /* LEAGUE GROUP */
 .league-group { margin-bottom: 20px; animation: fadeUp 0.3s ease; }
@@ -66,14 +66,14 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .league-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 13px; font-weight: 700; color: var(--text); background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; border: 1px solid var(--border); border-bottom: none; }
 .league-header img { width: 20px; height: 20px; border-radius: 3px; object-fit: contain; background: #fff; padding: 1px; }
 
-/* MATCH CARD (Yeni Inline Tasarım) */
+/* MATCH CARD (Inline Tasarım) */
 .match-card { display: flex; align-items: center; padding: 12px 14px; background: var(--surface); border-left: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transition: var(--transition); position: relative; }
 .match-card:last-child { border-radius: 0 0 var(--radius) var(--radius); } .match-card:hover { background: var(--surface2); }
 .match-card.selected { background: var(--brand-dim); border-left-color: var(--brand); } .match-card.live-card { border-left: 2px solid var(--green); }
 .match-time { width: 52px; flex-shrink: 0; text-align: center; font-size: 11px; font-weight: 600; color: var(--text2); line-height: 1.4; }
 .match-time.live-time { color: var(--green); }
 .minute-badge { display: inline-block; background: var(--green); color: #000; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; animation: pulse-live 1.5s infinite; }
-.match-info-area { flex:1; min-width:0; display:flex; align-items:center; cursor: pointer; } /* Sadece takım kısmı tıklanabilir */
+.match-info-area { flex:1; min-width:0; display:flex; align-items:center; cursor: pointer; } 
 .match-teams { flex: 1; min-width: 0; padding: 0 12px; }
 .team-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; } .team-row:last-child { margin-bottom: 0; }
 .team-logo { width: 20px; height: 20px; object-fit: contain; flex-shrink: 0; }
@@ -89,7 +89,7 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .match-fav { width: 28px; flex-shrink: 0; text-align: center; font-size: 16px; color: var(--text3); cursor: pointer; transition: var(--transition); }
 .match-fav:hover, .match-fav.faved { color: var(--yellow); }
 
-/* BAHİS ORANLARI UI (Genişletilmiş Inline) */
+/* BAHİS ORANLARI UI */
 .match-odds-wrapper { display: flex; gap: 12px; flex-shrink: 0; align-items: center; }
 .odds-group { display: flex; gap: 2px; background: var(--bg2); padding: 4px; border-radius: 6px; border: 1px solid var(--border); position: relative;}
 .odds-group-title { position: absolute; top: -8px; left: 6px; font-size: 8px; font-weight: 800; color: var(--text3); background: var(--surface); padding: 0 4px; border-radius: 4px;}
@@ -136,7 +136,7 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .detail-tab:hover { color: var(--text2); } .detail-tab.active { color: var(--brand); border-bottom-color: var(--brand); }
 .detail-content { flex: 1; overflow-y: auto; padding: 16px; }
 
-/* DÜZELTİLMİŞ İSTATİSTİK BARLARI */
+/* İSTATİSTİK BARLARI */
 .stat-group-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); text-align: center;} .stat-group-title:first-child { margin-top: 0; }
 .stat-row { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;} 
 .stat-labels { display: flex; justify-content: space-between; align-items: center; width: 100%;}
@@ -198,6 +198,7 @@ body.hide-scores .incident-score:hover {
   filter: blur(0); opacity: 1; 
 }
 
+/* UTILITY */
 .loading { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 0; gap:12px; }
 .spinner { width:28px; height:28px; border:3px solid var(--border); border-top-color:var(--brand); border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
@@ -280,7 +281,7 @@ body.hide-scores .incident-score:hover {
 
 <script>
 // =============================================
-//  VIVOSCORE APP v6.0 (ULTIMATE PRO)
+//  VIVOSCORE APP v6.1 (BUG FIX & OPTIMIZED)
 // =============================================
 
 var safeStorage = {
@@ -304,7 +305,6 @@ var SPORTS = [
   { id: 'motorsport', name: 'Motor Sporları', icon: '🏎️' }
 ];
 
-// OYUNCU İSTATİSTİKLERİ ÇEVİRİ SÖZLÜĞÜ (Tüm İhtimaliler)
 var STAT_DICT = {
   goals: 'Gol', assists: 'Asist', totalShots: 'Toplam Şut', shotsOnTarget: 'İsabetli Şut',
   shotsOffTarget: 'İsabetsiz Şut', blockedShots: 'Engellenen Şut', hitWoodwork: 'Direkten Dönen',
@@ -325,7 +325,7 @@ var V = {
     favPlayers: safeStorage.get('vivo_fav_players', []),
     hideScores: safeStorage.get('vivo_hide_scores', false),
     hiddenMatchScores: safeStorage.get('vivo_hidden_matches', {}),
-    betSlip: [] // Seçilen oranlar listesi
+    betSlip: [] 
   },
 
   init: function() { 
@@ -336,22 +336,20 @@ var V = {
     this.updateHideScoresBtn();
   },
 
-  // ─── KUPON & ORAN MANTIĞI ───
-  toggleOdd: function(matchId, matchName, market, selection, oddVal, btnElement, ev) {
+  toggleOdd: function(matchId, matchNameRaw, market, selection, oddVal, btnElement, ev) {
     if (ev) ev.stopPropagation();
     
-    // Aynı maçtan başka seçim varsa kaldır (Tek maç tek seçim kuralı)
-    var existingIdx = this.state.betSlip.findIndex(function(b){ return b.matchId === matchId; });
+    // Güvenlik: İsimdeki kesme işaretlerini temizle
+    var matchName = decodeURIComponent(matchNameRaw);
+    var existingIdx = this.state.betSlip.findIndex(function(b){ return b.matchId == matchId; });
     
-    // Aynı butona basıldıysa iptal et
     if (existingIdx >= 0 && this.state.betSlip[existingIdx].selection === selection && this.state.betSlip[existingIdx].market === market) {
       this.state.betSlip.splice(existingIdx, 1);
       btnElement.classList.remove('selected');
     } else {
-      if(existingIdx >= 0) this.state.betSlip.splice(existingIdx, 1); // Eski seçimi sil
+      if(existingIdx >= 0) this.state.betSlip.splice(existingIdx, 1); 
       this.state.betSlip.push({ matchId: matchId, matchName: matchName, market: market, selection: selection, odd: parseFloat(oddVal) });
       
-      // Ekrandaki diğer aktifleri temizle, bunu aktif yap
       var card = btnElement.closest('.match-odds-wrapper');
       if(card) card.querySelectorAll('.odd-btn').forEach(function(b){ b.classList.remove('selected'); });
       btnElement.classList.add('selected');
@@ -391,7 +389,6 @@ var V = {
     var idx = this.state.betSlip.findIndex(function(b){ return b.matchId == matchId; });
     if(idx >= 0) this.state.betSlip.splice(idx, 1);
     
-    // UI üzerindeki aktif butonu temizle
     var btn = document.querySelector('.odd-btn.selected[data-mid="'+matchId+'"]');
     if(btn) btn.classList.remove('selected');
     
@@ -410,6 +407,7 @@ var V = {
     document.body.classList.toggle('hide-scores', this.state.hideScores);
     this.updateHideScoresBtn();
   },
+  
   updateHideScoresBtn: function() {
     var btn = document.getElementById('hideScoresBtn');
     if(btn) {
@@ -443,7 +441,8 @@ var V = {
         if(this.state.isLiveOnly) dateNav.classList.add('disabled');
         else dateNav.classList.remove('disabled');
     }
-    this.loadMatches();
+    
+    if(this.state.page === 'matches') this.loadMatches();
   },
 
   toggleFavView: function() {
@@ -520,7 +519,7 @@ var V = {
       el.innerHTML = html;
       
       V.loadOddsForAll();
-      // Önceden seçilmiş bahisleri aktif et
+      
       setTimeout(function() {
         for(var b=0; b<V.state.betSlip.length; b++) {
           var item = V.state.betSlip[b];
@@ -537,70 +536,134 @@ var V = {
     
     document.querySelectorAll('.match-odds-wrapper').forEach(function(container) {
       var matchId = container.getAttribute('data-matchid');
-      var mName = container.getAttribute('data-mname');
+      var mNameRaw = container.getAttribute('data-mname'); // Şifrelenmiş (encode edilmiş) isim
       
       fetch('/api/odds/' + matchId)
         .then(function(res) { return res.json(); })
         .then(function(odds) {
           if(odds && odds.match) {
             var h = '';
-            
-            // Maç Sonucu
+            // MS
             h += '<div class="odds-group"><div class="odds-group-title">MS</div>' +
-              '<div class="odd-btn" data-mid="'+matchId+'" data-sel="1" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mName+'\', \'MS\', \'1\', '+odds.match.home+', this, event)"><div class="odd-lbl">1</div><div class="odd-val">' + odds.match.home + '</div></div>' +
-              '<div class="odd-btn" data-mid="'+matchId+'" data-sel="X" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mName+'\', \'MS\', \'X\', '+odds.match.draw+', this, event)"><div class="odd-lbl">X</div><div class="odd-val">' + odds.match.draw + '</div></div>' +
-              '<div class="odd-btn" data-mid="'+matchId+'" data-sel="2" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mName+'\', \'MS\', \'2\', '+odds.match.away+', this, event)"><div class="odd-lbl">2</div><div class="odd-val">' + odds.match.away + '</div></div></div>';
+              '<div class="odd-btn" data-mid="'+matchId+'" data-sel="1" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'1\', '+odds.match.home+', this, event)"><div class="odd-lbl">1</div><div class="odd-val">' + odds.match.home + '</div></div>' +
+              '<div class="odd-btn" data-mid="'+matchId+'" data-sel="X" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'X\', '+odds.match.draw+', this, event)"><div class="odd-lbl">X</div><div class="odd-val">' + odds.match.draw + '</div></div>' +
+              '<div class="odd-btn" data-mid="'+matchId+'" data-sel="2" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'2\', '+odds.match.away+', this, event)"><div class="odd-lbl">2</div><div class="odd-val">' + odds.match.away + '</div></div></div>';
             
-            // Alt Üst
+            // A/Ü
             if(odds.goals) {
               h += '<div class="odds-group"><div class="odds-group-title">2.5 A/Ü</div>' +
-                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Üst" data-mark="A/Ü" onclick="V.toggleOdd(\''+matchId+'\', \''+mName+'\', \'2.5 A/Ü\', \'Üst\', '+odds.goals.over+', this, event)"><div class="odd-lbl">ÜST</div><div class="odd-val">' + odds.goals.over + '</div></div>' +
-                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Alt" data-mark="A/Ü" onclick="V.toggleOdd(\''+matchId+'\', \''+mName+'\', \'2.5 A/Ü\', \'Alt\', '+odds.goals.under+', this, event)"><div class="odd-lbl">ALT</div><div class="odd-val">' + odds.goals.under + '</div></div></div>';
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Üst" data-mark="A/Ü" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'2.5 A/Ü\', \'Üst\', '+odds.goals.over+', this, event)"><div class="odd-lbl">ÜST</div><div class="odd-val">' + odds.goals.over + '</div></div>' +
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Alt" data-mark="A/Ü" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'2.5 A/Ü\', \'Alt\', '+odds.goals.under+', this, event)"><div class="odd-lbl">ALT</div><div class="odd-val">' + odds.goals.under + '</div></div></div>';
             }
             
-            // KG Var Yok
+            // KG
             if(odds.btts) {
               h += '<div class="odds-group"><div class="odds-group-title">KG</div>' +
-                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Var" data-mark="KG" onclick="V.toggleOdd(\''+matchId+'\', \''+mName+'\', \'KG\', \'Var\', '+odds.btts.yes+', this, event)"><div class="odd-lbl">VAR</div><div class="odd-val">' + odds.btts.yes + '</div></div>' +
-                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Yok" data-mark="KG" onclick="V.toggleOdd(\''+matchId+'\', \''+mName+'\', \'KG\', \'Yok\', '+odds.btts.no+', this, event)"><div class="odd-lbl">YOK</div><div class="odd-val">' + odds.btts.no + '</div></div></div>';
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Var" data-mark="KG" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'KG\', \'Var\', '+odds.btts.yes+', this, event)"><div class="odd-lbl">VAR</div><div class="odd-val">' + odds.btts.yes + '</div></div>' +
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Yok" data-mark="KG" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'KG\', \'Yok\', '+odds.btts.no+', this, event)"><div class="odd-lbl">YOK</div><div class="odd-val">' + odds.btts.no + '</div></div></div>';
             }
-
             container.innerHTML = h;
           }
         }).catch(function(e) {});
     });
   },
 
-  // (Favori Yükleme Aynı Kaldı)
-  loadFavorites: function() { ... },
-  toggleFav: function(matchId, ev) { ... },
-  toggleFavPlayer: function(pDataStr, ev) { ... },
+  loadFavorites: function() {
+    var el = document.getElementById('matchScroll'); if (!el) return;
+    var hasFavM = this.state.favorites.length > 0;
+    var hasFavP = this.state.favPlayers.length > 0;
+
+    if (!hasFavM && !hasFavP) return el.innerHTML = T.empty('Henüz favori maç veya oyuncu eklemediniz.');
+    
+    el.innerHTML = T.loading('Favorileriniz yükleniyor...');
+    var playersHtml = '';
+
+    if(hasFavP) {
+      playersHtml = '<div class="league-group"><div class="league-header">⭐ Favori Oyuncular</div><div style="display:flex; flex-wrap:wrap; gap:10px; padding:0 14px;">';
+      for(var i=0; i<this.state.favPlayers.length; i++) {
+        var fp = this.state.favPlayers[i];
+        var pDataStr = encodeURIComponent(JSON.stringify(fp));
+        playersHtml += '<div style="background:var(--surface); border:1px solid var(--border); padding:10px; border-radius:var(--radius); width:180px; position:relative;">' +
+          '<div onclick="V.toggleFavPlayer(\'' + pDataStr + '\', event)" style="position:absolute; top:10px; right:10px; color:var(--yellow); cursor:pointer;">★</div>' +
+          '<div style="display:flex; align-items:center; gap:10px;"><img src="'+fp.img+'" style="width:30px; height:30px; border-radius:50%; background:var(--bg2)">' +
+          '<div><div style="font-size:12px; font-weight:700;">'+fp.name+'</div><div style="font-size:9px; color:var(--text3)">'+fp.pos+'</div></div></div></div>';
+      }
+      playersHtml += '</div></div>';
+    }
+
+    if(!hasFavM) { el.innerHTML = playersHtml; return; }
+
+    var promises = this.state.favorites.map(function(id) {
+      return V.apiFetch('/api/event/' + id).catch(function(){ return null; });
+    });
+
+    Promise.all(promises).then(function(results) {
+      var validMatches = [];
+      for(var i=0; i<results.length; i++) {
+        if(results[i] && results[i].event) validMatches.push(results[i].event);
+      }
+      var matchesHtml = '';
+      if(validMatches.length > 0) {
+        validMatches.sort(function(a,b){ return b.timestamp - a.timestamp; });
+        matchesHtml = T.leagueGroup('Yıldızladığım Maçlar', 'fav', validMatches);
+      }
+      el.innerHTML = playersHtml + matchesHtml;
+    });
+  },
+
+  toggleFav: function(matchId, ev) {
+    if (ev) ev.stopPropagation();
+    var idx = this.state.favorites.indexOf(matchId);
+    if (idx >= 0) {
+      this.state.favorites.splice(idx, 1);
+      if(this.state.page === 'favorites') this.loadFavorites();
+    } else {
+      this.state.favorites.push(matchId);
+    }
+    safeStorage.set('vivo_favs', this.state.favorites);
+    document.querySelectorAll('.match-fav[data-fav="' + matchId + '"]').forEach(function(star){ star.classList.toggle('faved'); });
+  },
+
+  toggleFavPlayer: function(pDataStr, ev) {
+    if (ev) ev.stopPropagation();
+    var p = JSON.parse(decodeURIComponent(pDataStr));
+    var idx = this.state.favPlayers.findIndex(function(fp) { return fp.id === p.id; });
+    
+    if (idx >= 0) this.state.favPlayers.splice(idx, 1);
+    else this.state.favPlayers.push(p);
+    
+    safeStorage.set('vivo_fav_players', this.state.favPlayers);
+    document.querySelectorAll('.player-fav[data-pid="' + p.id + '"]').forEach(function(star) { star.classList.toggle('faved'); });
+    if(this.state.page === 'favorites') this.loadFavorites();
+  },
 
   showPlayerModal: function(pDataStr) {
     var p = JSON.parse(decodeURIComponent(pDataStr));
+    
     document.getElementById('pmImg').src = p.img;
     document.getElementById('pmName').textContent = p.name;
     document.getElementById('pmPos').textContent = p.pos;
     
     var rBox = document.getElementById('pmRating');
     if(p.rating) {
-      rBox.textContent = p.rating; rBox.style.display = 'inline-block';
+      rBox.textContent = p.rating;
+      rBox.style.display = 'inline-block';
       var r = parseFloat(p.rating);
       rBox.className = 'pm-rating ' + (r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'));
-    } else { rBox.style.display = 'none'; }
+    } else {
+      rBox.style.display = 'none';
+    }
 
     var grid = document.getElementById('pmStatsGrid');
-    var html = ''; 
+    var html = '';
     var s = p.stats || {};
     
-    // API'den gelen tüm anahtarları dön ve sözlükte karşılığı varsa bas
     var keys = Object.keys(s);
     var addedCount = 0;
     
     for(var i=0; i<keys.length; i++) {
       var key = keys[i];
       var val = s[key];
-      // Ondalıklı sayıları düzelt
       if (typeof val === 'number' && val % 1 !== 0) val = val.toFixed(2);
       
       if(STAT_DICT[key] && val !== undefined && val !== null) {
@@ -690,7 +753,6 @@ var V = {
     var content = document.getElementById('detailContent'); if (!content) return;
     content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
 
-    // ÖZET SEKMESİ (BİTMİŞ MAÇLAR İÇİN OLAYLAR ÇEKİLİYOR)
     if (tab === 'summary') {
       var self = this;
       this.apiFetch('/api/event/' + matchId + '/incidents').then(function(data) {
@@ -734,9 +796,9 @@ var T = {
     var hideBtnHtml = isEligibleForHide 
       ? '<button class="hide-single-btn" title="Skoru Gizle" onclick="V.toggleSingleScore(' + m.id + ', event)">' + (isHidden ? '👁️' : '🙈') + '</button>' : '';
 
-    var mNameForOdds = m.homeTeam.shortName + ' - ' + m.awayTeam.shortName;
-    var oddsContainer = (!isLive && isEligibleForHide) 
-      ? '<div class="match-odds-wrapper" data-matchid="' + m.id + '" data-mname="' + mNameForOdds + '"></div>' : '';
+    var mNameEncoded = encodeURIComponent(m.homeTeam.shortName + ' - ' + m.awayTeam.shortName);
+    var oddsContainer = (!isLive && !isFin && isEligibleForHide) 
+      ? '<div class="match-odds-wrapper" data-matchid="' + m.id + '" data-mname="' + mNameEncoded + '"></div>' : '';
 
     return '<div class="match-card' + (isLive ? ' live-card' : '') + (isHidden ? ' hide-this-score' : '') + '" data-match="' + m.id + '">' + timeH +
       '<div class="match-info-area" onclick="V.showDetail(' + m.id + ')">' +
@@ -752,7 +814,6 @@ var T = {
     return '<div class="league-group"><div class="league-header">' + imgHtml + '<span style="margin-left:6px">' + name + '</span></div>' + cards + '</div>';
   },
 
-  // ─── DÜZELTİLMİŞ CSS'Lİ İSTATİSTİK BARLARI ───
   statBar: function(s) {
     var hVal = parseFloat(String(s.home).replace('%','')) || 0; var aVal = parseFloat(String(s.away).replace('%','')) || 0;
     var tot = hVal + aVal || 1; var hP = (hVal / tot) * 100; var aP = (aVal / tot) * 100;
@@ -862,7 +923,12 @@ var T = {
   }
 };
 
-V.init();
+try {
+  V.init();
+} catch(err) {
+  console.error("VivoScore Başlatılma Hatası:", err);
+  alert("Sistem yüklenirken ufak bir hata oluştu. Lütfen kodun tamamını kopyaladığınızdan emin olun.");
+}
 </script>
 </body>
 </html>
