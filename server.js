@@ -42,20 +42,7 @@ async function api(endpoint) {
   return data;
 }
 
-// ─── Genişletilmiş Turnuva Haritası (Futbol, Basketbol, Espor) ───
-const TOURNAMENTS = {
-  PL:  { id: 17,   name: 'Premier League', sport: 'football' },
-  CL:  { id: 7,    name: 'Champions League', sport: 'football' },
-  TSL: { id: 52,   name: 'Süper Lig', sport: 'football' },
-  PD:  { id: 8,    name: 'La Liga', sport: 'football' },
-  SA:  { id: 23,   name: 'Serie A', sport: 'football' },
-  BL1: { id: 35,   name: 'Bundesliga', sport: 'football' },
-  L1:  { id: 34,   name: 'Ligue 1', sport: 'football' },
-  NBA: { id: 132,  name: 'NBA', sport: 'basketball' },
-  ELB: { id: 138,  name: 'Euroleague', sport: 'basketball' },
-  LOL: { id: 11467, name: 'LoL Esports', sport: 'esports' }
-};
-
+// Ortak formatlayıcı
 function formatEvent(e) {
   const ts = e.startTimestamp * 1000;
   const status = e.status || {};
@@ -92,45 +79,21 @@ function formatEvent(e) {
   };
 }
 
-app.get('/api/tournaments', (req, res) => res.json(TOURNAMENTS));
+// ═══════════════════════════════════════
+//  YENİ DİNAMİK ENDPOINTLER
+// ═══════════════════════════════════════
 
-app.get('/api/matches/:leagueId', async (req, res) => {
-  const league = TOURNAMENTS[req.params.leagueId];
-  if (!league) return res.status(400).json({ error: 'Geçersiz lig' });
+// Dinamik Tarih ve Spor Filtreli İstek
+app.get('/api/schedule/:sport/:date', async (req, res) => {
   try {
-    const [lastData, nextData] = await Promise.all([
-      api(`/unique-tournament/${league.id}/season/latest/events/last/20`).catch(() => ({ events: [] })),
-      api(`/unique-tournament/${league.id}/season/latest/events/next/20`).catch(() => ({ events: [] }))
-    ]);
-    const events = [...(lastData.events || []), ...(nextData.events || [])];
-    events.sort((a, b) => b.startTimestamp - a.startTimestamp);
-    const grouped = {};
-    events.forEach(e => {
-      const m = formatEvent(e);
-      if (!grouped[m.date]) grouped[m.date] = [];
-      grouped[m.date].push(m);
-    });
-    res.json({ matches: grouped, league: league.name });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-app.get('/api/schedule/:date', async (req, res) => {
-  try {
-    // Tüm maçlar sekmesi için performansı korumak adına futbol ve basketbolu birleştiriyoruz
-    const [fb, bb] = await Promise.all([
-      api(`/sport/football/scheduled-events/${req.params.date}`).catch(() => ({ events: [] })),
-      api(`/sport/basketball/scheduled-events/${req.params.date}`).catch(() => ({ events: [] }))
-    ]);
-    
-    const events = [...(fb.events || []), ...(bb.events || [])].filter(e => {
-      const tid = e.tournament?.uniqueTournament?.id;
-      return Object.values(TOURNAMENTS).some(t => t.id === tid);
-    });
+    const { sport, date } = req.params;
+    const data = await api(`/sport/${sport}/scheduled-events/${date}`);
+    const events = data.events || [];
 
     const grouped = {};
     events.forEach(e => {
-      const tName = e.tournament?.uniqueTournament?.name || 'Diğer';
-      const tId = e.tournament?.uniqueTournament?.id;
+      const tName = e.tournament?.uniqueTournament?.name || e.tournament?.name || 'Diğer Turnuvalar';
+      const tId = e.tournament?.uniqueTournament?.id || 'other';
       if (!grouped[tId]) grouped[tId] = { name: tName, matches: [] };
       grouped[tId].matches.push(formatEvent(e));
     });
@@ -138,29 +101,25 @@ app.get('/api/schedule/:date', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.get('/api/live', async (req, res) => {
+// Dinamik Canlı Maçlar İstek (Spora göre)
+app.get('/api/live/:sport', async (req, res) => {
   try {
-    const data = await api('/sport/football/events/live');
-    const events = (data.events || []).map(formatEvent);
-    res.json({ matches: events });
+    const { sport } = req.params;
+    const data = await api(`/sport/${sport}/events/live`);
+    const events = data.events || [];
+
+    const grouped = {};
+    events.forEach(e => {
+      const tName = e.tournament?.uniqueTournament?.name || e.tournament?.name || 'Diğer Turnuvalar';
+      const tId = e.tournament?.uniqueTournament?.id || 'other';
+      if (!grouped[tId]) grouped[tId] = { name: tName, matches: [] };
+      grouped[tId].matches.push(formatEvent(e));
+    });
+    res.json({ groups: grouped });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.get('/api/standings/:leagueId', async (req, res) => {
-  const league = TOURNAMENTS[req.params.leagueId];
-  if (!league) return res.status(400).json({ error: 'Geçersiz lig' });
-  try {
-    const data = await api(`/unique-tournament/${league.id}/season/latest/standings/total`);
-    const rows = (data.standings?.[0]?.rows || []).map(r => ({
-      pos: r.position,
-      team: { name: r.team?.shortName || r.team?.name, img: `https://api.sofascore.app/api/v1/team/${r.team?.id}/image` },
-      played: r.matches, won: r.wins, drawn: r.draws, lost: r.losses,
-      gf: r.scoresFor, ga: r.scoresAgainst, gd: r.scoresFor - r.scoresAgainst, pts: r.points
-    }));
-    res.json({ standings: rows, league: league.name });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
+// Detay Endpointleri (Aynı kaldı)
 app.get('/api/event/:id/stats', async (req, res) => {
   try {
     const data = await api(`/event/${req.params.id}/statistics`);
@@ -222,4 +181,4 @@ app.get('/api/event/:id', async (req, res) => {
 });
 
 app.get('*', (_, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.listen(PORT, () => console.log(`\n🟢 VivoScore Pro Aktif: Port ${PORT}\n`));
+app.listen(PORT, () => console.log(`\n🟢 VivoScore Multi-Sport Aktif: Port ${PORT}\n`));
