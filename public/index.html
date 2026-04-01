@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VivoScore | Profesyonel Analiz</title>
+    <title>VivoScore | SofaScore Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0b0e14; --s1: #151821; --brd: #222634; --brand: #3b82f6; --red: #ef4444; --t1: #e6edf3; --t2: #8b949e; --grn: #22c55e; }
@@ -12,32 +12,31 @@
         
         .app { display: flex; width: 100vw; height: 100vh; }
         
-        /* Sol Sidebar */
+        /* Sidebar */
         .sidebar { width: 260px; background: var(--s1); border-right: 1px solid var(--brd); padding: 25px; flex-shrink: 0; }
-        .logo { font-size: 24px; font-weight: 800; margin-bottom: 40px; }
+        .logo { font-size: 24px; font-weight: 800; margin-bottom: 40px; color: white; }
         .logo span { color: var(--brand); }
         .nav-item { padding: 14px; cursor: pointer; border-radius: 10px; margin-bottom: 8px; font-weight: 600; color: var(--t2); transition: 0.2s; }
         .nav-item.active { background: rgba(59,130,246,0.12); color: var(--brand); }
-        .nav-item:hover:not(.active) { background: #1c222d; color: var(--t1); }
 
-        /* Orta Alan */
-        .main-content { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--brd); }
-        .top-nav { padding: 15px 25px; border-bottom: 1px solid var(--brd); display: flex; gap: 10px; overflow-x: auto; }
-        .league-btn { padding: 10px 18px; border-radius: 12px; border: 1px solid var(--brd); background: var(--s1); color: white; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; }
-        .league-btn.active { border-color: var(--brand); color: var(--brand); }
+        /* Main Content */
+        .main-content { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--brd); min-width: 0; }
+        .top-nav { padding: 15px 25px; border-bottom: 1px solid var(--brd); display: flex; gap: 10px; overflow-x: auto; background: var(--bg); }
+        .league-btn { padding: 10px 18px; border-radius: 12px; border: 1px solid var(--brd); background: var(--s1); color: white; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; transition: 0.2s; }
+        .league-btn.active { border-color: var(--brand); color: var(--brand); background: rgba(59,130,246,0.05); }
         .scroll-area { flex: 1; overflow-y: auto; padding: 20px; }
 
-        /* Maç Satırı */
+        /* Match Row */
         .m-row { display: flex; align-items: center; padding: 18px; background: var(--s1); border-radius: 16px; margin-bottom: 12px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
         .m-row:hover { border-color: var(--brand); transform: translateY(-2px); }
-        .team-logo { width: 22px; height: 22px; object-fit: contain; margin-right: 12px; }
+        .team-logo { width: 24px; height: 24px; object-fit: contain; margin-right: 12px; }
 
-        /* Sağ Detay Paneli */
-        .details-panel { width: 400px; background: var(--s1); overflow-y: auto; padding: 30px; display: flex; flex-direction: column; flex-shrink: 0; }
+        /* Details Panel */
+        .details-panel { width: 400px; background: var(--s1); overflow-y: auto; padding: 30px; display: flex; flex-direction: column; flex-shrink: 0; border-left: 1px solid var(--brd); }
         .stat-bar { height: 6px; background: #242d3d; border-radius: 3px; display: flex; overflow: hidden; margin: 8px 0 18px; }
         .bar-h { background: var(--brand); height: 100%; transition: 0.6s ease-out; }
         .bar-a { background: var(--red); height: 100%; transition: 0.6s ease-out; }
-
+        
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: var(--brd); border-radius: 10px; }
     </style>
@@ -54,13 +53,13 @@
     <main class="main-content">
         <div class="top-nav" id="leagueTabs"></div>
         <div class="scroll-area" id="matchList">
-            <div style="text-align:center; padding-top:50px; color:var(--t2);">Lig seçin...</div>
+            <div style="text-align:center; padding-top:50px; color:var(--t2);">Yükleniyor...</div>
         </div>
     </main>
 
     <aside class="details-panel" id="matchDetails">
         <div style="text-align:center; padding-top:120px; color:var(--t2); font-size:14px;">
-            Analizleri görmek için<br>bir maça tıklayın.
+            Analizleri görmek için bir maça tıklayın.
         </div>
     </aside>
 </div>
@@ -71,6 +70,7 @@ const App = {
 
     async init() {
         this.renderTabs();
+        // Sayfa açılır açılmaz Premier League verisini çek
         await this.fetchMatches('PL');
     },
 
@@ -79,24 +79,34 @@ const App = {
             {id:'PL', n:'Premier League'},
             {id:'CL', n:'Champions League'},
             {id:'SA', n:'Serie A'},
-            {id:'PD', n:'La Liga'}
+            {id:'PD', n:'La Liga'},
+            {id:'BL1', n:'Bundesliga'}
         ];
         document.getElementById('leagueTabs').innerHTML = leagues.map(l => 
             `<button class="league-btn ${this.state.currentLeague === l.id ? 'active' : ''}" onclick="App.fetchMatches('${l.id}')">${l.n}</button>`
         ).join('');
     },
 
-    async fetchMatches(id) {
-        this.state.currentLeague = id;
+    async fetchMatches(leagueId) {
+        this.state.currentLeague = leagueId;
         this.renderTabs();
-        document.getElementById('matchList').innerHTML = '<div style="text-align:center; padding-top:50px;">Yükleniyor...</div>';
+        const listEl = document.getElementById('matchList');
+        listEl.innerHTML = '<div style="text-align:center; padding-top:50px;">Veriler çekiliyor...</div>';
+        
         try {
-            const res = await fetch(`/api/matches/${id}`);
+            const res = await fetch(`/api/matches/${leagueId}`);
             const data = await res.json();
+            
+            if (!data.matches || data.matches.length === 0) {
+                listEl.innerHTML = '<div style="text-align:center; padding-top:50px; color:var(--t2);">Bu lig için maç bulunamadı.</div>';
+                return;
+            }
+            
             this.state.matches = data.matches;
             this.renderList();
         } catch (e) {
-            document.getElementById('matchList').innerHTML = 'Hata oluştu.';
+            console.error("Hata:", e);
+            listEl.innerHTML = '<div style="text-align:center; padding-top:50px; color:var(--red);">Bağlantı hatası oluştu.</div>';
         }
     },
 
@@ -108,36 +118,38 @@ const App = {
                 </div>
                 <div style="flex:1;">
                     <div style="display:flex; align-items:center; margin-bottom:8px;">
-                        <img src="${m.homeTeam.crest}" class="team-logo"> 
+                        <img src="${m.homeTeam.crest}" class="team-logo" onerror="this.src='https://www.sofascore.com/static/images/placeholders/team.png'"> 
                         <span style="font-weight:600;">${m.homeTeam.name}</span>
                     </div>
                     <div style="display:flex; align-items:center;">
-                        <img src="${m.awayTeam.crest}" class="team-logo"> 
+                        <img src="${m.awayTeam.crest}" class="team-logo" onerror="this.src='https://www.sofascore.com/static/images/placeholders/team.png'"> 
                         <span style="font-weight:600;">${m.awayTeam.name}</span>
                     </div>
                 </div>
                 <div style="text-align:right; font-weight:800; font-size:18px; padding-left:20px;">
-                    <div style="color:${m.score.home > m.score.away ? 'white' : 'var(--t2)'}">${m.score.home ?? '-'}</div>
-                    <div style="color:${m.score.away > m.score.home ? 'white' : 'var(--t2)'}">${m.score.away ?? '-'}</div>
+                    <div>${m.score.home ?? 0}</div>
+                    <div>${m.score.away ?? 0}</div>
                 </div>
             </div>
         `).join('');
     },
 
-    async showDetails(id) {
+    async showDetails(matchId) {
         const panel = document.getElementById('matchDetails');
-        panel.innerHTML = '<div style="text-align:center; padding-top:50px;">Veriler çekiliyor...</div>';
+        panel.innerHTML = '<div style="text-align:center; padding-top:50px;">Analizler hazırlanıyor...</div>';
         
         try {
-            const res = await fetch(`/api/match-details/${id}`);
+            const res = await fetch(`/api/match-details/${matchId}`);
             const data = await res.json();
             
             let html = `<h2 style="margin-bottom:25px; font-size:20px;">Maç Merkezi</h2>`;
 
-            // İstatistikler (SofaScore Çubukları)
+            // İstatistik Çubukları
             if (data.stats && data.stats.statistics && data.stats.statistics.length > 0) {
-                const items = data.stats.statistics[0].groups[0].statisticsItems;
-                items.forEach(item => {
+                // SofaScore verisinde genellikle ilk grup (index 0) ana istatistiklerdir
+                const statsItems = data.stats.statistics[0].groups[0].statisticsItems;
+                
+                statsItems.forEach(item => {
                     const h = parseFloat(item.homeValue) || 0;
                     const a = parseFloat(item.awayValue) || 0;
                     const total = h + a;
@@ -154,24 +166,27 @@ const App = {
                         </div>
                     `;
                 });
+            } else {
+                html += '<div style="color:var(--t2); font-size:12px;">Detaylı istatistik henüz mevcut değil.</div>';
             }
 
             // Oyuncu Reytingleri
-            if (data.lineups) {
-                html += `<h3 style="margin:30px 0 15px; font-size:16px;">Öne Çıkan Oyuncular</h3>`;
+            if (data.lineups && (data.lineups.home || data.lineups.away)) {
+                html += `<h3 style="margin:30px 0 15px; font-size:16px;">Reytingler</h3>`;
                 const allPlayers = [...(data.lineups.home?.players || []), ...(data.lineups.away?.players || [])];
-                const top = allPlayers
-                    .filter(p => p.statistics?.rating)
-                    .sort((a,b) => b.statistics.rating - a.statistics.rating)
+                
+                const topPlayers = allPlayers
+                    .filter(p => p.statistics && p.statistics.rating)
+                    .sort((a, b) => b.statistics.rating - a.statistics.rating)
                     .slice(0, 5);
 
-                top.forEach(p => {
-                    const r = p.statistics.rating;
-                    const color = r >= 7.5 ? var(--grn) : (r >= 6.8 ? '#eab308' : '#8b949e');
+                topPlayers.forEach(p => {
+                    const rating = p.statistics.rating;
+                    const color = rating >= 7.5 ? '#22c55e' : (rating >= 6.8 ? '#eab308' : '#8b949e');
                     html += `
-                        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--brd);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--brd);">
                             <span style="font-size:13px; font-weight:600;">${p.player.name}</span>
-                            <span style="background:${color}; color:#000; padding:3px 8px; border-radius:6px; font-weight:800; font-size:11px;">${r}</span>
+                            <span style="background:${color}; color:#000; padding:2px 7px; border-radius:5px; font-weight:800; font-size:11px;">${rating}</span>
                         </div>
                     `;
                 });
@@ -179,10 +194,12 @@ const App = {
 
             panel.innerHTML = html;
         } catch (e) {
-            panel.innerHTML = '<div class="empty-state">İstatistik bulunamadı.</div>';
+            panel.innerHTML = '<div style="text-align:center; padding-top:50px;">Veri çekme hatası.</div>';
         }
     }
 };
+
+// Uygulamayı başlat
 App.init();
 </script>
 </body>
