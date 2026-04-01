@@ -649,7 +649,8 @@ var V = {
     else this.state.favPlayers.push(p);
     
     safeStorage.set('vivo_fav_players', this.state.favPlayers);
-    document.querySelectorAll('.player-fav[data-pid="' + p.id + '"]').forEach(function(star) { star.classList.toggle('faved'); });
+    // DÜZELTME: `.player-fav` class'ı `.ll-fav` olarak değiştirildi.
+    document.querySelectorAll('.ll-fav[data-pid="' + p.id + '"]').forEach(function(star) { star.classList.toggle('faved'); });
     if(this.state.page === 'favorites') this.loadFavorites();
   },
 
