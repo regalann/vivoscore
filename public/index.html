@@ -206,7 +206,6 @@ body.hide-scores .detail-score:hover {
 .incident-row { display: flex; align-items: center; background: var(--surface2); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
 .incident-time { font-weight: 800; font-size: 15px; width: 44px; color: var(--text2); flex-shrink: 0; }
 .incident-icon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; margin-right: 14px; flex-shrink: 0; background: var(--surface); border-radius: 50%; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-.incident-icon svg { width: 18px; height: 18px; }
 .incident-details { flex: 1; min-width: 0; }
 .incident-player { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height:1.4;}
 .incident-desc { font-size: 13px; color: var(--text3); margin-top: 2px; }
@@ -565,10 +564,21 @@ var V = {
       playersHtml = '<div class="league-group"><div class="league-header">⭐ Favori Oyuncular</div><div class="fav-players-grid">';
       for(var i=0; i<this.state.favPlayers.length; i++) {
         var fp = this.state.favPlayers[i]; var pDataStr = encodeURIComponent(JSON.stringify(fp));
-        playersHtml += '<div style="background:var(--surface); border:1px solid var(--border); padding:10px; border-radius:var(--radius); width:180px; position:relative;">' +
-          '<div onclick="V.toggleFavPlayer(\'' + pDataStr + '\', event)" style="position:absolute; top:10px; right:10px; color:var(--yellow); cursor:pointer;">★</div>' +
-          '<div style="display:flex; align-items:center; gap:10px;"><img src="'+fp.img+'" style="width:30px; height:30px; border-radius:50%; background:var(--bg2)">' +
-          '<div><div style="font-size:12px; font-weight:700;">'+fp.name+'</div><div style="font-size:9px; color:var(--text3)">'+fp.pos+'</div></div></div></div>';
+        
+        // Yeni: Oyuncu kartında detaylı statların görünmesi
+        var sHtml = '';
+        if(fp.rating) sHtml += '<span style="background:var(--green); color:#000; padding:2px 6px; border-radius:4px; font-weight:800; font-size:11px;">⭐ ' + fp.rating + '</span> ';
+        var s = fp.stats || {};
+        if(s.goals !== undefined) sHtml += '<span style="font-size:12px; color:var(--text2); margin-left:6px;">⚽ '+s.goals+'</span>';
+        if(s.assists !== undefined) sHtml += '<span style="font-size:12px; color:var(--text2); margin-left:6px;">👟 '+s.assists+'</span>';
+
+        // Yeni: Karta tıklanınca detaylı istatistik modalının açılması
+        playersHtml += '<div onclick="V.showPlayerModal(\'' + pDataStr + '\')" style="background:var(--surface); border:1px solid var(--border); padding:14px; border-radius:var(--radius); width:210px; position:relative; cursor:pointer; transition:0.2s;" onmouseover="this.style.borderColor=\'var(--brand)\'" onmouseout="this.style.borderColor=\'var(--border)\'">' +
+          '<div onclick="V.toggleFavPlayer(\'' + pDataStr + '\', event)" style="position:absolute; top:12px; right:12px; color:var(--yellow); cursor:pointer; font-size:18px;">★</div>' +
+          '<div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;"><img src="'+fp.img+'" style="width:40px; height:40px; border-radius:50%; background:var(--bg2); object-fit:cover;">' +
+          '<div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">'+fp.name+'</div><div style="font-size:11px; color:var(--text3)">'+fp.pos+'</div></div></div>' +
+          '<div style="display:flex; align-items:center;">' + (sHtml || '<span style="font-size:11px; color:var(--text3)">İstatistik henüz yok</span>') + '</div>' +
+          '</div>';
       }
       playersHtml += '</div></div>';
     }
@@ -832,38 +842,70 @@ var T = {
     return html;
   },
 
+  // YENİLENEN VE HATALARDAN ARINDIRILMIŞ MAÇ ÖZETİ (INCIDENTS) KISMI
   incidents: function(incidents) {
     if (!incidents || incidents.length === 0) return this.empty('Maç olayları henüz mevcut değil');
     var html = '<div class="incident-list">';
-    
-    var svgGoal = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 12l3-2.5m-3 2.5l-3-2.5m3 2.5v3.5m0-3.5l4.5 1.5m-4.5-1.5l-4.5 1.5m6.5-6.5l2-3.5m-8 3.5l-2-3.5m2 8.5l-1.5 4m8.5-4l1.5 4"></path></svg>';
-    var svgSub = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 21h5v-5M10 3L3 10M21 14l-7 7M3 10v5M21 14V9"/></svg>';
-    var svgWhistle = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 6v6l4 2"></path></svg>';
-    var svgVar = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>';
 
     for (var i = 0; i < incidents.length; i++) {
-      var inc = incidents[i]; var icon = '', detail = ''; var playerNameHtml = inc.playerName ? '<div class="incident-player">' + inc.playerName + '</div>' : '';
+      var inc = incidents[i]; 
       
-      if (inc.type === 'goal') { 
-        icon = svgGoal; detail = inc.incidentClass === 'penalty' ? '(Penaltı)' : (inc.incidentClass === 'ownGoal' ? '(Kendi Kalesine)' : ''); 
-        playerNameHtml = '<div class="incident-player" style="color:var(--brand); font-weight:800;">' + (inc.playerName || 'Gol') + ' ' + detail + '</div>'; detail = '';
+      // API'nin gönderdiği veri yapısındaki karışıklıkları gidermek için esnek kontroller eklendi
+      var type = inc.incidentType || inc.type;
+      var iClass = inc.incidentClass || '';
+      var pName = inc.player ? (inc.player.shortName || inc.player.name) : (inc.playerName || '');
+      
+      var icon = '⏱️', detail = '';
+      var playerNameHtml = pName ? '<div class="incident-player">' + pName + '</div>' : '';
+      
+      if (type === 'goal') { 
+        icon = '⚽'; 
+        var extra = iClass === 'penalty' ? '(Penaltı)' : (iClass === 'ownGoal' ? '(Kendi Kalesine)' : ''); 
+        playerNameHtml = '<div class="incident-player" style="color:var(--brand); font-weight:800;">' + (pName || 'Gol') + ' ' + extra + '</div>';
       }
-      else if (inc.type === 'card') {
-        if (inc.incidentClass === 'yellow') { icon = '<div style="width:14px;height:18px;background:var(--yellow);border-radius:2px;box-shadow:0 0 2px rgba(0,0,0,0.5);"></div>'; detail = 'Sarı Kart'; }
-        else if (inc.incidentClass === 'red') { icon = '<div style="width:14px;height:18px;background:var(--red);border-radius:2px;box-shadow:0 0 2px rgba(0,0,0,0.5);"></div>'; detail = 'Kırmızı Kart'; }
-        else { icon = '<div style="position:relative;width:18px;height:18px;"><div style="position:absolute;top:0;left:0;width:14px;height:18px;background:var(--yellow);border-radius:2px;z-index:1;"></div><div style="position:absolute;top:3px;left:4px;width:14px;height:18px;background:var(--red);border-radius:2px;z-index:2;box-shadow:-1px -1px 2px rgba(0,0,0,0.3);"></div></div>'; detail = '2. Sarıdan Kırmızı'; }
+      else if (type === 'card') {
+        if (iClass === 'yellow') { icon = '🟨'; detail = 'Sarı Kart'; }
+        else if (iClass === 'red') { icon = '🟥'; detail = 'Kırmızı Kart'; }
+        else { icon = '🟨🟥'; detail = '2. Sarıdan Kırmızı'; }
       }
-      else if (inc.type === 'substitution') { 
-        icon = svgSub; playerNameHtml = '<div class="incident-player"><span style="color:var(--green)">▲ ' + (inc.playerIn || '?') + '</span></div>'; detail = '<span style="color:var(--red)">▼ ' + (inc.playerOut || '?') + '</span>'; 
+      else if (type === 'substitution') { 
+        icon = '🔄'; 
+        var pIn = inc.playerIn ? (inc.playerIn.shortName || inc.playerIn.name) : (pName || '?');
+        var pOut = inc.playerOut ? (inc.playerOut.shortName || inc.playerOut.name) : '?';
+        playerNameHtml = '<div class="incident-player"><span style="color:var(--green)">▲ ' + pIn + '</span></div>';
+        detail = '<span style="color:var(--red)">▼ ' + pOut + '</span>'; 
       }
-      else if (inc.type === 'period') { icon = svgWhistle; playerNameHtml = '<div class="incident-player" style="color:var(--text2)">' + (inc.text || 'Devre / Maç Sonu') + '</div>'; }
-      else if (inc.type === 'varDecision') { icon = svgVar; playerNameHtml = '<div class="incident-player" style="color:var(--brand)">VAR Kararı</div>'; detail = inc.text || inc.description || ''; }
-      else { icon = svgWhistle; detail = inc.text || inc.description || ''; }
+      else if (type === 'period') { 
+        icon = '🏁'; 
+        playerNameHtml = '<div class="incident-player" style="color:var(--text2)">' + (inc.text || inc.description || 'Devre / Maç Sonu') + '</div>'; 
+      }
+      else if (type === 'injuryTime') {
+        icon = '⏱️';
+        playerNameHtml = '<div class="incident-player" style="color:var(--yellow)">Uzatmalar</div>';
+        detail = '+' + inc.length + ' Dakika eklendi';
+      }
+      else if (type === 'varDecision') {
+        icon = '📺';
+        playerNameHtml = '<div class="incident-player" style="color:var(--brand)">VAR Kararı</div>';
+        detail = inc.text || inc.description || '';
+      }
+      else { 
+        icon = 'ℹ️'; 
+        detail = inc.text || inc.description || type || ''; 
+      }
 
-      var scoreBadge = (inc.homeScore !== undefined && inc.awayScore !== undefined && inc.type === 'goal') ? '<div class="incident-score">' + inc.homeScore + ' - ' + inc.awayScore + '</div>' : '';
+      var scoreBadge = (inc.homeScore !== undefined && inc.awayScore !== undefined && type === 'goal') 
+        ? '<div class="incident-score">' + inc.homeScore + ' - ' + inc.awayScore + '</div>' : '';
+        
       var timeStr = (inc.time !== undefined) ? inc.time + '\'' : '';
+      if (inc.addedTime) timeStr = inc.time + '+' + inc.addedTime + '\'';
 
-      html += '<div class="incident-row"><div class="incident-time">' + timeStr + '</div><div class="incident-icon">' + icon + '</div><div class="incident-details">' + playerNameHtml + '<div class="incident-desc">' + detail + '</div></div>' + scoreBadge + '</div>';
+      html += '<div class="incident-row">' +
+        '<div class="incident-time">' + timeStr + '</div>' +
+        '<div class="incident-icon" style="font-size:18px; background:transparent; border:none; box-shadow:none;">' + icon + '</div>' +
+        '<div class="incident-details">' + playerNameHtml + '<div class="incident-desc">' + detail + '</div></div>' +
+        scoreBadge +
+      '</div>';
     }
     return html + '</div>';
   }
