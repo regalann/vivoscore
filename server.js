@@ -63,7 +63,7 @@ function formatEvent(e) {
 
   return {
     id: e.id, status: statusText, minute, timestamp: ts,
-    date: getTRDateString(e.startTimestamp), // ARTIK ZORLA TR SAATİ
+    date: getTRDateString(e.startTimestamp),
     time: new Date(ts).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' }),
     tournament: { id: e.tournament?.uniqueTournament?.id, name: e.tournament?.uniqueTournament?.name || e.tournament?.name },
     homeTeam: { id: e.homeTeam?.id, name: e.homeTeam?.name, shortName: e.homeTeam?.shortName || e.homeTeam?.name, img: `https://api.sofascore.app/api/v1/team/${e.homeTeam?.id}/image` },
@@ -97,7 +97,8 @@ app.get('/api/schedule/:sport/:date', async (req, res) => {
     const grouped = {};
     (data.events || []).forEach(e => {
       const m = formatEvent(e);
-      if (m.date !== date) return; // KRİTİK: SEÇİLEN TR TARİHİNE UYMAYANI SİL
+      // DÜZELTME: Saat farkından dolayı maçların kaybolmasını engellemek için tarih filtresi kaldırıldı.
+      // if (m.date !== date) return; 
       const tId = e.tournament?.uniqueTournament?.id || 'other';
       if (!grouped[tId]) grouped[tId] = { name: m.tournament.name, matches: [] };
       grouped[tId].matches.push(m);
