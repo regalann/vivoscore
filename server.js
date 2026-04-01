@@ -5,7 +5,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Pro Plan API Anahtarın (Render Environment'tan çeker)
+// Pro Plan API Anahtarın
 const RAPID_API_KEY = process.env.RAPID_API_KEY || "03947fd0b1mshc18ef7cc86815b9p1068cdjsnca79c2737b74";
 const BASE_URL = 'https://sportapi7.p.rapidapi.com/api/v1';
 
@@ -72,18 +72,10 @@ function formatEvent(e) {
     statusText = 'scheduled';
   }
 
-  // ─── KESİN ZAMAN DİLİMİ KİLİDİ ───
-  // Timestamp'i zorla Türkiye saatine göre YYYY-MM-DD formatına çeviriyoruz.
-  const d = new Date(ts);
-  const trDate = new Intl.DateTimeFormat('en-CA', { 
-    timeZone: 'Europe/Istanbul', 
-    year: 'numeric', month: '2-digit', day: '2-digit' 
-  }).format(d);
-
   return {
     id: e.id, status: statusText, minute, timestamp: ts,
-    date: trDate,
-    time: d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' }),
+    date: new Date(ts).toISOString().slice(0, 10), // API'nin verdiği tarihi koruyoruz
+    time: new Date(ts).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' }),
     tournament: { id: e.tournament?.uniqueTournament?.id, name: e.tournament?.uniqueTournament?.name || e.tournament?.name },
     homeTeam: { id: e.homeTeam?.id, name: e.homeTeam?.name, shortName: e.homeTeam?.shortName || e.homeTeam?.name, img: `https://api.sofascore.app/api/v1/team/${e.homeTeam?.id}/image` },
     awayTeam: { id: e.awayTeam?.id, name: e.awayTeam?.name, shortName: e.awayTeam?.shortName || e.awayTeam?.name, img: `https://api.sofascore.app/api/v1/team/${e.awayTeam?.id}/image` },
@@ -93,7 +85,7 @@ function formatEvent(e) {
   };
 }
 
-// ─── GÜNCELLENMİŞ ORAN MOTORU ───
+// ─── ORAN MOTORU ───
 app.get('/api/odds/:matchId', async (req, res) => {
   const { matchId } = req.params;
   try {
@@ -134,11 +126,7 @@ app.get('/api/schedule/:sport/:date', async (req, res) => {
     
     events.forEach(e => {
       const m = formatEvent(e);
-      
-      // MÜHENDİSLİK DOKUNUŞU: Kesin Tarih Filtresi
-      // Eğer maçın Türkiye saatindeki takvim günü, seçilen sekmeye eşit değilse listeden çıkar!
-      if (m.date !== date) return;
-
+      // Hatalı tarih filtresini kaldırdık! Maçlar artık silinmeyecek.
       const tName = e.tournament?.uniqueTournament?.name || e.tournament?.name || 'Diğer Turnuvalar';
       const tId = e.tournament?.uniqueTournament?.id || 'other';
       if (!grouped[tId]) grouped[tId] = { name: tName, matches: [] };
@@ -174,14 +162,10 @@ app.get('/api/matches/:leagueId', async (req, res) => {
     ]);
     const events = [...(lastData.events || []), ...(nextData.events || [])];
     
-    // MÜHENDİSLİK DOKUNUŞU 2: Çiftleyen maçları engellemek için Set (Küme) kontrolü
     const uniqueEvents = [];
     const seen = new Set();
     events.forEach(e => {
-        if(!seen.has(e.id)) {
-            seen.add(e.id);
-            uniqueEvents.push(e);
-        }
+        if(!seen.has(e.id)) { seen.add(e.id); uniqueEvents.push(e); }
     });
 
     uniqueEvents.sort((a, b) => b.startTimestamp - a.startTimestamp);
