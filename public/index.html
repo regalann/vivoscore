@@ -58,7 +58,7 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .live-toggle.active .pulse-dot-btn { background:var(--red); animation: pulse-live 1.5s infinite; }
 .right-actions { margin-left: auto; display: flex; gap: 8px; }
 
-.match-scroll { flex: 1; overflow-y: auto; padding: 16px 20px; padding-bottom: 150px; }
+.match-scroll { flex: 1; overflow-y: auto; padding: 16px 20px; padding-bottom: 150px; } 
 
 /* LEAGUE GROUP */
 .league-group { margin-bottom: 20px; animation: fadeUp 0.3s ease; }
@@ -66,22 +66,27 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .league-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 13px; font-weight: 700; color: var(--text); background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; border: 1px solid var(--border); border-bottom: none; }
 .league-header img { width: 20px; height: 20px; border-radius: 3px; object-fit: contain; background: #fff; padding: 1px; }
 
-/* MATCH CARD (Inline Tasarım) */
+/* ── YENİ YAPISAL HİZALAMA (TOLERANS DÜZELTMESİ) ── */
 .match-card { display: flex; align-items: center; padding: 12px 14px; background: var(--surface); border-left: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transition: var(--transition); position: relative; }
 .match-card:last-child { border-radius: 0 0 var(--radius) var(--radius); } .match-card:hover { background: var(--surface2); }
 .match-card.selected { background: var(--brand-dim); border-left-color: var(--brand); } .match-card.live-card { border-left: 2px solid var(--green); }
 .match-time { width: 52px; flex-shrink: 0; text-align: center; font-size: 11px; font-weight: 600; color: var(--text2); line-height: 1.4; }
 .match-time.live-time { color: var(--green); }
 .minute-badge { display: inline-block; background: var(--green); color: #000; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; animation: pulse-live 1.5s infinite; }
+
 .match-info-area { flex:1; min-width:0; display:flex; align-items:center; cursor: pointer; } 
-.match-teams { flex: 1; min-width: 0; padding: 0 12px; }
+/* Takım alanı sabit genişlikte, oranlar tam yanından başlar */
+.match-teams { flex: 0 0 28%; min-width: 180px; max-width: 250px; padding: 0 12px; border-right: 1px solid var(--border); }
 .team-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; } .team-row:last-child { margin-bottom: 0; }
 .team-logo { width: 20px; height: 20px; object-fit: contain; flex-shrink: 0; }
 .team-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .team-name.loser { color: var(--text2); }
+
+/* Skor alanı en sağa yaslanır */
+.match-score-wrap { display: flex; align-items: center; flex-shrink: 0; margin-left: auto; gap: 12px; }
 .match-score { width: 36px; flex-shrink: 0; text-align: center; position: relative; }
 .score-num { font-size: 14px; font-weight: 800; line-height: 1.8; color: var(--text); } .score-num.loser { color: var(--text3); } .score-num.live-score { color: var(--green); }
 
-.hide-single-btn { background: transparent; border: none; color: var(--text3); font-size: 14px; cursor: pointer; margin: 0 12px; transition: 0.2s; flex-shrink: 0;}
+.hide-single-btn { background: transparent; border: none; color: var(--text3); font-size: 14px; cursor: pointer; transition: 0.2s; flex-shrink: 0;}
 .hide-single-btn:hover { color: var(--text); }
 .match-card.hide-this-score .score-num { filter: blur(5px); opacity: 0.6; transition: 0.3s; }
 .match-card.hide-this-score .score-num:hover { filter: blur(0); opacity: 1; }
@@ -90,7 +95,7 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .match-fav:hover, .match-fav.faved { color: var(--yellow); }
 
 /* BAHİS ORANLARI UI */
-.match-odds-wrapper { display: flex; gap: 12px; flex-shrink: 0; align-items: center; }
+.match-odds-wrapper { flex: 1; display: flex; gap: 16px; align-items: center; padding-left: 16px; margin-right: auto; min-height: 40px; overflow-x: auto; }
 .odds-group { display: flex; gap: 2px; background: var(--bg2); padding: 4px; border-radius: 6px; border: 1px solid var(--border); position: relative;}
 .odds-group-title { position: absolute; top: -8px; left: 6px; font-size: 8px; font-weight: 800; color: var(--text3); background: var(--surface); padding: 0 4px; border-radius: 4px;}
 .odd-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; text-align: center; min-width: 38px; cursor: pointer; transition: 0.2s; user-select: none; }
@@ -136,7 +141,7 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .detail-tab:hover { color: var(--text2); } .detail-tab.active { color: var(--brand); border-bottom-color: var(--brand); }
 .detail-content { flex: 1; overflow-y: auto; padding: 16px; }
 
-/* İSTATİSTİK BARLARI */
+/* İSTATİSTİK BARLARI (DÜZELTİLDİ) */
 .stat-group-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); text-align: center;} .stat-group-title:first-child { margin-top: 0; }
 .stat-row { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;} 
 .stat-labels { display: flex; justify-content: space-between; align-items: center; width: 100%;}
@@ -186,17 +191,8 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .incident-desc { font-size: 11px; color: var(--text3); margin-top: 2px; }
 .incident-score { font-size: 14px; font-weight: 800; background: var(--bg); padding: 4px 10px; border-radius: 6px; color: var(--brand); margin-left: 12px; flex-shrink: 0; border: 1px solid var(--border); }
 
-/* SPOILER FREE MODE */
-body.hide-scores .score-num, 
-body.hide-scores .detail-score, 
-body.hide-scores .incident-score { 
-  filter: blur(6px); opacity: 0.6; transition: filter 0.3s, opacity 0.3s; cursor: help; 
-}
-body.hide-scores .score-num:hover, 
-body.hide-scores .detail-score:hover, 
-body.hide-scores .incident-score:hover { 
-  filter: blur(0); opacity: 1; 
-}
+/* FAVORITE PLAYERS GRID */
+.fav-players-grid { display:flex; flex-wrap:wrap; gap:10px; padding:0 14px; }
 
 /* UTILITY */
 .loading { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 0; gap:12px; }
@@ -204,7 +200,7 @@ body.hide-scores .incident-score:hover {
 @keyframes spin { to { transform:rotate(360deg); } }
 .empty-state { text-align:center; padding:60px 20px; color:var(--text3); } .empty-state .es-icon { font-size:36px; margin-bottom:12px; opacity:0.4; } .empty-state .es-text { font-size:13px; line-height:1.6; }
 @media (max-width:1200px) { .detail-panel { width:340px; } }
-@media (max-width:1000px) { .sidebar { width:60px; } .sidebar .logo .s, .sidebar .nav-label, .sidebar .sport-item span:not(.flag) { display:none; } .sidebar .sport-item { justify-content:center; padding:12px; } }
+@media (max-width:1000px) { .sidebar { width:60px; } .sidebar .logo .s, .sidebar .nav-label, .sidebar .sport-item span:not(.flag) { display:none; } .sidebar .sport-item { justify-content:center; padding:12px; } .match-teams { flex: 1; border-right:none;} .match-odds-wrapper {display:none;} }
 </style>
 </head>
 <body>
@@ -281,7 +277,7 @@ body.hide-scores .incident-score:hover {
 
 <script>
 // =============================================
-//  VIVOSCORE APP v6.1 (BUG FIX & OPTIMIZED)
+//  VIVOSCORE APP v6.2 (MÜHENDİSLİK SÜRÜMÜ)
 // =============================================
 
 var safeStorage = {
@@ -339,7 +335,6 @@ var V = {
   toggleOdd: function(matchId, matchNameRaw, market, selection, oddVal, btnElement, ev) {
     if (ev) ev.stopPropagation();
     
-    // Güvenlik: İsimdeki kesme işaretlerini temizle
     var matchName = decodeURIComponent(matchNameRaw);
     var existingIdx = this.state.betSlip.findIndex(function(b){ return b.matchId == matchId; });
     
@@ -536,7 +531,7 @@ var V = {
     
     document.querySelectorAll('.match-odds-wrapper').forEach(function(container) {
       var matchId = container.getAttribute('data-matchid');
-      var mNameRaw = container.getAttribute('data-mname'); // Şifrelenmiş (encode edilmiş) isim
+      var mNameRaw = container.getAttribute('data-mname'); 
       
       fetch('/api/odds/' + matchId)
         .then(function(res) { return res.json(); })
@@ -693,7 +688,8 @@ var V = {
   showDetail: function(matchId) {
     this.state.selectedMatch = matchId; this.state.detailTab = 'summary';
     document.querySelectorAll('.match-card').forEach(function(el) { el.classList.remove('selected'); });
-    var card = document.querySelector('[data-match="' + matchId + '"]'); if (card) card.classList.add('selected');
+    var card = document.querySelector('.match-card[data-match="' + matchId + '"]'); 
+    if (card) card.classList.add('selected');
 
     var panel = document.getElementById('detailPanel'); if (!panel) return;
     panel.innerHTML = '<div class="loading" style="height:100%"><div class="spinner"></div><div class="loading-text">Pro Detaylar Yükleniyor...</div></div>';
@@ -753,15 +749,21 @@ var V = {
     var content = document.getElementById('detailContent'); if (!content) return;
     content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
 
+    // ÖZET SEKMESİ (HAKEM BİLGİSİ + OLAYLAR BİRLEŞTİRİLDİ)
     if (tab === 'summary') {
       var self = this;
+      var evData = this.state.matchCache[matchId].match;
+      var topInfo = '<div style="font-size:12px; color:var(--text2); text-align:center; padding-bottom:16px; margin-bottom:16px; border-bottom:1px solid var(--border)">' + 
+                    (evData.stadium ? '🏟️ Stadyum: <span style="color:var(--text)">' + evData.stadium + '</span> &nbsp;&nbsp;' : '') +
+                    (evData.referee ? '👤 Hakem: <span style="color:var(--text)">' + evData.referee + '</span>' : '') + '</div>';
+
       this.apiFetch('/api/event/' + matchId + '/incidents').then(function(data) {
         if(data.incidents && data.incidents.length > 0) {
-            content.innerHTML = T.incidents(data.incidents);
+            content.innerHTML = topInfo + T.incidents(data.incidents);
         } else {
-            content.innerHTML = T.empty('Bu maç için olay özeti bulunmuyor.');
+            content.innerHTML = topInfo + T.empty('Bu maç için detaylı olay özeti bulunmuyor.');
         }
-      }).catch(function() { content.innerHTML = T.empty('Özet bilgi bulunmuyor.'); });
+      }).catch(function() { content.innerHTML = topInfo + T.empty('Özet bilgi bulunmuyor.'); });
     }
     else if (tab === 'stats') {
       this.apiFetch('/api/event/' + matchId + '/stats').then(function(data) {
@@ -798,14 +800,16 @@ var T = {
 
     var mNameEncoded = encodeURIComponent(m.homeTeam.shortName + ' - ' + m.awayTeam.shortName);
     var oddsContainer = (!isLive && !isFin && isEligibleForHide) 
-      ? '<div class="match-odds-wrapper" data-matchid="' + m.id + '" data-mname="' + mNameEncoded + '"></div>' : '';
+      ? '<div class="match-odds-wrapper" data-matchid="' + m.id + '" data-mname="' + mNameEncoded + '"></div>' : '<div class="match-odds-wrapper empty"></div>';
 
     return '<div class="match-card' + (isLive ? ' live-card' : '') + (isHidden ? ' hide-this-score' : '') + '" data-match="' + m.id + '">' + timeH +
       '<div class="match-info-area" onclick="V.showDetail(' + m.id + ')">' +
-      '<div class="match-teams"><div class="team-row"><img class="team-logo" src="' + m.homeTeam.img + '" onerror="this.style.visibility=\'hidden\'"><span class="team-name' + (aW ? ' loser' : '') + '">' + m.homeTeam.shortName + '</span></div>' +
-      '<div class="team-row"><img class="team-logo" src="' + m.awayTeam.img + '" onerror="this.style.visibility=\'hidden\'"><span class="team-name' + (hW ? ' loser' : '') + '">' + m.awayTeam.shortName + '</span></div></div>' +
-      scoreH + hideBtnHtml + '</div>' + 
-      oddsContainer + '<div class="match-fav' + (isFav ? ' faved' : '') + '" data-fav="' + m.id + '" onclick="V.toggleFav(' + m.id + ',event)">\u2605</div></div>';
+        '<div class="match-teams"><div class="team-row"><img class="team-logo" src="' + m.homeTeam.img + '" onerror="this.style.visibility=\'hidden\'"><span class="team-name' + (aW ? ' loser' : '') + '">' + m.homeTeam.shortName + '</span></div>' +
+        '<div class="team-row"><img class="team-logo" src="' + m.awayTeam.img + '" onerror="this.style.visibility=\'hidden\'"><span class="team-name' + (hW ? ' loser' : '') + '">' + m.awayTeam.shortName + '</span></div></div>' +
+        oddsContainer +
+        '<div class="match-score-wrap">' + scoreH + hideBtnHtml + '</div>' +
+      '</div>' + 
+      '<div class="match-fav' + (isFav ? ' faved' : '') + '" data-fav="' + m.id + '" onclick="V.toggleFav(' + m.id + ',event)">\u2605</div></div>';
   },
 
   leagueGroup: function(name, id, matches) {
