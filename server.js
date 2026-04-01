@@ -97,8 +97,6 @@ app.get('/api/schedule/:sport/:date', async (req, res) => {
     const grouped = {};
     (data.events || []).forEach(e => {
       const m = formatEvent(e);
-      // DÜZELTME: Saat farkından dolayı maçların kaybolmasını engellemek için tarih filtresi kaldırıldı.
-      // if (m.date !== date) return; 
       const tId = e.tournament?.uniqueTournament?.id || 'other';
       if (!grouped[tId]) grouped[tId] = { name: m.tournament.name, matches: [] };
       grouped[tId].matches.push(m);
