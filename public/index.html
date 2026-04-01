@@ -66,7 +66,7 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .league-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 13px; font-weight: 700; color: var(--text); background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; border: 1px solid var(--border); border-bottom: none; }
 .league-header img { width: 20px; height: 20px; border-radius: 3px; object-fit: contain; background: #fff; padding: 1px; }
 
-/* ── YENİ YAPISAL HİZALAMA (TOLERANS DÜZELTMESİ) ── */
+/* MATCH CARD */
 .match-card { display: flex; align-items: center; padding: 12px 14px; background: var(--surface); border-left: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transition: var(--transition); position: relative; }
 .match-card:last-child { border-radius: 0 0 var(--radius) var(--radius); } .match-card:hover { background: var(--surface2); }
 .match-card.selected { background: var(--brand-dim); border-left-color: var(--brand); } .match-card.live-card { border-left: 2px solid var(--green); }
@@ -75,13 +75,11 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .minute-badge { display: inline-block; background: var(--green); color: #000; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; animation: pulse-live 1.5s infinite; }
 
 .match-info-area { flex:1; min-width:0; display:flex; align-items:center; cursor: pointer; } 
-/* Takım alanı sabit genişlikte, oranlar tam yanından başlar */
 .match-teams { flex: 0 0 28%; min-width: 180px; max-width: 250px; padding: 0 12px; border-right: 1px solid var(--border); }
 .team-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; } .team-row:last-child { margin-bottom: 0; }
 .team-logo { width: 20px; height: 20px; object-fit: contain; flex-shrink: 0; }
 .team-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .team-name.loser { color: var(--text2); }
 
-/* Skor alanı en sağa yaslanır */
 .match-score-wrap { display: flex; align-items: center; flex-shrink: 0; margin-left: auto; gap: 12px; }
 .match-score { width: 36px; flex-shrink: 0; text-align: center; position: relative; }
 .score-num { font-size: 14px; font-weight: 800; line-height: 1.8; color: var(--text); } .score-num.loser { color: var(--text3); } .score-num.live-score { color: var(--green); }
@@ -141,7 +139,7 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .detail-tab:hover { color: var(--text2); } .detail-tab.active { color: var(--brand); border-bottom-color: var(--brand); }
 .detail-content { flex: 1; overflow-y: auto; padding: 16px; }
 
-/* İSTATİSTİK BARLARI (DÜZELTİLDİ) */
+/* İSTATİSTİK BARLARI */
 .stat-group-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); text-align: center;} .stat-group-title:first-child { margin-top: 0; }
 .stat-row { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;} 
 .stat-labels { display: flex; justify-content: space-between; align-items: center; width: 100%;}
@@ -163,7 +161,7 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .player-fav { cursor:pointer; color:var(--border2); font-size:15px; margin-left:8px; transition:0.2s; }
 .player-fav.faved, .player-fav:hover { color:var(--yellow); }
 
-/* OYUNCU MODAL (GENİŞLETİLMİŞ) */
+/* OYUNCU MODAL */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); }
 .player-modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 400px; max-height: 80vh; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column;}
 @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -191,8 +189,17 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .incident-desc { font-size: 11px; color: var(--text3); margin-top: 2px; }
 .incident-score { font-size: 14px; font-weight: 800; background: var(--bg); padding: 4px 10px; border-radius: 6px; color: var(--brand); margin-left: 12px; flex-shrink: 0; border: 1px solid var(--border); }
 
-/* FAVORITE PLAYERS GRID */
-.fav-players-grid { display:flex; flex-wrap:wrap; gap:10px; padding:0 14px; }
+/* SPOILER FREE MODE */
+body.hide-scores .score-num, 
+body.hide-scores .detail-score, 
+body.hide-scores .incident-score { 
+  filter: blur(6px); opacity: 0.6; transition: filter 0.3s, opacity 0.3s; cursor: help; 
+}
+body.hide-scores .score-num:hover, 
+body.hide-scores .detail-score:hover, 
+body.hide-scores .incident-score:hover { 
+  filter: blur(0); opacity: 1; 
+}
 
 /* UTILITY */
 .loading { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 0; gap:12px; }
@@ -332,21 +339,29 @@ var V = {
     this.updateHideScoresBtn();
   },
 
-  toggleOdd: function(matchId, matchNameRaw, market, selection, oddVal, btnElement, ev) {
+  /* ─── DÜZELTİLMİŞ SEÇİM MANTIĞI ─── */
+  toggleOdd: function(matchId, market, selection, oddVal, btnElement, ev) {
     if (ev) ev.stopPropagation();
     
-    var matchName = decodeURIComponent(matchNameRaw);
-    var existingIdx = this.state.betSlip.findIndex(function(b){ return b.matchId == matchId; });
+    // Güvenli isim çekimi (DOM üzerinden)
+    var wrapper = btnElement.closest('.match-odds-wrapper');
+    var mNameRaw = wrapper ? wrapper.getAttribute('data-mname') : 'Bilinmeyen Maç';
+    var matchName = decodeURIComponent(mNameRaw);
     
-    if (existingIdx >= 0 && this.state.betSlip[existingIdx].selection === selection && this.state.betSlip[existingIdx].market === market) {
+    // Aynı maç VE aynı market için bir seçim var mı?
+    var existingIdx = this.state.betSlip.findIndex(function(b){ return b.matchId == matchId && b.market == market; });
+    
+    if (existingIdx >= 0 && this.state.betSlip[existingIdx].selection === selection) {
+      // Zaten seçiliyse kaldır
       this.state.betSlip.splice(existingIdx, 1);
       btnElement.classList.remove('selected');
     } else {
+      // Farklı bir seçime geçiliyorsa eskisini silip yenisini ekle
       if(existingIdx >= 0) this.state.betSlip.splice(existingIdx, 1); 
       this.state.betSlip.push({ matchId: matchId, matchName: matchName, market: market, selection: selection, odd: parseFloat(oddVal) });
       
-      var card = btnElement.closest('.match-odds-wrapper');
-      if(card) card.querySelectorAll('.odd-btn').forEach(function(b){ b.classList.remove('selected'); });
+      var group = btnElement.closest('.odds-group');
+      if(group) group.querySelectorAll('.odd-btn').forEach(function(b){ b.classList.remove('selected'); });
       btnElement.classList.add('selected');
     }
     
@@ -372,7 +387,7 @@ var V = {
       totalOdds *= item.odd;
       html += '<div class="bs-item">' +
         '<div><div class="bs-match-name">' + item.matchName + '</div><div class="bs-market">' + item.market + ' - ' + item.selection + '</div></div>' +
-        '<div class="bs-val-box"><div class="bs-odd-val">' + item.odd.toFixed(2) + '</div><div class="bs-remove" onclick="V.removeBetItem(\''+item.matchId+'\')">✕</div></div>' +
+        '<div class="bs-val-box"><div class="bs-odd-val">' + item.odd.toFixed(2) + '</div><div class="bs-remove" onclick="V.removeBetItem(\''+item.matchId+'\', \''+item.market+'\')">✕</div></div>' +
         '</div>';
     }
     
@@ -380,11 +395,11 @@ var V = {
     totalEl.textContent = totalOdds.toFixed(2);
   },
 
-  removeBetItem: function(matchId) {
-    var idx = this.state.betSlip.findIndex(function(b){ return b.matchId == matchId; });
+  removeBetItem: function(matchId, market) {
+    var idx = this.state.betSlip.findIndex(function(b){ return b.matchId == matchId && b.market == market; });
     if(idx >= 0) this.state.betSlip.splice(idx, 1);
     
-    var btn = document.querySelector('.odd-btn.selected[data-mid="'+matchId+'"]');
+    var btn = document.querySelector('.odd-btn.selected[data-mid="'+matchId+'"][data-mark="'+market+'"]');
     if(btn) btn.classList.remove('selected');
     
     this.renderBetSlip();
@@ -526,12 +541,12 @@ var V = {
     }).catch(function() { el.innerHTML = T.empty('Veri yüklenirken hata oluştu'); });
   },
 
+  // SADECE MAÇ İÇEREN ELEMANLARI DİNLER (BOŞ OLANLARI ATLAR)
   loadOddsForAll: function() {
     if (this.state.selectedSport !== 'football' && this.state.selectedSport !== 'basketball') return;
     
-    document.querySelectorAll('.match-odds-wrapper').forEach(function(container) {
+    document.querySelectorAll('.match-odds-wrapper[data-matchid]').forEach(function(container) {
       var matchId = container.getAttribute('data-matchid');
-      var mNameRaw = container.getAttribute('data-mname'); 
       
       fetch('/api/odds/' + matchId)
         .then(function(res) { return res.json(); })
@@ -540,22 +555,22 @@ var V = {
             var h = '';
             // MS
             h += '<div class="odds-group"><div class="odds-group-title">MS</div>' +
-              '<div class="odd-btn" data-mid="'+matchId+'" data-sel="1" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'1\', '+odds.match.home+', this, event)"><div class="odd-lbl">1</div><div class="odd-val">' + odds.match.home + '</div></div>' +
-              '<div class="odd-btn" data-mid="'+matchId+'" data-sel="X" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'X\', '+odds.match.draw+', this, event)"><div class="odd-lbl">X</div><div class="odd-val">' + odds.match.draw + '</div></div>' +
-              '<div class="odd-btn" data-mid="'+matchId+'" data-sel="2" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'2\', '+odds.match.away+', this, event)"><div class="odd-lbl">2</div><div class="odd-val">' + odds.match.away + '</div></div></div>';
+              '<div class="odd-btn" data-mid="'+matchId+'" data-sel="1" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \'MS\', \'1\', '+odds.match.home+', this, event)"><div class="odd-lbl">1</div><div class="odd-val">' + odds.match.home + '</div></div>' +
+              '<div class="odd-btn" data-mid="'+matchId+'" data-sel="X" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \'MS\', \'X\', '+odds.match.draw+', this, event)"><div class="odd-lbl">X</div><div class="odd-val">' + odds.match.draw + '</div></div>' +
+              '<div class="odd-btn" data-mid="'+matchId+'" data-sel="2" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \'MS\', \'2\', '+odds.match.away+', this, event)"><div class="odd-lbl">2</div><div class="odd-val">' + odds.match.away + '</div></div></div>';
             
             // A/Ü
             if(odds.goals) {
               h += '<div class="odds-group"><div class="odds-group-title">2.5 A/Ü</div>' +
-                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Üst" data-mark="A/Ü" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'2.5 A/Ü\', \'Üst\', '+odds.goals.over+', this, event)"><div class="odd-lbl">ÜST</div><div class="odd-val">' + odds.goals.over + '</div></div>' +
-                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Alt" data-mark="A/Ü" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'2.5 A/Ü\', \'Alt\', '+odds.goals.under+', this, event)"><div class="odd-lbl">ALT</div><div class="odd-val">' + odds.goals.under + '</div></div></div>';
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Üst" data-mark="A/Ü" onclick="V.toggleOdd(\''+matchId+'\', \'A/Ü\', \'Üst\', '+odds.goals.over+', this, event)"><div class="odd-lbl">ÜST</div><div class="odd-val">' + odds.goals.over + '</div></div>' +
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Alt" data-mark="A/Ü" onclick="V.toggleOdd(\''+matchId+'\', \'A/Ü\', \'Alt\', '+odds.goals.under+', this, event)"><div class="odd-lbl">ALT</div><div class="odd-val">' + odds.goals.under + '</div></div></div>';
             }
             
             // KG
             if(odds.btts) {
               h += '<div class="odds-group"><div class="odds-group-title">KG</div>' +
-                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Var" data-mark="KG" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'KG\', \'Var\', '+odds.btts.yes+', this, event)"><div class="odd-lbl">VAR</div><div class="odd-val">' + odds.btts.yes + '</div></div>' +
-                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Yok" data-mark="KG" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'KG\', \'Yok\', '+odds.btts.no+', this, event)"><div class="odd-lbl">YOK</div><div class="odd-val">' + odds.btts.no + '</div></div></div>';
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Var" data-mark="KG" onclick="V.toggleOdd(\''+matchId+'\', \'KG\', \'Var\', '+odds.btts.yes+', this, event)"><div class="odd-lbl">VAR</div><div class="odd-val">' + odds.btts.yes + '</div></div>' +
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Yok" data-mark="KG" onclick="V.toggleOdd(\''+matchId+'\', \'KG\', \'Yok\', '+odds.btts.no+', this, event)"><div class="odd-lbl">YOK</div><div class="odd-val">' + odds.btts.no + '</div></div></div>';
             }
             container.innerHTML = h;
           }
@@ -574,7 +589,7 @@ var V = {
     var playersHtml = '';
 
     if(hasFavP) {
-      playersHtml = '<div class="league-group"><div class="league-header">⭐ Favori Oyuncular</div><div style="display:flex; flex-wrap:wrap; gap:10px; padding:0 14px;">';
+      playersHtml = '<div class="league-group"><div class="league-header">⭐ Favori Oyuncular</div><div class="fav-players-grid">';
       for(var i=0; i<this.state.favPlayers.length; i++) {
         var fp = this.state.favPlayers[i];
         var pDataStr = encodeURIComponent(JSON.stringify(fp));
@@ -749,7 +764,6 @@ var V = {
     var content = document.getElementById('detailContent'); if (!content) return;
     content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
 
-    // ÖZET SEKMESİ (HAKEM BİLGİSİ + OLAYLAR BİRLEŞTİRİLDİ)
     if (tab === 'summary') {
       var self = this;
       var evData = this.state.matchCache[matchId].match;
@@ -800,7 +814,7 @@ var T = {
 
     var mNameEncoded = encodeURIComponent(m.homeTeam.shortName + ' - ' + m.awayTeam.shortName);
     var oddsContainer = (!isLive && !isFin && isEligibleForHide) 
-      ? '<div class="match-odds-wrapper" data-matchid="' + m.id + '" data-mname="' + mNameEncoded + '"></div>' : '<div class="match-odds-wrapper empty"></div>';
+      ? '<div class="match-odds-wrapper" data-matchid="' + m.id + '" data-mname="' + mNameEncoded + '"></div>' : '';
 
     return '<div class="match-card' + (isLive ? ' live-card' : '') + (isHidden ? ' hide-this-score' : '') + '" data-match="' + m.id + '">' + timeH +
       '<div class="match-info-area" onclick="V.showDetail(' + m.id + ')">' +
