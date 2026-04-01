@@ -5,8 +5,8 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const RAPID_API_KEY = "03947fd0b1mshc18ef7cc86815b9p1068cdjsnca79c2737b74";
-const BASE_URL = 'https://sportapi7.p.rapidapi.com/api/v1';
+const RAPID_API_KEY = "7612812a59b64ef0aa81860f5b813483";
+const BASE_URL = 'https://api.football-data.org/v2/';
 
 app.use(cors());
 app.use(express.json());
