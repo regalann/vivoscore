@@ -2,54 +2,66 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>VivoScore | SofaScore Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VivoScore | Profesyonel Analiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0b0e14; --s1: #151821; --brd: #222634; --brand: #3b82f6; --red: #ef4444; --t1: #e6edf3; --t2: #8b949e; }
+        :root { --bg: #0b0e14; --s1: #151821; --brd: #222634; --brand: #3b82f6; --red: #ef4444; --t1: #e6edf3; --t2: #8b949e; --grn: #22c55e; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--t1); overflow: hidden; }
         
         .app { display: flex; width: 100vw; height: 100vh; }
         
-        /* Sol Menü */
-        .sidebar { width: 250px; background: var(--s1); border-right: 1px solid var(--brd); padding: 20px; }
-        .nav-item { padding: 12px; cursor: pointer; border-radius: 8px; margin-bottom: 5px; font-weight: 600; color: var(--t2); }
-        .nav-item.active { background: rgba(59,130,246,0.1); color: var(--brand); }
+        /* Sol Sidebar */
+        .sidebar { width: 260px; background: var(--s1); border-right: 1px solid var(--brd); padding: 25px; flex-shrink: 0; }
+        .logo { font-size: 24px; font-weight: 800; margin-bottom: 40px; }
+        .logo span { color: var(--brand); }
+        .nav-item { padding: 14px; cursor: pointer; border-radius: 10px; margin-bottom: 8px; font-weight: 600; color: var(--t2); transition: 0.2s; }
+        .nav-item.active { background: rgba(59,130,246,0.12); color: var(--brand); }
+        .nav-item:hover:not(.active) { background: #1c222d; color: var(--t1); }
 
-        /* Orta Maç Listesi */
+        /* Orta Alan */
         .main-content { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--brd); }
+        .top-nav { padding: 15px 25px; border-bottom: 1px solid var(--brd); display: flex; gap: 10px; overflow-x: auto; }
+        .league-btn { padding: 10px 18px; border-radius: 12px; border: 1px solid var(--brd); background: var(--s1); color: white; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; }
+        .league-btn.active { border-color: var(--brand); color: var(--brand); }
         .scroll-area { flex: 1; overflow-y: auto; padding: 20px; }
-        .m-row { display: flex; align-items: center; padding: 15px; background: var(--s1); border-radius: 12px; margin-bottom: 10px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
-        .m-row:hover { border-color: var(--brand); }
+
+        /* Maç Satırı */
+        .m-row { display: flex; align-items: center; padding: 18px; background: var(--s1); border-radius: 16px; margin-bottom: 12px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
+        .m-row:hover { border-color: var(--brand); transform: translateY(-2px); }
+        .team-logo { width: 22px; height: 22px; object-fit: contain; margin-right: 12px; }
 
         /* Sağ Detay Paneli */
-        .details-panel { width: 380px; background: var(--s1); overflow-y: auto; padding: 25px; display: flex; flex-direction: column; }
-        
-        /* İstatistik Çubukları */
-        .stat-bar { height: 6px; background: #242d3d; border-radius: 3px; display: flex; overflow: hidden; margin: 8px 0 15px; }
-        .bar-h { background: var(--brand); height: 100%; transition: 0.5s; }
-        .bar-a { background: var(--red); height: 100%; transition: 0.5s; }
-        
-        .rating-badge { padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 11px; color: #000; }
-        .team-logo { width: 20px; height: 20px; object-fit: contain; }
+        .details-panel { width: 400px; background: var(--s1); overflow-y: auto; padding: 30px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .stat-bar { height: 6px; background: #242d3d; border-radius: 3px; display: flex; overflow: hidden; margin: 8px 0 18px; }
+        .bar-h { background: var(--brand); height: 100%; transition: 0.6s ease-out; }
+        .bar-a { background: var(--red); height: 100%; transition: 0.6s ease-out; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--brd); border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <div class="app">
     <aside class="sidebar">
-        <h2 style="margin-bottom:30px;">Vivo<span>Score</span></h2>
-        <div class="nav-item active" onclick="App.setMode('matches')">⚽ Maçlar</div>
-        <div class="nav-item" onclick="App.setMode('favs')">⭐ Favoriler</div>
+        <div class="logo">Vivo<span>Score</span></div>
+        <div class="nav-item active">⚽ Maçlar</div>
+        <div class="nav-item">⭐ Favoriler</div>
     </aside>
 
     <main class="main-content">
-        <div style="padding:20px; border-bottom:1px solid var(--brd);" id="leagueTabs"></div>
-        <div class="scroll-area" id="matchList"></div>
+        <div class="top-nav" id="leagueTabs"></div>
+        <div class="scroll-area" id="matchList">
+            <div style="text-align:center; padding-top:50px; color:var(--t2);">Lig seçin...</div>
+        </div>
     </main>
 
     <aside class="details-panel" id="matchDetails">
-        <div style="text-align:center; padding-top:100px; color:var(--t2);">Detay için bir maça tıkla.</div>
+        <div style="text-align:center; padding-top:120px; color:var(--t2); font-size:14px;">
+            Analizleri görmek için<br>bir maça tıklayın.
+        </div>
     </aside>
 </div>
 
@@ -63,31 +75,50 @@ const App = {
     },
 
     renderTabs() {
-        const leagues = [{id:'PL', n:'Premier League'}, {id:'CL', n:'Champions League'}, {id:'SA', n:'Serie A'}];
+        const leagues = [
+            {id:'PL', n:'Premier League'},
+            {id:'CL', n:'Champions League'},
+            {id:'SA', n:'Serie A'},
+            {id:'PD', n:'La Liga'}
+        ];
         document.getElementById('leagueTabs').innerHTML = leagues.map(l => 
-            `<button onclick="App.fetchMatches('${l.id}')" style="margin-right:10px; padding:8px 15px; border-radius:20px; border:1px solid var(--brd); background:none; color:white; cursor:pointer;">${l.n}</button>`
+            `<button class="league-btn ${this.state.currentLeague === l.id ? 'active' : ''}" onclick="App.fetchMatches('${l.id}')">${l.n}</button>`
         ).join('');
     },
 
     async fetchMatches(id) {
-        document.getElementById('matchList').innerHTML = "Yükleniyor...";
-        const res = await fetch(`/api/matches/${id}`);
-        const data = await res.json();
-        this.state.matches = data.matches;
-        this.renderList();
+        this.state.currentLeague = id;
+        this.renderTabs();
+        document.getElementById('matchList').innerHTML = '<div style="text-align:center; padding-top:50px;">Yükleniyor...</div>';
+        try {
+            const res = await fetch(`/api/matches/${id}`);
+            const data = await res.json();
+            this.state.matches = data.matches;
+            this.renderList();
+        } catch (e) {
+            document.getElementById('matchList').innerHTML = 'Hata oluştu.';
+        }
     },
 
     renderList() {
         document.getElementById('matchList').innerHTML = this.state.matches.map(m => `
             <div class="m-row" onclick="App.showDetails(${m.id})">
-                <div style="width:50px; font-size:12px; color:var(--t2);">${new Date(m.utcDate).getHours()}:${new Date(m.utcDate).getMinutes()}</div>
-                <div style="flex:1;">
-                    <div style="margin-bottom:5px;"><img src="${m.homeTeam.crest}" class="team-logo"> ${m.homeTeam.name}</div>
-                    <div><img src="${m.awayTeam.crest}" class="team-logo"> ${m.awayTeam.name}</div>
+                <div style="width:60px; font-size:12px; font-weight:700; color:var(--t2);">
+                    ${new Date(m.utcDate).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'})}
                 </div>
-                <div style="text-align:right; font-weight:800;">
-                    <div>${m.score.home ?? '-'}</div>
-                    <div>${m.score.away ?? '-'}</div>
+                <div style="flex:1;">
+                    <div style="display:flex; align-items:center; margin-bottom:8px;">
+                        <img src="${m.homeTeam.crest}" class="team-logo"> 
+                        <span style="font-weight:600;">${m.homeTeam.name}</span>
+                    </div>
+                    <div style="display:flex; align-items:center;">
+                        <img src="${m.awayTeam.crest}" class="team-logo"> 
+                        <span style="font-weight:600;">${m.awayTeam.name}</span>
+                    </div>
+                </div>
+                <div style="text-align:right; font-weight:800; font-size:18px; padding-left:20px;">
+                    <div style="color:${m.score.home > m.score.away ? 'white' : 'var(--t2)'}">${m.score.home ?? '-'}</div>
+                    <div style="color:${m.score.away > m.score.home ? 'white' : 'var(--t2)'}">${m.score.away ?? '-'}</div>
                 </div>
             </div>
         `).join('');
@@ -95,24 +126,61 @@ const App = {
 
     async showDetails(id) {
         const panel = document.getElementById('matchDetails');
-        panel.innerHTML = "Veriler çekiliyor...";
-        const res = await fetch(`/api/match-details/${id}`);
-        const data = await res.json();
+        panel.innerHTML = '<div style="text-align:center; padding-top:50px;">Veriler çekiliyor...</div>';
         
-        let html = `<h3>Maç İstatistikleri</h3><br>`;
-        if(data.stats && data.stats.statistics) {
-            data.stats.statistics[0].groups[0].statisticsItems.forEach(item => {
-                const total = parseFloat(item.homeValue) + parseFloat(item.awayValue);
-                const hP = total === 0 ? 50 : (parseFloat(item.homeValue) / total) * 100;
-                html += `
-                    <div style="display:flex; justify-content:space-between; font-size:12px;">
-                        <span>${item.home}</span><span>${item.name}</span><span>${item.away}</span>
-                    </div>
-                    <div class="stat-bar"><div class="bar-h" style="width:${hP}%"></div><div class="bar-a" style="flex:1"></div></div>
-                `;
-            });
+        try {
+            const res = await fetch(`/api/match-details/${id}`);
+            const data = await res.json();
+            
+            let html = `<h2 style="margin-bottom:25px; font-size:20px;">Maç Merkezi</h2>`;
+
+            // İstatistikler (SofaScore Çubukları)
+            if (data.stats && data.stats.statistics && data.stats.statistics.length > 0) {
+                const items = data.stats.statistics[0].groups[0].statisticsItems;
+                items.forEach(item => {
+                    const h = parseFloat(item.homeValue) || 0;
+                    const a = parseFloat(item.awayValue) || 0;
+                    const total = h + a;
+                    const hP = total === 0 ? 50 : (h / total) * 100;
+
+                    html += `
+                        <div style="margin-bottom:15px;">
+                            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                                <span style="font-weight:800;">${item.homeValue}</span>
+                                <span style="color:var(--t2); font-size:10px; text-transform:uppercase;">${item.name}</span>
+                                <span style="font-weight:800;">${item.awayValue}</span>
+                            </div>
+                            <div class="stat-bar"><div class="bar-h" style="width:${hP}%"></div><div class="bar-a" style="flex:1"></div></div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Oyuncu Reytingleri
+            if (data.lineups) {
+                html += `<h3 style="margin:30px 0 15px; font-size:16px;">Öne Çıkan Oyuncular</h3>`;
+                const allPlayers = [...(data.lineups.home?.players || []), ...(data.lineups.away?.players || [])];
+                const top = allPlayers
+                    .filter(p => p.statistics?.rating)
+                    .sort((a,b) => b.statistics.rating - a.statistics.rating)
+                    .slice(0, 5);
+
+                top.forEach(p => {
+                    const r = p.statistics.rating;
+                    const color = r >= 7.5 ? var(--grn) : (r >= 6.8 ? '#eab308' : '#8b949e');
+                    html += `
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--brd);">
+                            <span style="font-size:13px; font-weight:600;">${p.player.name}</span>
+                            <span style="background:${color}; color:#000; padding:3px 8px; border-radius:6px; font-weight:800; font-size:11px;">${r}</span>
+                        </div>
+                    `;
+                });
+            }
+
+            panel.innerHTML = html;
+        } catch (e) {
+            panel.innerHTML = '<div class="empty-state">İstatistik bulunamadı.</div>';
         }
-        panel.innerHTML = html;
     }
 };
 App.init();
