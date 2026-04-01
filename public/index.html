@@ -565,14 +565,12 @@ var V = {
       for(var i=0; i<this.state.favPlayers.length; i++) {
         var fp = this.state.favPlayers[i]; var pDataStr = encodeURIComponent(JSON.stringify(fp));
         
-        // Yeni: Oyuncu kartında detaylı statların görünmesi
         var sHtml = '';
         if(fp.rating) sHtml += '<span style="background:var(--green); color:#000; padding:2px 6px; border-radius:4px; font-weight:800; font-size:11px;">⭐ ' + fp.rating + '</span> ';
         var s = fp.stats || {};
         if(s.goals !== undefined) sHtml += '<span style="font-size:12px; color:var(--text2); margin-left:6px;">⚽ '+s.goals+'</span>';
         if(s.assists !== undefined) sHtml += '<span style="font-size:12px; color:var(--text2); margin-left:6px;">👟 '+s.assists+'</span>';
 
-        // Yeni: Karta tıklanınca detaylı istatistik modalının açılması
         playersHtml += '<div onclick="V.showPlayerModal(\'' + pDataStr + '\')" style="background:var(--surface); border:1px solid var(--border); padding:14px; border-radius:var(--radius); width:210px; position:relative; cursor:pointer; transition:0.2s;" onmouseover="this.style.borderColor=\'var(--brand)\'" onmouseout="this.style.borderColor=\'var(--border)\'">' +
           '<div onclick="V.toggleFavPlayer(\'' + pDataStr + '\', event)" style="position:absolute; top:12px; right:12px; color:var(--yellow); cursor:pointer; font-size:18px;">★</div>' +
           '<div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;"><img src="'+fp.img+'" style="width:40px; height:40px; border-radius:50%; background:var(--bg2); object-fit:cover;">' +
@@ -842,7 +840,7 @@ var T = {
     return html;
   },
 
-  // YENİLENEN VE HATALARDAN ARINDIRILMIŞ MAÇ ÖZETİ (INCIDENTS) KISMI
+  // YENİLENEN VE ZAMAN HATALARINDAN ARINDIRILMIŞ MAÇ ÖZETİ (INCIDENTS) KISMI
   incidents: function(incidents) {
     if (!incidents || incidents.length === 0) return this.empty('Maç olayları henüz mevcut değil');
     var html = '<div class="incident-list">';
@@ -850,7 +848,6 @@ var T = {
     for (var i = 0; i < incidents.length; i++) {
       var inc = incidents[i]; 
       
-      // API'nin gönderdiği veri yapısındaki karışıklıkları gidermek için esnek kontroller eklendi
       var type = inc.incidentType || inc.type;
       var iClass = inc.incidentClass || '';
       var pName = inc.player ? (inc.player.shortName || inc.player.name) : (inc.playerName || '');
@@ -897,8 +894,18 @@ var T = {
       var scoreBadge = (inc.homeScore !== undefined && inc.awayScore !== undefined && type === 'goal') 
         ? '<div class="incident-score">' + inc.homeScore + ' - ' + inc.awayScore + '</div>' : '';
         
-      var timeStr = (inc.time !== undefined) ? inc.time + '\'' : '';
-      if (inc.addedTime) timeStr = inc.time + '+' + inc.addedTime + '\'';
+      // 🚀 ZAMAN DÜZELTMESİ (999 ve Negatif dakikalar için MANTIK FİLTRESİ)
+      var timeStr = '';
+      if (inc.time !== undefined && inc.time !== null) {
+         if (inc.time < 0) {
+             timeStr = 'M.Ö.'; // Maç Öncesi
+         } else {
+             timeStr = inc.time + '\'';
+             if (type !== 'period' && inc.addedTime && inc.addedTime > 0 && inc.addedTime < 100) {
+                 timeStr = inc.time + '+' + inc.addedTime + '\'';
+             }
+         }
+      }
 
       html += '<div class="incident-row">' +
         '<div class="incident-time">' + timeStr + '</div>' +
