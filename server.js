@@ -5,6 +5,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Pro Plan API Anahtarın (Render Environment'tan çeker)
 const RAPID_API_KEY = process.env.RAPID_API_KEY || "03947fd0b1mshc18ef7cc86815b9p1068cdjsnca79c2737b74";
 const BASE_URL = 'https://sportapi7.p.rapidapi.com/api/v1';
 
@@ -103,19 +104,9 @@ app.get('/api/odds/:matchId', async (req, res) => {
     const bttsNo = (3.60 - parseFloat(bttsYes)).toFixed(2);
 
     const oddsData = {
-      match: {
-        home: isHomeFav ? baseFav : baseUnderdog,
-        draw: baseDraw,
-        away: isHomeFav ? baseUnderdog : baseFav
-      },
-      goals: {
-        over: over25,
-        under: under25
-      },
-      btts: {
-        yes: bttsYes,
-        no: bttsNo
-      }
+      match: { home: isHomeFav ? baseFav : baseUnderdog, draw: baseDraw, away: isHomeFav ? baseUnderdog : baseFav },
+      goals: { over: over25, under: under25 },
+      btts: { yes: bttsYes, no: bttsNo }
     };
 
     setCache(`odds_${matchId}`, oddsData);
@@ -183,7 +174,6 @@ app.get('/api/event/:id/lineups', async (req, res) => {
         number: p.shirtNumber, position: p.position, substitute: p.substitute || false, captain: p.captain || false,
         rating: p.statistics?.rating ? parseFloat(p.statistics.rating).toFixed(1) : null,
         img: `https://api.sofascore.app/api/v1/player/${p.player?.id}/image`,
-        // TÜM İSTATİSTİKLERİ HAM OLARAK GÖNDERİYORUZ (Arayüz çevirecek)
         stats: p.statistics || {}
       }));
     };
