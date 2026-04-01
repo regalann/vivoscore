@@ -1,14 +1,13 @@
 {
   "name": "vivoskor",
-  "version": "1.0.0",
-  "description": "Vivo Skor - Canlı Maç Takip Sistemi",
+  "version": "1.1.0",
+  "description": "Vivo Score - Profesyonel Analiz Sistemi",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "sqlite3": "^5.1.7"
+    "express": "^4.19.2"
   }
 }
