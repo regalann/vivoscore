@@ -21,40 +21,50 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 img { display: block; } button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 .app { display: flex; height: 100vh; width: 100vw; position: relative; }
 
+/* GLOBAL HIDE SCORES */
+body.hide-scores .score-num, 
+body.hide-scores .detail-score { 
+  filter: blur(6px); opacity: 0.5; transition: var(--transition); 
+}
+body.hide-scores .score-num:hover, 
+body.hide-scores .detail-score:hover { 
+  filter: blur(0); opacity: 1; 
+}
+
 /* SIDEBAR */
-.sidebar { width: 220px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; z-index: 10; }
+.sidebar { width: 240px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; z-index: 10; }
 .sidebar-header { padding: 20px 18px; border-bottom: 1px solid var(--border); }
-.logo { font-size: 22px; font-weight: 800; display: flex; align-items: center; gap: 3px; }
+.logo { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 3px; }
 .logo .v { color: var(--text); } .logo .s { color: var(--brand); }
 .logo .dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; margin-left: 4px; animation: pulse-dot 2s infinite; }
 @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.7); } }
 .sidebar-nav { padding: 12px 10px; flex: 1; overflow-y: auto; }
-.nav-label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--text3); padding: 0 10px; margin-bottom: 8px; letter-spacing: 1px; margin-top:15px; }
+.nav-label { font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text3); padding: 0 10px; margin-bottom: 8px; letter-spacing: 1px; margin-top:15px; }
 
 /* SPORT ITEMS */
-.sport-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; transition: var(--transition); margin-bottom: 2px;}
+.sport-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; color: var(--text2); cursor: pointer; transition: var(--transition); margin-bottom: 2px;}
 .sport-item:hover { background: var(--surface2); color: var(--text); } .sport-item.active { background: var(--brand-dim); color: var(--brand); }
-.sport-item .flag { font-size: 16px; width: 22px; text-align: center; } 
+.sport-item .flag { font-size: 18px; width: 24px; text-align: center; } 
 
 /* MAIN */
 .main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg); }
 .topbar { display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--bg2); gap: 12px; }
 .date-nav { display: flex; align-items: center; gap: 4px; background: var(--surface); border-radius: var(--radius); padding: 3px; border: 1px solid var(--border); transition: 0.3s; }
 .date-nav.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(1); }
-.date-btn { padding: 8px 14px; border-radius: var(--radius-sm); background: transparent; color: var(--text2); font-size: 12px; font-weight: 600; transition: var(--transition); }
+.date-btn { padding: 8px 14px; border-radius: var(--radius-sm); background: transparent; color: var(--text2); font-size: 14px; font-weight: 600; transition: var(--transition); }
 .date-btn:hover { background: var(--surface2); color: var(--text); } .date-btn.active { background: var(--brand); color: white; }
-.date-btn .day { display: block; font-size: 10px; color: var(--text3); margin-top: 1px; } .date-btn.active .day { color: rgba(255,255,255,0.7); }
-.date-arrow { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text2); font-size: 14px; cursor: pointer; transition: var(--transition); }
+.date-btn .day { display: block; font-size: 12px; color: var(--text3); margin-top: 1px; } .date-btn.active .day { color: rgba(255,255,255,0.7); }
+.date-arrow { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text2); font-size: 16px; cursor: pointer; transition: var(--transition); }
 .date-arrow:hover { background: var(--surface2); color: var(--text); }
 
 /* TOGGLE BUTTONS */
-.btn-toggle { padding: 8px 16px; border-radius: var(--radius-sm); background: transparent; color: var(--text2); font-size: 12px; font-weight: 700; transition: var(--transition); display:flex; align-items:center; gap:6px; cursor: pointer; border: 1px solid transparent; }
+.btn-toggle { padding: 8px 16px; border-radius: var(--radius-sm); background: transparent; color: var(--text2); font-size: 14px; font-weight: 700; transition: var(--transition); display:flex; align-items:center; gap:6px; cursor: pointer; border: 1px solid transparent; }
 .btn-toggle:hover { color: var(--text); background:var(--surface2); } 
 .live-toggle { margin-left: 8px; border: 1px solid var(--border); }
 .live-toggle.active { background: var(--red-dim); color: var(--red); border-color: var(--red); }
 .fav-toggle { border: 1px solid var(--border); }
 .fav-toggle.active { background: var(--yellow-dim); color: var(--yellow); border-color: var(--yellow); }
-.pulse-dot-btn { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--text3); margin-right:2px; }
+.pulse-dot-btn { display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--text3); margin-right:2px; }
 .live-toggle.active .pulse-dot-btn { background:var(--red); animation: pulse-live 1.5s infinite; }
 .right-actions { margin-left: auto; display: flex; gap: 8px; }
 
@@ -63,143 +73,144 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 /* LEAGUE GROUP */
 .league-group { margin-bottom: 20px; animation: fadeUp 0.3s ease; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-.league-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 13px; font-weight: 700; color: var(--text); background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; border: 1px solid var(--border); border-bottom: none; }
-.league-header img { width: 20px; height: 20px; border-radius: 3px; object-fit: contain; background: #fff; padding: 1px; }
+.league-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 15px; font-weight: 700; color: var(--text); background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; border: 1px solid var(--border); border-bottom: none; }
+.league-header img { width: 22px; height: 22px; border-radius: 3px; object-fit: contain; background: transparent; padding: 1px; }
 
 /* MATCH CARD */
 .match-card { display: flex; align-items: center; padding: 12px 14px; background: var(--surface); border-left: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transition: var(--transition); position: relative; }
 .match-card:last-child { border-radius: 0 0 var(--radius) var(--radius); } .match-card:hover { background: var(--surface2); }
 .match-card.selected { background: var(--brand-dim); border-left-color: var(--brand); } .match-card.live-card { border-left: 2px solid var(--green); }
-.match-time { width: 52px; flex-shrink: 0; text-align: center; font-size: 11px; font-weight: 600; color: var(--text2); line-height: 1.4; }
+.match-time { width: 56px; flex-shrink: 0; text-align: center; font-size: 13px; font-weight: 600; color: var(--text2); line-height: 1.4; }
 .match-time.live-time { color: var(--green); }
-.minute-badge { display: inline-block; background: var(--green); color: #000; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; animation: pulse-live 1.5s infinite; }
+.minute-badge { display: inline-block; background: var(--green); color: #000; font-size: 12px; font-weight: 700; padding: 1px 6px; border-radius: 4px; animation: pulse-live 1.5s infinite; }
 
 .match-info-area { flex:1; min-width:0; display:flex; align-items:center; cursor: pointer; } 
-.match-teams { flex: 0 0 28%; min-width: 180px; max-width: 250px; padding: 0 12px; border-right: 1px solid var(--border); }
+.match-teams { flex: 0 0 28%; min-width: 190px; max-width: 260px; padding: 0 12px; border-right: 1px solid var(--border); }
 .team-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; } .team-row:last-child { margin-bottom: 0; }
-.team-logo { width: 20px; height: 20px; object-fit: contain; flex-shrink: 0; }
-.team-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .team-name.loser { color: var(--text2); }
+.team-logo { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0; background: transparent; }
+.team-name { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .team-name.loser { color: var(--text2); }
 
 .match-score-wrap { display: flex; align-items: center; flex-shrink: 0; margin-left: auto; gap: 12px; }
-.match-score { width: 36px; flex-shrink: 0; text-align: center; position: relative; }
-.score-num { font-size: 14px; font-weight: 800; line-height: 1.8; color: var(--text); } .score-num.loser { color: var(--text3); } .score-num.live-score { color: var(--green); }
+.match-score { width: 55px; flex-shrink: 0; text-align: center; position: relative; }
+.score-num { font-size: 16px; font-weight: 800; line-height: 1.8; color: var(--text); } .score-num.loser { color: var(--text3); } .score-num.live-score { color: var(--green); }
 
-.hide-single-btn { background: transparent; border: none; color: var(--text3); font-size: 14px; cursor: pointer; transition: 0.2s; flex-shrink: 0;}
+.hide-single-btn { background: transparent; border: none; color: var(--text3); font-size: 16px; cursor: pointer; transition: 0.2s; flex-shrink: 0;}
 .hide-single-btn:hover { color: var(--text); }
 .match-card.hide-this-score .score-num { filter: blur(5px); opacity: 0.6; transition: 0.3s; }
 .match-card.hide-this-score .score-num:hover { filter: blur(0); opacity: 1; }
-.match-fav { width: 28px; flex-shrink: 0; text-align: center; font-size: 16px; color: var(--text3); cursor: pointer; transition: var(--transition); }
+.match-fav { width: 32px; flex-shrink: 0; text-align: center; font-size: 18px; color: var(--text3); cursor: pointer; transition: var(--transition); }
 .match-fav:hover, .match-fav.faved { color: var(--yellow); }
 
 /* BAHİS ORANLARI UI */
 .match-odds-wrapper { flex: 1; display: flex; gap: 12px; align-items: center; padding-left: 16px; min-height: 40px; overflow-x: auto; justify-content: flex-start; }
 .odds-group { display: flex; gap: 2px; background: var(--bg2); padding: 8px 4px 4px; border-radius: 6px; border: 1px solid var(--border); position: relative; margin-top: 6px;}
-.odds-group-title { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: 800; color: var(--text3); background: var(--surface); padding: 0 6px; border-radius: 4px; white-space: nowrap;}
-.odd-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; text-align: center; min-width: 38px; cursor: pointer; transition: 0.2s; user-select: none; }
+.odds-group-title { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 800; color: var(--text3); background: var(--surface); padding: 0 6px; border-radius: 4px; white-space: nowrap;}
+.odd-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; text-align: center; min-width: 42px; cursor: pointer; transition: 0.2s; user-select: none; }
 .odd-btn:hover { border-color: var(--brand); }
 .odd-btn.selected { background: var(--brand); border-color: var(--brand); }
 .odd-btn.selected .odd-lbl, .odd-btn.selected .odd-val { color: #fff; }
-.odd-lbl { font-size: 9px; color: var(--text3); font-weight: 700; margin-bottom: 2px; }
-.odd-val { font-size: 11px; color: var(--text); font-weight: 800; }
+.odd-lbl { font-size: 11px; color: var(--text3); font-weight: 700; margin-bottom: 2px; }
+.odd-val { font-size: 13px; color: var(--text); font-weight: 800; }
 
 /* KUPON HESAPLAYICI (BET SLIP) */
-.bet-slip { position: fixed; bottom: 20px; left: 240px; width: 320px; background: var(--surface); border: 1px solid var(--brand); border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 50; display: none; flex-direction: column; overflow: hidden; animation: slideUp 0.3s ease; }
+.bet-slip { position: fixed; bottom: 20px; left: 260px; width: 340px; background: var(--surface); border: 1px solid var(--brand); border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 50; display: none; flex-direction: column; overflow: hidden; animation: slideUp 0.3s ease; }
 @keyframes slideUp { from{transform:translateY(20px); opacity:0;} to{transform:translateY(0); opacity:1;} }
-.bs-header { background: var(--brand-dim); color: var(--brand); padding: 12px 16px; font-size: 13px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--brand); }
-.bs-clear { font-size: 11px; color: var(--text3); cursor: pointer; } .bs-clear:hover { color: var(--red); }
-.bs-content { max-height: 250px; overflow-y: auto; padding: 10px; }
-.bs-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.bs-header { background: var(--brand-dim); color: var(--brand); padding: 14px 18px; font-size: 15px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--brand); }
+.bs-clear { font-size: 13px; color: var(--text3); cursor: pointer; } .bs-clear:hover { color: var(--red); }
+.bs-content { max-height: 250px; overflow-y: auto; padding: 12px; }
+.bs-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
 .bs-item:last-child { margin-bottom: 0; }
-.bs-match-name { font-size: 11px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-.bs-market { font-size: 10px; color: var(--text3); }
-.bs-val-box { display: flex; align-items: center; gap: 10px; }
-.bs-odd-val { font-size: 14px; font-weight: 800; color: var(--brand); }
-.bs-remove { color: var(--red); cursor: pointer; font-size: 14px; opacity: 0.7; } .bs-remove:hover { opacity: 1; }
-.bs-footer { background: var(--bg2); padding: 16px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-.bs-total-lbl { font-size: 12px; font-weight: 700; color: var(--text2); }
-.bs-total-val { font-size: 20px; font-weight: 800; color: var(--green); }
+.bs-match-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.bs-market { font-size: 12px; color: var(--text3); }
+.bs-val-box { display: flex; align-items: center; gap: 12px; }
+.bs-odd-val { font-size: 16px; font-weight: 800; color: var(--brand); }
+.bs-remove { color: var(--red); cursor: pointer; font-size: 16px; opacity: 0.7; } .bs-remove:hover { opacity: 1; }
+.bs-footer { background: var(--bg2); padding: 18px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.bs-total-lbl { font-size: 14px; font-weight: 700; color: var(--text2); }
+.bs-total-val { font-size: 22px; font-weight: 800; color: var(--green); }
 
 /* DETAIL PANEL */
-.detail-panel { width: 400px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; z-index:20;}
-.detail-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text3); gap: 10px; } .detail-empty .de-icon { font-size: 40px; opacity: 0.3; } .detail-empty .de-text { font-size: 13px; }
+.detail-panel { width: 420px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; z-index:20;}
+.detail-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text3); gap: 10px; } .detail-empty .de-icon { font-size: 42px; opacity: 0.3; } .detail-empty .de-text { font-size: 15px; }
 .detail-header { padding: 24px 20px 16px; text-align: center; border-bottom: 1px solid var(--border); background: var(--bg2); position:relative; }
-.btn-close-panel { position: absolute; top: 12px; right: 12px; background: var(--surface2); color: var(--text2); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; transition: 0.2s; z-index: 10; border: 1px solid var(--border); }
+.btn-close-panel { position: absolute; top: 12px; right: 12px; background: var(--surface2); color: var(--text2); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: 0.2s; z-index: 10; border: 1px solid var(--border); }
 .btn-close-panel:hover { background: var(--red-dim); color: var(--red); border-color: var(--red); }
-.match-info-meta { font-size:10px; color:var(--text3); margin-top:12px; display:flex; justify-content:center; gap:12px; }
+.match-info-meta { font-size:12px; color:var(--text3); margin-top:12px; display:flex; justify-content:center; gap:12px; }
 .detail-teams { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 8px; }
-.detail-team { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100px; }
-.detail-team img { width: 44px; height: 44px; object-fit: contain; } .detail-team .dt-name { font-size: 12px; font-weight: 700; text-align: center; line-height: 1.3; }
-.detail-score-box { display: flex; flex-direction: column; align-items: center; } .detail-score { font-size: 32px; font-weight: 800; letter-spacing: 4px; } .detail-score.live-ds { color: var(--green); }
-.detail-ht { font-size: 10px; color: var(--text3); margin-top: 2px; }
-.detail-status { font-size: 11px; font-weight: 600; margin-top: 6px; padding: 2px 10px; border-radius: 4px; }
+.detail-team { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 110px; }
+.detail-team img { width: 56px; height: 56px; object-fit: contain; background: transparent; } .detail-team .dt-name { font-size: 14px; font-weight: 700; text-align: center; line-height: 1.3; }
+.detail-score-box { display: flex; flex-direction: column; align-items: center; } .detail-score { font-size: 34px; font-weight: 800; letter-spacing: 4px; } .detail-score.live-ds { color: var(--green); }
+.detail-ht { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.detail-status { font-size: 13px; font-weight: 600; margin-top: 6px; padding: 2px 10px; border-radius: 4px; }
 .detail-status.st-live { background: var(--green-dim); color: var(--green); } .detail-status.st-finished { background: var(--surface2); color: var(--text3); } .detail-status.st-scheduled { background: var(--brand-dim); color: var(--brand); }
 .detail-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg2); padding: 0 12px; }
-.detail-tab { padding: 12px 16px; font-size: 12px; font-weight: 600; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; transition: var(--transition); flex:1; text-align:center;}
+.detail-tab { padding: 14px 16px; font-size: 14px; font-weight: 600; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; transition: var(--transition); flex:1; text-align:center;}
 .detail-tab:hover { color: var(--text2); } .detail-tab.active { color: var(--brand); border-bottom-color: var(--brand); }
 .detail-content { flex: 1; overflow-y: auto; padding: 16px; }
 
 /* İSTATİSTİK BARLARI */
-.stat-group-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); text-align: center;} .stat-group-title:first-child { margin-top: 0; }
+.stat-group-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); text-align: center;} .stat-group-title:first-child { margin-top: 0; }
 .stat-row { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;} 
 .stat-labels { display: flex; justify-content: space-between; align-items: center; width: 100%;}
-.stat-val { font-size: 14px; font-weight: 800; color: var(--text); min-width: 24px; } 
+.stat-val { font-size: 16px; font-weight: 800; color: var(--text); min-width: 24px; } 
 .stat-val.home { text-align: left; } .stat-val.away { text-align: right; } .stat-val.high { color: var(--brand); }
-.stat-name { font-size: 11px; font-weight: 600; color: var(--text2); text-align: center; flex: 1; }
+.stat-name { font-size: 13px; font-weight: 600; color: var(--text2); text-align: center; flex: 1; }
 .stat-bar-track { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: var(--surface2); gap: 2px; }
 .stat-bar-home { height:100%; border-radius:3px; background:var(--brand); transition:width 0.6s ease; } .stat-bar-away { height:100%; border-radius:3px; background:var(--orange); transition:width 0.6s ease; margin-left:auto; }
 
 /* SAHA GÖRÜNÜMÜ & YEDEKLER LİSTESİ */
 .team-lineup-wrapper { margin-bottom: 30px; }
-.team-lineup-header { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 12px; text-align: center; background: var(--bg2); padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border);}
-.formation-label { text-align:center; font-size:12px; font-weight:700; color:var(--brand); margin-bottom:12px; }
+.team-lineup-header { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 12px; text-align: center; background: var(--bg2); padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border);}
+.formation-label { text-align:center; font-size:14px; font-weight:700; color:var(--brand); margin-bottom:12px; }
 .pitch-container { background: #2a3c24 url('data:image/svg+xml;utf8,<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/><line x1="0" y1="50%" x2="100%" y2="50%" stroke="rgba(255,255,255,0.15)" stroke-width="2"/><circle cx="50%" cy="50%" r="40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/></svg>') no-repeat center center; background-size: cover; border-radius: 8px; padding: 20px 0; display: flex; flex-direction: column; gap: 20px; margin-bottom: 16px; border: 2px solid #3d5a35; }
 .pitch-row { display: flex; justify-content: center; gap: 12px; }
 .pitch-player { display: flex; flex-direction: column; align-items: center; width: 60px; cursor: pointer; transition: transform 0.2s; }
 .pitch-player:hover { transform: scale(1.1); }
 .p-img-wrap { position: relative; }
-.pitch-player img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; background: var(--bg2); object-fit: cover; }
-.p-num { position: absolute; bottom: 0; left: -6px; background: rgba(0,0,0,0.8); color: #fff; font-size: 9px; font-weight: 800; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
-.pitch-player .p-rating { color: #000; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: -6px; z-index: 2; border: 1px solid #fff; }
-.pitch-player .p-name { font-size: 10px; color: #fff; font-weight: 700; margin-top: 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px; text-shadow: 1px 1px 2px #000; }
+.pitch-player img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; background: var(--surface); object-fit: cover; }
+.p-num { position: absolute; bottom: 0; left: -6px; background: rgba(0,0,0,0.8); color: #fff; font-size: 11px; font-weight: 800; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
+.pitch-player .p-rating { color: #000; font-size: 12px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: -6px; z-index: 2; border: 1px solid #fff; }
+.pitch-player .p-name { font-size: 12px; color: #fff; font-weight: 700; margin-top: 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px; text-shadow: 1px 1px 2px #000; }
 .rating-high { background:var(--green) !important; color:#000 !important; } .rating-mid { background:var(--yellow) !important; color:#000 !important; } .rating-low { background:var(--text3) !important; color:#fff !important; }
-.lineup-section-title { font-size:12px; font-weight:800; color:var(--text); margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+.lineup-section-title { font-size:14px; font-weight:800; color:var(--text); margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
 .lineup-list { display: flex; flex-direction: column; gap: 4px; }
 .ll-item { display: flex; align-items: center; background: var(--bg2); padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: var(--transition); border: 1px solid transparent;}
 .ll-item:hover { border-color: var(--border2); background: var(--surface2); }
-.ll-num { width: 30px; height: 30px; background: var(--surface); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--text2); flex-shrink: 0; margin-right: 12px;}
+.ll-num { width: 32px; height: 32px; background: var(--surface); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: var(--text2); flex-shrink: 0; margin-right: 12px;}
 .ll-info { flex: 1; min-width: 0; }
-.ll-name { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ll-pos { font-size: 10px; color: var(--text3); margin-top: 2px; }
-.ll-rating { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 6px; flex-shrink: 0; }
-.ll-fav { color: var(--text3); font-size: 18px; margin-left: 12px; transition: 0.2s; }
+.ll-name { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ll-pos { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.ll-rating { font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 6px; flex-shrink: 0; }
+.ll-fav { color: var(--text3); font-size: 20px; margin-left: 12px; transition: 0.2s; }
 .ll-fav:hover, .ll-fav.faved { color: var(--yellow); }
 
 /* OYUNCU MODAL */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); }
-.player-modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 400px; max-height: 80vh; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column;}
+.player-modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 420px; max-height: 80vh; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column;}
 @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.pm-close { position: absolute; top: 12px; right: 12px; font-size: 16px; color: var(--text3); cursor: pointer; transition: 0.2s; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+.pm-close { position: absolute; top: 12px; right: 12px; font-size: 18px; color: var(--text3); cursor: pointer; transition: 0.2s; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
 .pm-close:hover { background: var(--surface2); color: var(--text); }
 .pm-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); flex-shrink:0;}
-.pm-header img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: var(--bg2); border: 2px solid var(--border); }
-.pm-name { font-size: 18px; font-weight: 800; color: var(--text); }
-.pm-pos { font-size: 12px; color: var(--text2); margin-top: 4px; }
-.pm-rating { margin-top: 6px; display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 800; }
+.pm-header img { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; background: var(--bg2); border: 2px solid var(--border); }
+.pm-name { font-size: 20px; font-weight: 800; color: var(--text); }
+.pm-pos { font-size: 14px; color: var(--text2); margin-top: 4px; }
+.pm-rating { margin-top: 6px; display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 14px; font-weight: 800; }
 .pm-body { overflow-y: auto; padding-right: 5px; }
 .pm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .pm-stat-box { background: var(--bg2); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;}
-.pm-stat-lbl { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; }
-.pm-stat-val { font-size: 14px; font-weight: 800; color: var(--brand); }
+.pm-stat-lbl { font-size: 13px; font-weight: 600; color: var(--text3); text-transform: uppercase; }
+.pm-stat-val { font-size: 16px; font-weight: 800; color: var(--brand); }
 
 /* YENİLENMİŞ OLAYLAR (INCIDENTS) SVG TASARIMI */
 .incident-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
 .incident-row { display: flex; align-items: center; background: var(--surface2); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
-.incident-time { font-weight: 800; font-size: 13px; width: 40px; color: var(--text2); flex-shrink: 0; }
-.incident-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0; }
+.incident-time { font-weight: 800; font-size: 15px; width: 44px; color: var(--text2); flex-shrink: 0; }
+.incident-icon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; margin-right: 14px; flex-shrink: 0; background: var(--surface); border-radius: 50%; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.incident-icon svg { width: 18px; height: 18px; }
 .incident-details { flex: 1; min-width: 0; }
-.incident-player { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height:1.4;}
-.incident-desc { font-size: 11px; color: var(--text3); margin-top: 2px; }
-.incident-score { font-size: 14px; font-weight: 800; background: var(--bg); padding: 4px 10px; border-radius: 6px; color: var(--brand); margin-left: 12px; flex-shrink: 0; border: 1px solid var(--border); }
+.incident-player { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height:1.4;}
+.incident-desc { font-size: 13px; color: var(--text3); margin-top: 2px; }
+.incident-score { font-size: 16px; font-weight: 800; background: var(--bg); padding: 4px 10px; border-radius: 6px; color: var(--brand); margin-left: 12px; flex-shrink: 0; border: 1px solid var(--border); }
 
 /* FAVORITE PLAYERS GRID */
 .fav-players-grid { display:flex; flex-wrap:wrap; gap:10px; padding:0 14px; }
@@ -208,7 +219,7 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 .loading { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 0; gap:12px; }
 .spinner { width:28px; height:28px; border:3px solid var(--border); border-top-color:var(--brand); border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
-.empty-state { text-align:center; padding:60px 20px; color:var(--text3); } .empty-state .es-icon { font-size:36px; margin-bottom:12px; opacity:0.4; } .empty-state .es-text { font-size:13px; line-height:1.6; }
+.empty-state { text-align:center; padding:60px 20px; color:var(--text3); } .empty-state .es-icon { font-size:38px; margin-bottom:12px; opacity:0.4; } .empty-state .es-text { font-size:15px; line-height:1.6; }
 @media (max-width:1200px) { .detail-panel { width:340px; } }
 @media (max-width:1000px) { .sidebar { width:60px; } .sidebar .logo .s, .sidebar .nav-label, .sidebar .sport-item span:not(.flag) { display:none; } .sidebar .sport-item { justify-content:center; padding:12px; } .match-teams { flex: 1; border-right:none;} .match-odds-wrapper {display:none;} }
 </style>
@@ -286,10 +297,6 @@ img { display: block; } button { font-family: inherit; cursor: pointer; border: 
 </div>
 
 <script>
-// =============================================
-//  VIVOSCORE APP v8.0 (TEK SEÇİM & KUSURSUZ ÖZET)
-// =============================================
-
 var safeStorage = {
   get: function(key, fallback) {
     try { var v = window.localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
@@ -342,35 +349,28 @@ var V = {
     this.updateHideScoresBtn();
   },
 
-  /* ── KUPON: MAÇ BAŞINA TEK SEÇİM KİLİDİ EKLENDİ ── */
   toggleOdd: function(matchId, matchNameRaw, market, selection, oddVal, btnElement, ev) {
     if (ev) ev.stopPropagation();
-    
     var matchName = decodeURIComponent(matchNameRaw);
-    // Sadece MatchId'ye göre arıyoruz. Bir maçtan sadece 1 seçim olabilir.
     var existingIdx = this.state.betSlip.findIndex(function(b){ return b.matchId == matchId; });
     var wrapper = btnElement.closest('.match-odds-wrapper');
     
     if (existingIdx >= 0) {
       var existing = this.state.betSlip[existingIdx];
-      // Zaten seçili olana tıklandıysa İPTAL ET
       if (existing.selection === selection && existing.market === market) {
         this.state.betSlip.splice(existingIdx, 1);
         btnElement.classList.remove('selected');
       } else {
-        // Maça ait başka bir orana tıklandıysa ESKİSİNİ SİL, YENİSİNİ EKLE
         this.state.betSlip.splice(existingIdx, 1);
         this.state.betSlip.push({ matchId: matchId, matchName: matchName, market: market, selection: selection, odd: parseFloat(oddVal) });
         if(wrapper) wrapper.querySelectorAll('.odd-btn').forEach(function(b){ b.classList.remove('selected'); });
         btnElement.classList.add('selected');
       }
     } else {
-      // Maçtan hiç seçim yoksa DOĞRUDAN EKLE
       this.state.betSlip.push({ matchId: matchId, matchName: matchName, market: market, selection: selection, odd: parseFloat(oddVal) });
       if(wrapper) wrapper.querySelectorAll('.odd-btn').forEach(function(b){ b.classList.remove('selected'); });
       btnElement.classList.add('selected');
     }
-    
     this.renderBetSlip();
   },
 
@@ -379,35 +379,26 @@ var V = {
     var content = document.getElementById('bsContent');
     var totalEl = document.getElementById('bsTotalOdds');
     
-    if(this.state.betSlip.length === 0) {
-      container.style.display = 'none';
-      return;
-    }
+    if(this.state.betSlip.length === 0) { container.style.display = 'none'; return; }
     
     container.style.display = 'flex';
-    var html = '';
-    var totalOdds = 1.0;
+    var html = ''; var totalOdds = 1.0;
     
     for(var i=0; i<this.state.betSlip.length; i++) {
-      var item = this.state.betSlip[i];
-      totalOdds *= item.odd;
+      var item = this.state.betSlip[i]; totalOdds *= item.odd;
       html += '<div class="bs-item">' +
         '<div><div class="bs-match-name">' + item.matchName + '</div><div class="bs-market">' + item.market + ' - ' + item.selection + '</div></div>' +
         '<div class="bs-val-box"><div class="bs-odd-val">' + item.odd.toFixed(2) + '</div><div class="bs-remove" onclick="V.removeBetItem(\''+item.matchId+'\')">✕</div></div>' +
         '</div>';
     }
-    
-    content.innerHTML = html;
-    totalEl.textContent = totalOdds.toFixed(2);
+    content.innerHTML = html; totalEl.textContent = totalOdds.toFixed(2);
   },
 
   removeBetItem: function(matchId) {
     var idx = this.state.betSlip.findIndex(function(b){ return b.matchId == matchId; });
     if(idx >= 0) this.state.betSlip.splice(idx, 1);
-    
     var btn = document.querySelector('.odd-btn.selected[data-mid="'+matchId+'"]');
     if(btn) btn.classList.remove('selected');
-    
     this.renderBetSlip();
   },
 
@@ -436,7 +427,6 @@ var V = {
     if (ev) ev.stopPropagation();
     if(this.state.hiddenMatchScores[matchId]) delete this.state.hiddenMatchScores[matchId];
     else this.state.hiddenMatchScores[matchId] = true;
-    
     safeStorage.set('vivo_hidden_matches', this.state.hiddenMatchScores);
     
     var mCard = document.querySelector('.match-card[data-match="'+matchId+'"]');
@@ -457,19 +447,14 @@ var V = {
         if(this.state.isLiveOnly) dateNav.classList.add('disabled');
         else dateNav.classList.remove('disabled');
     }
-    
     if(this.state.page === 'matches') this.loadMatches();
   },
 
   toggleFavView: function() {
     if(this.state.page === 'favorites') {
-      this.state.page = 'matches';
-      document.getElementById('favToggleBtn').classList.remove('active');
-      this.loadMatches();
+      this.state.page = 'matches'; document.getElementById('favToggleBtn').classList.remove('active'); this.loadMatches();
     } else {
-      this.state.page = 'favorites';
-      document.getElementById('favToggleBtn').classList.add('active');
-      this.loadFavorites();
+      this.state.page = 'favorites'; document.getElementById('favToggleBtn').classList.add('active'); this.loadFavorites();
     }
   },
 
@@ -502,15 +487,13 @@ var V = {
     for(var i=0; i<SPORTS.length; i++) {
       var s = SPORTS[i];
       var activeCls = (s.id === this.state.selectedSport) ? ' active' : '';
-      html += '<div class="sport-item'+activeCls+'" onclick="V.selectSport(\''+s.id+'\')">' +
-              '<span class="flag">'+s.icon+'</span><span>'+s.name+'</span></div>';
+      html += '<div class="sport-item'+activeCls+'" onclick="V.selectSport(\''+s.id+'\')"><span class="flag">'+s.icon+'</span><span>'+s.name+'</span></div>';
     }
     el.innerHTML = html;
   },
   
   selectSport: function(id) {
-    this.state.selectedSport = id; 
-    this.renderSports();
+    this.state.selectedSport = id; this.renderSports();
     if(this.state.page === 'matches') this.loadMatches(); 
   },
 
@@ -522,18 +505,13 @@ var V = {
     var el = document.getElementById('matchScroll'); if (!el) return;
     el.innerHTML = T.loading(this.state.isLiveOnly ? 'Canlı maçlar aranıyor...' : 'Maçlar yükleniyor...');
     
-    var endpoint = this.state.isLiveOnly 
-        ? '/api/live/' + this.state.selectedSport 
-        : '/api/schedule/' + this.state.selectedSport + '/' + this.getDateStr(0);
+    var endpoint = this.state.isLiveOnly ? '/api/live/' + this.state.selectedSport : '/api/schedule/' + this.state.selectedSport + '/' + this.getDateStr(0);
 
     this.apiFetch(endpoint).then(function(data) {
-      if (!data.groups || Object.keys(data.groups).length === 0) {
-          return el.innerHTML = T.empty(V.state.isLiveOnly ? 'Şu anda canlı maç bulunmuyor.' : 'Bu tarihte maç bulunamadı.');
-      }
+      if (!data.groups || Object.keys(data.groups).length === 0) return el.innerHTML = T.empty(V.state.isLiveOnly ? 'Şu anda canlı maç bulunmuyor.' : 'Bu tarihte maç bulunamadı.');
       var html = ''; var gKeys = Object.keys(data.groups);
       for (var i = 0; i < gKeys.length; i++) html += T.leagueGroup(data.groups[gKeys[i]].name, gKeys[i], data.groups[gKeys[i]].matches);
       el.innerHTML = html;
-      
       V.loadOddsForAll();
       
       setTimeout(function() {
@@ -543,36 +521,26 @@ var V = {
           if(btn) btn.classList.add('selected');
         }
       }, 500);
-
     }).catch(function() { el.innerHTML = T.empty('Veri yüklenirken hata oluştu'); });
   },
 
   loadOddsForAll: function() {
     if (this.state.selectedSport !== 'football' && this.state.selectedSport !== 'basketball') return;
-    
     document.querySelectorAll('.match-odds-wrapper[data-matchid]').forEach(function(container) {
       var matchId = container.getAttribute('data-matchid');
       var mNameRaw = container.getAttribute('data-mname'); 
       
-      fetch('/api/odds/' + matchId)
-        .then(function(res) { return res.json(); })
-        .then(function(odds) {
+      fetch('/api/odds/' + matchId).then(function(res) { return res.json(); }).then(function(odds) {
           if(odds && odds.match) {
-            var h = '';
-            // MS
-            h += '<div class="odds-group"><div class="odds-group-title">MS</div>' +
+            var h = '<div class="odds-group"><div class="odds-group-title">MS</div>' +
               '<div class="odd-btn" data-mid="'+matchId+'" data-sel="1" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'1\', '+odds.match.home+', this, event)"><div class="odd-lbl">1</div><div class="odd-val">' + odds.match.home + '</div></div>' +
               '<div class="odd-btn" data-mid="'+matchId+'" data-sel="X" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'X\', '+odds.match.draw+', this, event)"><div class="odd-lbl">X</div><div class="odd-val">' + odds.match.draw + '</div></div>' +
               '<div class="odd-btn" data-mid="'+matchId+'" data-sel="2" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'2\', '+odds.match.away+', this, event)"><div class="odd-lbl">2</div><div class="odd-val">' + odds.match.away + '</div></div></div>';
-            
-            // A/Ü
             if(odds.goals) {
               h += '<div class="odds-group"><div class="odds-group-title">2.5 A/Ü</div>' +
                 '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Üst" data-mark="A/Ü" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'A/Ü\', \'Üst\', '+odds.goals.over+', this, event)"><div class="odd-lbl">ÜST</div><div class="odd-val">' + odds.goals.over + '</div></div>' +
                 '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Alt" data-mark="A/Ü" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'A/Ü\', \'Alt\', '+odds.goals.under+', this, event)"><div class="odd-lbl">ALT</div><div class="odd-val">' + odds.goals.under + '</div></div></div>';
             }
-            
-            // KG
             if(odds.btts) {
               h += '<div class="odds-group"><div class="odds-group-title">KG</div>' +
                 '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Var" data-mark="KG" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'KG\', \'Var\', '+odds.btts.yes+', this, event)"><div class="odd-lbl">VAR</div><div class="odd-val">' + odds.btts.yes + '</div></div>' +
@@ -590,15 +558,13 @@ var V = {
     var hasFavP = this.state.favPlayers.length > 0;
 
     if (!hasFavM && !hasFavP) return el.innerHTML = T.empty('Henüz favori maç veya oyuncu eklemediniz.');
-    
     el.innerHTML = T.loading('Favorileriniz yükleniyor...');
     var playersHtml = '';
 
     if(hasFavP) {
       playersHtml = '<div class="league-group"><div class="league-header">⭐ Favori Oyuncular</div><div class="fav-players-grid">';
       for(var i=0; i<this.state.favPlayers.length; i++) {
-        var fp = this.state.favPlayers[i];
-        var pDataStr = encodeURIComponent(JSON.stringify(fp));
+        var fp = this.state.favPlayers[i]; var pDataStr = encodeURIComponent(JSON.stringify(fp));
         playersHtml += '<div style="background:var(--surface); border:1px solid var(--border); padding:10px; border-radius:var(--radius); width:180px; position:relative;">' +
           '<div onclick="V.toggleFavPlayer(\'' + pDataStr + '\', event)" style="position:absolute; top:10px; right:10px; color:var(--yellow); cursor:pointer;">★</div>' +
           '<div style="display:flex; align-items:center; gap:10px;"><img src="'+fp.img+'" style="width:30px; height:30px; border-radius:50%; background:var(--bg2)">' +
@@ -609,15 +575,10 @@ var V = {
 
     if(!hasFavM) { el.innerHTML = playersHtml; return; }
 
-    var promises = this.state.favorites.map(function(id) {
-      return V.apiFetch('/api/event/' + id).catch(function(){ return null; });
-    });
-
+    var promises = this.state.favorites.map(function(id) { return V.apiFetch('/api/event/' + id).catch(function(){ return null; }); });
     Promise.all(promises).then(function(results) {
       var validMatches = [];
-      for(var i=0; i<results.length; i++) {
-        if(results[i] && results[i].event) validMatches.push(results[i].event);
-      }
+      for(var i=0; i<results.length; i++) { if(results[i] && results[i].event) validMatches.push(results[i].event); }
       var matchesHtml = '';
       if(validMatches.length > 0) {
         validMatches.sort(function(a,b){ return b.timestamp - a.timestamp; });
@@ -630,69 +591,37 @@ var V = {
   toggleFav: function(matchId, ev) {
     if (ev) ev.stopPropagation();
     var idx = this.state.favorites.indexOf(matchId);
-    if (idx >= 0) {
-      this.state.favorites.splice(idx, 1);
-      if(this.state.page === 'favorites') this.loadFavorites();
-    } else {
-      this.state.favorites.push(matchId);
-    }
+    if (idx >= 0) { this.state.favorites.splice(idx, 1); if(this.state.page === 'favorites') this.loadFavorites(); }
+    else { this.state.favorites.push(matchId); }
     safeStorage.set('vivo_favs', this.state.favorites);
     document.querySelectorAll('.match-fav[data-fav="' + matchId + '"]').forEach(function(star){ star.classList.toggle('faved'); });
   },
 
   toggleFavPlayer: function(pDataStr, ev) {
     if (ev) ev.stopPropagation();
-    var p = JSON.parse(decodeURIComponent(pDataStr));
-    var idx = this.state.favPlayers.findIndex(function(fp) { return fp.id === p.id; });
-    
-    if (idx >= 0) this.state.favPlayers.splice(idx, 1);
-    else this.state.favPlayers.push(p);
-    
+    var p = JSON.parse(decodeURIComponent(pDataStr)); var idx = this.state.favPlayers.findIndex(function(fp) { return fp.id === p.id; });
+    if (idx >= 0) this.state.favPlayers.splice(idx, 1); else this.state.favPlayers.push(p);
     safeStorage.set('vivo_fav_players', this.state.favPlayers);
-    // DÜZELTME: `.player-fav` class'ı `.ll-fav` olarak değiştirildi.
     document.querySelectorAll('.ll-fav[data-pid="' + p.id + '"]').forEach(function(star) { star.classList.toggle('faved'); });
     if(this.state.page === 'favorites') this.loadFavorites();
   },
 
   showPlayerModal: function(pDataStr) {
     var p = JSON.parse(decodeURIComponent(pDataStr));
-    
-    document.getElementById('pmImg').src = p.img;
-    document.getElementById('pmName').textContent = p.name;
-    document.getElementById('pmPos').textContent = p.pos;
-    
+    document.getElementById('pmImg').src = p.img; document.getElementById('pmName').textContent = p.name; document.getElementById('pmPos').textContent = p.pos;
     var rBox = document.getElementById('pmRating');
     if(p.rating) {
-      rBox.textContent = p.rating;
-      rBox.style.display = 'inline-block';
-      var r = parseFloat(p.rating);
+      rBox.textContent = p.rating; rBox.style.display = 'inline-block'; var r = parseFloat(p.rating);
       rBox.className = 'pm-rating ' + (r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'));
-    } else {
-      rBox.style.display = 'none';
-    }
+    } else { rBox.style.display = 'none'; }
 
-    var grid = document.getElementById('pmStatsGrid');
-    var html = '';
-    var s = p.stats || {};
-    
-    var keys = Object.keys(s);
-    var addedCount = 0;
-    
+    var grid = document.getElementById('pmStatsGrid'); var html = ''; var s = p.stats || {}; var keys = Object.keys(s); var addedCount = 0;
     for(var i=0; i<keys.length; i++) {
-      var key = keys[i];
-      var val = s[key];
-      if (typeof val === 'number' && val % 1 !== 0) val = val.toFixed(2);
-      
-      if(STAT_DICT[key] && val !== undefined && val !== null) {
-        html += '<div class="pm-stat-box"><div class="pm-stat-lbl">'+STAT_DICT[key]+'</div><div class="pm-stat-val">'+val+'</div></div>';
-        addedCount++;
-      }
+      var key = keys[i]; var val = s[key]; if (typeof val === 'number' && val % 1 !== 0) val = val.toFixed(2);
+      if(STAT_DICT[key] && val !== undefined && val !== null) { html += '<div class="pm-stat-box"><div class="pm-stat-lbl">'+STAT_DICT[key]+'</div><div class="pm-stat-val">'+val+'</div></div>'; addedCount++; }
     }
-    
     if(addedCount === 0) html = '<div style="grid-column:1/-1; text-align:center; color:var(--text3); font-size:12px; padding:20px 0;">Detaylı istatistik bulunmuyor.</div>';
-    
-    grid.innerHTML = html;
-    document.getElementById('playerModalOverlay').style.display = 'flex';
+    grid.innerHTML = html; document.getElementById('playerModalOverlay').style.display = 'flex';
   },
 
   closePlayerModal: function(ev) {
@@ -710,9 +639,7 @@ var V = {
   showDetail: function(matchId) {
     this.state.selectedMatch = matchId; this.state.detailTab = 'summary';
     document.querySelectorAll('.match-card').forEach(function(el) { el.classList.remove('selected'); });
-    var card = document.querySelector('.match-card[data-match="' + matchId + '"]'); 
-    if (card) card.classList.add('selected');
-
+    var card = document.querySelector('.match-card[data-match="' + matchId + '"]'); if (card) card.classList.add('selected');
     var panel = document.getElementById('detailPanel'); if (!panel) return;
     panel.innerHTML = '<div class="loading" style="height:100%"><div class="spinner"></div><div class="loading-text">Pro Detaylar Yükleniyor...</div></div>';
 
@@ -727,7 +654,6 @@ var V = {
     var m = cache.match; var panel = document.getElementById('detailPanel'); if (!panel) return;
 
     var isLive = m.status === 'live'; var isFinished = m.status === 'finished'; var hasScore = m.homeScore !== null && m.homeScore !== undefined;
-
     var statusHtml = '';
     if (isLive) statusHtml = '<div class="detail-status st-live">' + (m.minute || 'CANLI') + '\'</div>';
     else if (isFinished) statusHtml = '<div class="detail-status st-finished">Maç Sonu</div>';
@@ -755,45 +681,34 @@ var V = {
     h += '</div>' + metaHtml + '</div>';
     h += '<div class="detail-tabs">';
     h += '<div class="detail-tab active" data-tab="summary" onclick="V.loadTab(\'summary\',' + matchId + ')">Özet</div>';
-    
     if(V.state.selectedSport === 'football' || V.state.selectedSport === 'basketball') {
         h += '<div class="detail-tab" data-tab="stats" onclick="V.loadTab(\'stats\',' + matchId + ')">İstatistik</div>';
         h += '<div class="detail-tab" data-tab="lineups" onclick="V.loadTab(\'lineups\',' + matchId + ')">Kadro</div>';
     }
-    
     h += '</div><div class="detail-content" id="detailContent"><div class="loading"><div class="spinner"></div></div></div>';
     panel.innerHTML = h; this.loadTab('summary', matchId);
   },
 
   loadTab: function(tab, matchId) {
-    this.state.detailTab = tab;
-    document.querySelectorAll('.detail-tab').forEach(function(el) { el.classList.toggle('active', el.getAttribute('data-tab') === tab); });
+    this.state.detailTab = tab; document.querySelectorAll('.detail-tab').forEach(function(el) { el.classList.toggle('active', el.getAttribute('data-tab') === tab); });
     var content = document.getElementById('detailContent'); if (!content) return;
     content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
 
     if (tab === 'summary') {
-      var self = this;
       var evData = this.state.matchCache[matchId].match;
-      var topInfo = '<div style="font-size:12px; color:var(--text2); text-align:center; padding-bottom:16px; margin-bottom:16px; border-bottom:1px solid var(--border)">' + 
+      var topInfo = '<div style="font-size:13px; color:var(--text2); text-align:center; padding-bottom:16px; margin-bottom:16px; border-bottom:1px solid var(--border)">' + 
                     (evData.stadium ? '🏟️ Stadyum: <span style="color:var(--text)">' + evData.stadium + '</span> &nbsp;&nbsp;' : '') +
                     (evData.referee ? '👤 Hakem: <span style="color:var(--text)">' + evData.referee + '</span>' : '') + '</div>';
 
       this.apiFetch('/api/event/' + matchId + '/incidents').then(function(data) {
-        if(data.incidents && data.incidents.length > 0) {
-            content.innerHTML = topInfo + T.incidents(data.incidents);
-        } else {
-            content.innerHTML = topInfo + T.empty('Bu maç için detaylı olay özeti bulunmuyor.');
-        }
+        if(data.incidents && data.incidents.length > 0) content.innerHTML = topInfo + T.incidents(data.incidents);
+        else content.innerHTML = topInfo + T.empty('Bu maç için detaylı olay özeti bulunmuyor.');
       }).catch(function() { content.innerHTML = topInfo + T.empty('Özet bilgi bulunmuyor.'); });
     }
     else if (tab === 'stats') {
-      this.apiFetch('/api/event/' + matchId + '/stats').then(function(data) {
-        content.innerHTML = T.statsDetailed(data.raw || []);
-      }).catch(function() { content.innerHTML = T.empty('Bu maç için istatistik mevcut değil'); });
+      this.apiFetch('/api/event/' + matchId + '/stats').then(function(data) { content.innerHTML = T.statsDetailed(data.raw || []); }).catch(function() { content.innerHTML = T.empty('Bu maç için istatistik mevcut değil'); });
     } else if (tab === 'lineups') {
-      this.apiFetch('/api/event/' + matchId + '/lineups').then(function(data) {
-        content.innerHTML = T.lineups(data);
-      }).catch(function() { content.innerHTML = T.empty('Kadro bilgisi henüz açıklanmadı'); });
+      this.apiFetch('/api/event/' + matchId + '/lineups').then(function(data) { content.innerHTML = T.lineups(data); }).catch(function() { content.innerHTML = T.empty('Kadro bilgisi henüz açıklanmadı'); });
     }
   }
 };
@@ -804,8 +719,7 @@ var T = {
 
   matchCard: function(m) {
     var isLive = m.status === 'live'; var isFin = m.status === 'finished'; var hasScore = m.homeScore !== null && m.homeScore !== undefined;
-    var isFav = V.state.favorites.indexOf(m.id) >= 0;
-    var isHidden = !!V.state.hiddenMatchScores[m.id];
+    var isFav = V.state.favorites.indexOf(m.id) >= 0; var isHidden = !!V.state.hiddenMatchScores[m.id];
     var isEligibleForHide = (V.state.selectedSport === 'football' || V.state.selectedSport === 'basketball');
 
     var timeH = '';
@@ -816,26 +730,21 @@ var T = {
     var hW = hasScore && m.homeScore > m.awayScore; var aW = hasScore && m.awayScore > m.homeScore;
     var scoreH = hasScore ? '<div class="match-score"><div class="score-num' + (aW ? ' loser' : '') + (isLive ? ' live-score' : '') + '">' + m.homeScore + '</div><div class="score-num' + (hW ? ' loser' : '') + (isLive ? ' live-score' : '') + '">' + m.awayScore + '</div></div>' : '<div class="match-score"><div class="score-num" style="color:var(--text3)">-</div><div class="score-num" style="color:var(--text3)">-</div></div>';
 
-    var hideBtnHtml = isEligibleForHide 
-      ? '<button class="hide-single-btn" title="Skoru Gizle" onclick="V.toggleSingleScore(' + m.id + ', event)">' + (isHidden ? '👁️' : '🙈') + '</button>' : '';
-
+    var hideBtnHtml = isEligibleForHide ? '<button class="hide-single-btn" title="Skoru Gizle" onclick="V.toggleSingleScore(' + m.id + ', event)">' + (isHidden ? '👁️' : '🙈') + '</button>' : '';
     var mNameEncoded = encodeURIComponent(m.homeTeam.shortName + ' - ' + m.awayTeam.shortName);
-    var oddsContainer = (!isLive && !isFin && isEligibleForHide) 
-      ? '<div class="match-odds-wrapper" data-matchid="' + m.id + '" data-mname="' + mNameEncoded + '"></div>' : '<div class="match-odds-wrapper empty"></div>';
+    var oddsContainer = (!isLive && !isFin && isEligibleForHide) ? '<div class="match-odds-wrapper" data-matchid="' + m.id + '" data-mname="' + mNameEncoded + '"></div>' : '<div class="match-odds-wrapper empty"></div>';
 
     return '<div class="match-card' + (isLive ? ' live-card' : '') + (isHidden ? ' hide-this-score' : '') + '" data-match="' + m.id + '">' + timeH +
       '<div class="match-info-area" onclick="V.showDetail(' + m.id + ')">' +
         '<div class="match-teams"><div class="team-row"><img class="team-logo" src="' + m.homeTeam.img + '" onerror="this.style.visibility=\'hidden\'"><span class="team-name' + (aW ? ' loser' : '') + '">' + m.homeTeam.shortName + '</span></div>' +
         '<div class="team-row"><img class="team-logo" src="' + m.awayTeam.img + '" onerror="this.style.visibility=\'hidden\'"><span class="team-name' + (hW ? ' loser' : '') + '">' + m.awayTeam.shortName + '</span></div></div>' +
-        oddsContainer +
-        '<div class="match-score-wrap">' + scoreH + hideBtnHtml + '</div>' +
-      '</div>' + 
-      '<div class="match-fav' + (isFav ? ' faved' : '') + '" data-fav="' + m.id + '" onclick="V.toggleFav(' + m.id + ',event)">\u2605</div></div>';
+        oddsContainer + '<div class="match-score-wrap">' + scoreH + hideBtnHtml + '</div>' +
+      '</div><div class="match-fav' + (isFav ? ' faved' : '') + '" data-fav="' + m.id + '" onclick="V.toggleFav(' + m.id + ',event)">\u2605</div></div>';
   },
 
   leagueGroup: function(name, id, matches) {
     var cards = ''; for (var i = 0; i < matches.length; i++) cards += this.matchCard(matches[i]);
-    var imgHtml = id === 'fav' ? '⭐' : '<img src="https://api.sofascore.app/api/v1/unique-tournament/' + id + '/image" onerror="this.style.display=\'none\'" width="20" height="20">';
+    var imgHtml = id === 'fav' ? '⭐' : '<img src="https://api.sofascore.app/api/v1/unique-tournament/' + id + '/image" onerror="this.style.display=\'none\'" width="22" height="22">';
     return '<div class="league-group"><div class="league-header">' + imgHtml + '<span style="margin-left:6px">' + name + '</span></div>' + cards + '</div>';
   },
 
@@ -860,27 +769,22 @@ var T = {
     return html || this.empty('Detaylı istatistik mevcut değil');
   },
 
-  /* ── YENİ SAHA GÖRÜNÜMÜ & LİSTE (KADROLAR) ── */
   lineups: function(data) {
     if (!data) return this.empty('Kadro bilgisi henüz açıklanmadı');
     var hp = (data.home && data.home.players) ? data.home.players : []; 
     var ap = (data.away && data.away.players) ? data.away.players : [];
     if (hp.length === 0 && ap.length === 0) return this.empty('Kadro bilgisi henüz açıklanmadı');
 
-    var html = '<div style="font-size:10px; color:var(--text3); text-align:center; margin-bottom:10px;">Detaylı istatistik için oyuncuya tıklayın</div>';
+    var html = '<div style="font-size:12px; color:var(--text3); text-align:center; margin-bottom:10px;">Detaylı istatistik için oyuncuya tıklayın</div>';
     var hf = data.home.formation || '?'; var af = data.away.formation || '?';
     html += '<div class="formation-label">' + hf + ' vs ' + af + '</div>';
 
     var renderPitch = function(players, isAway) {
         var starters = players.filter(function(p){ return !p.substitute; });
-        var groups = { G: [], D: [], M: [], F: [] };
-        var unknown = [];
+        var groups = { G: [], D: [], M: [], F: [] }; var unknown = [];
         starters.forEach(function(p) {
-            if(p.position === 'G') groups.G.push(p);
-            else if(p.position === 'D') groups.D.push(p);
-            else if(p.position === 'M') groups.M.push(p);
-            else if(p.position === 'F') groups.F.push(p);
-            else unknown.push(p);
+            if(p.position === 'G') groups.G.push(p); else if(p.position === 'D') groups.D.push(p);
+            else if(p.position === 'M') groups.M.push(p); else if(p.position === 'F') groups.F.push(p); else unknown.push(p);
         });
         groups.M = groups.M.concat(unknown); 
         var lines = [groups.G, groups.D, groups.M, groups.F];
@@ -890,145 +794,82 @@ var T = {
             if(line.length === 0) return;
             pitchHtml += '<div class="pitch-row">';
             line.forEach(function(p) {
-                var posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' };
-                var finalPos = posMap[p.position] || p.position || '';
+                var posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' }; var finalPos = posMap[p.position] || p.position || '';
                 var pDataStr = encodeURIComponent(JSON.stringify({ id: p.id, name: p.name, pos: finalPos, img: p.img, rating: p.rating, stats: p.stats || {} }));
-                var rc = '';
-                if (p.rating) {
-                    var r = parseFloat(p.rating);
-                    rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low');
-                }
+                var rc = ''; if (p.rating) { var r = parseFloat(p.rating); rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'); }
                 var num = p.number ? '<div class="p-num">'+p.number+'</div>' : '';
                 pitchHtml += '<div class="pitch-player" onclick="V.showPlayerModal(\'' + pDataStr + '\')">' +
                              '<div class="p-img-wrap"><img src="'+p.img+'" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'">' + num + '</div>' +
-                             (p.rating ? '<div class="p-rating '+rc+'">'+p.rating+'</div>' : '') +
-                             '<div class="p-name">'+p.name+'</div>' +
-                             '</div>';
+                             (p.rating ? '<div class="p-rating '+rc+'">'+p.rating+'</div>' : '') + '<div class="p-name">'+p.name+'</div></div>';
             });
             pitchHtml += '</div>';
         });
-        pitchHtml += '</div>';
-        return pitchHtml;
+        return pitchHtml + '</div>';
     };
 
     var renderList = function(players, title) {
         var lHtml = '<div class="lineup-section-title">' + title + '</div><div class="lineup-list">';
         players.forEach(function(p) {
-            var rc = '';
-            if (p.rating) {
-                var r = parseFloat(p.rating);
-                rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low');
-            }
-            var posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' };
-            var finalPos = posMap[p.position] || p.position || '';
+            var rc = ''; if (p.rating) { var r = parseFloat(p.rating); rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'); }
+            var posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' }; var finalPos = posMap[p.position] || p.position || '';
             var pDataStr = encodeURIComponent(JSON.stringify({ id: p.id, name: p.name, pos: finalPos, img: p.img, rating: p.rating, stats: p.stats || {} }));
             var isFavP = V.state.favPlayers.some(function(fp){ return fp.id === p.id; });
             var favIcon = '<div class="ll-fav ' + (isFavP ? 'faved' : '') + '" data-pid="' + p.id + '" onclick="V.toggleFavPlayer(\'' + pDataStr + '\', event)">★</div>';
-
-            lHtml += '<div class="ll-item" onclick="V.showPlayerModal(\'' + pDataStr + '\')">' +
-                    '<div class="ll-num">' + (p.number || '-') + '</div>' +
+            lHtml += '<div class="ll-item" onclick="V.showPlayerModal(\'' + pDataStr + '\')"><div class="ll-num">' + (p.number || '-') + '</div>' +
                     '<div class="ll-info"><div class="ll-name">' + p.name + '</div><div class="ll-pos">' + finalPos + '</div></div>' +
-                    (p.rating ? '<div class="ll-rating ' + rc + '">' + p.rating + '</div>' : '') +
-                    favIcon + '</div>';
+                    (p.rating ? '<div class="ll-rating ' + rc + '">' + p.rating + '</div>' : '') + favIcon + '</div>';
         });
-        lHtml += '</div>';
-        return lHtml;
+        return lHtml + '</div>';
     };
 
     html += '<div class="team-lineup-wrapper"><div class="team-lineup-header">İlk 11 - Ev Sahibi</div>';
-    if(V.state.selectedSport === 'football') html += renderPitch(hp, false);
-    else { var hStarters = hp.filter(function(p){ return !p.substitute; }); html += renderList(hStarters, 'İlk 11'); }
-    var hSubs = hp.filter(function(p){ return p.substitute; });
-    if(hSubs.length > 0) html += renderList(hSubs, 'Yedekler');
-    html += '</div>';
-
+    if(V.state.selectedSport === 'football') html += renderPitch(hp, false); else { var hStarters = hp.filter(function(p){ return !p.substitute; }); html += renderList(hStarters, 'İlk 11'); }
+    var hSubs = hp.filter(function(p){ return p.substitute; }); if(hSubs.length > 0) html += renderList(hSubs, 'Yedekler'); html += '</div>';
     html += '<div class="team-lineup-wrapper" style="margin-top:30px;"><div class="team-lineup-header">İlk 11 - Deplasman</div>';
-    if(V.state.selectedSport === 'football') html += renderPitch(ap, true);
-    else { var aStarters = ap.filter(function(p){ return !p.substitute; }); html += renderList(aStarters, 'İlk 11'); }
-    var aSubs = ap.filter(function(p){ return p.substitute; });
-    if(aSubs.length > 0) html += renderList(aSubs, 'Yedekler');
-    html += '</div>';
+    if(V.state.selectedSport === 'football') html += renderPitch(ap, true); else { var aStarters = ap.filter(function(p){ return !p.substitute; }); html += renderList(aStarters, 'İlk 11'); }
+    var aSubs = ap.filter(function(p){ return p.substitute; }); if(aSubs.length > 0) html += renderList(aSubs, 'Yedekler'); html += '</div>';
 
     return html;
   },
 
-  /* ── KUSURSUZ SVG İKONLU MAÇ ÖZETİ (INCIDENTS) ── */
   incidents: function(incidents) {
     if (!incidents || incidents.length === 0) return this.empty('Maç olayları henüz mevcut değil');
     var html = '<div class="incident-list">';
     
-    // Gelişmiş SVG İkonlar
-    var svgGoal = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 12l3-2.5m-3 2.5l-3-2.5m3 2.5v3.5m0-3.5l4.5 1.5m-4.5-1.5l-4.5 1.5m6.5-6.5l2-3.5m-8 3.5l-2-3.5m2 8.5l-1.5 4m8.5-4l1.5 4"></path></svg>';
-    var svgSub = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 21h5v-5M10 3L3 10M21 14l-7 7M3 10v5M21 14V9"/></svg>';
-    var svgWhistle = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 6v6l4 2"></path></svg>';
-    var svgVar = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>';
+    var svgGoal = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 12l3-2.5m-3 2.5l-3-2.5m3 2.5v3.5m0-3.5l4.5 1.5m-4.5-1.5l-4.5 1.5m6.5-6.5l2-3.5m-8 3.5l-2-3.5m2 8.5l-1.5 4m8.5-4l1.5 4"></path></svg>';
+    var svgSub = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 21h5v-5M10 3L3 10M21 14l-7 7M3 10v5M21 14V9"/></svg>';
+    var svgWhistle = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 6v6l4 2"></path></svg>';
+    var svgVar = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>';
 
     for (var i = 0; i < incidents.length; i++) {
-      var inc = incidents[i]; 
-      var icon = '', detail = '';
-      var playerNameHtml = inc.playerName ? '<div class="incident-player">' + inc.playerName + '</div>' : '';
+      var inc = incidents[i]; var icon = '', detail = ''; var playerNameHtml = inc.playerName ? '<div class="incident-player">' + inc.playerName + '</div>' : '';
       
       if (inc.type === 'goal') { 
-        icon = svgGoal; 
-        detail = inc.incidentClass === 'penalty' ? '(Penaltı)' : (inc.incidentClass === 'ownGoal' ? '(Kendi Kalesine)' : ''); 
-        playerNameHtml = '<div class="incident-player" style="color:var(--brand); font-weight:800;">' + (inc.playerName || 'Gol') + ' ' + detail + '</div>';
-        detail = '';
+        icon = svgGoal; detail = inc.incidentClass === 'penalty' ? '(Penaltı)' : (inc.incidentClass === 'ownGoal' ? '(Kendi Kalesine)' : ''); 
+        playerNameHtml = '<div class="incident-player" style="color:var(--brand); font-weight:800;">' + (inc.playerName || 'Gol') + ' ' + detail + '</div>'; detail = '';
       }
       else if (inc.type === 'card') {
-        if (inc.incidentClass === 'yellow') { 
-            icon = '<div style="width:12px;height:16px;background:var(--yellow);border-radius:2px;box-shadow:0 0 2px rgba(0,0,0,0.5);"></div>'; 
-            detail = 'Sarı Kart'; 
-        }
-        else if (inc.incidentClass === 'red') { 
-            icon = '<div style="width:12px;height:16px;background:var(--red);border-radius:2px;box-shadow:0 0 2px rgba(0,0,0,0.5);"></div>'; 
-            detail = 'Kırmızı Kart'; 
-        }
-        else { 
-            icon = '<div style="position:relative;width:16px;height:16px;"><div style="position:absolute;top:0;left:0;width:12px;height:16px;background:var(--yellow);border-radius:2px;z-index:1;"></div><div style="position:absolute;top:3px;left:4px;width:12px;height:16px;background:var(--red);border-radius:2px;z-index:2;box-shadow:-1px -1px 2px rgba(0,0,0,0.3);"></div></div>'; 
-            detail = '2. Sarıdan Kırmızı'; 
-        }
+        if (inc.incidentClass === 'yellow') { icon = '<div style="width:14px;height:18px;background:var(--yellow);border-radius:2px;box-shadow:0 0 2px rgba(0,0,0,0.5);"></div>'; detail = 'Sarı Kart'; }
+        else if (inc.incidentClass === 'red') { icon = '<div style="width:14px;height:18px;background:var(--red);border-radius:2px;box-shadow:0 0 2px rgba(0,0,0,0.5);"></div>'; detail = 'Kırmızı Kart'; }
+        else { icon = '<div style="position:relative;width:18px;height:18px;"><div style="position:absolute;top:0;left:0;width:14px;height:18px;background:var(--yellow);border-radius:2px;z-index:1;"></div><div style="position:absolute;top:3px;left:4px;width:14px;height:18px;background:var(--red);border-radius:2px;z-index:2;box-shadow:-1px -1px 2px rgba(0,0,0,0.3);"></div></div>'; detail = '2. Sarıdan Kırmızı'; }
       }
       else if (inc.type === 'substitution') { 
-        icon = svgSub; 
-        playerNameHtml = '<div class="incident-player"><span style="color:var(--green)">▲ ' + (inc.playerIn || '?') + '</span></div>';
-        detail = '<span style="color:var(--red)">▼ ' + (inc.playerOut || '?') + '</span>'; 
+        icon = svgSub; playerNameHtml = '<div class="incident-player"><span style="color:var(--green)">▲ ' + (inc.playerIn || '?') + '</span></div>'; detail = '<span style="color:var(--red)">▼ ' + (inc.playerOut || '?') + '</span>'; 
       }
-      else if (inc.type === 'period') { 
-        icon = svgWhistle; 
-        playerNameHtml = '<div class="incident-player" style="color:var(--text2)">' + (inc.text || 'Devre / Maç Sonu') + '</div>'; 
-      }
-      else if (inc.type === 'varDecision') {
-        icon = svgVar;
-        playerNameHtml = '<div class="incident-player" style="color:var(--brand)">VAR Kararı</div>';
-        detail = inc.text || inc.description || '';
-      }
-      else { 
-        icon = svgWhistle; 
-        detail = inc.text || inc.description || ''; 
-      }
+      else if (inc.type === 'period') { icon = svgWhistle; playerNameHtml = '<div class="incident-player" style="color:var(--text2)">' + (inc.text || 'Devre / Maç Sonu') + '</div>'; }
+      else if (inc.type === 'varDecision') { icon = svgVar; playerNameHtml = '<div class="incident-player" style="color:var(--brand)">VAR Kararı</div>'; detail = inc.text || inc.description || ''; }
+      else { icon = svgWhistle; detail = inc.text || inc.description || ''; }
 
-      var scoreBadge = (inc.homeScore !== undefined && inc.awayScore !== undefined && inc.type === 'goal') 
-        ? '<div class="incident-score">' + inc.homeScore + ' - ' + inc.awayScore + '</div>' : '';
-        
+      var scoreBadge = (inc.homeScore !== undefined && inc.awayScore !== undefined && inc.type === 'goal') ? '<div class="incident-score">' + inc.homeScore + ' - ' + inc.awayScore + '</div>' : '';
       var timeStr = (inc.time !== undefined) ? inc.time + '\'' : '';
 
-      html += '<div class="incident-row">' +
-        '<div class="incident-time">' + timeStr + '</div>' +
-        '<div class="incident-icon">' + icon + '</div>' +
-        '<div class="incident-details">' + playerNameHtml + '<div class="incident-desc">' + detail + '</div></div>' +
-        scoreBadge +
-      '</div>';
+      html += '<div class="incident-row"><div class="incident-time">' + timeStr + '</div><div class="incident-icon">' + icon + '</div><div class="incident-details">' + playerNameHtml + '<div class="incident-desc">' + detail + '</div></div>' + scoreBadge + '</div>';
     }
     return html + '</div>';
   }
 };
 
-try {
-  V.init();
-} catch(err) {
-  console.error("VivoScore Başlatılma Hatası:", err);
-  alert("Sistem yüklenirken ufak bir hata oluştu. Lütfen kodun tamamını kopyaladığınızdan emin olun.");
-}
+try { V.init(); } catch(err) { console.error("VivoScore Başlatılma Hatası:", err); }
 </script>
 </body>
 </html>
