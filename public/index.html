@@ -324,6 +324,24 @@ body.hide-scores .detail-score:hover {
 </div>
 
 <script>
+// ═══════════════════════════════════════════════
+//  GÜVENLİK: XSS Escape fonksiyonu
+// ═══════════════════════════════════════════════
+function esc(str) {
+  if (str === null || str === undefined) return '';
+  var s = String(str);
+  var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '/': '&#x2F;' };
+  return s.replace(/[&<>"'/]/g, function(c) { return map[c]; });
+}
+// Sayı güvenliği — sadece sayı döndür
+function safeNum(val) { var n = Number(val); return isNaN(n) ? 0 : n; }
+// URL güvenliği — sadece https URL'leri kabul et
+function safeImgUrl(url) {
+  if (typeof url !== 'string') return '';
+  if (url.startsWith('https://api.sofascore.app/') || url.startsWith('data:')) return url;
+  return '';
+}
+
 var safeStorage = {
   get: function(key, fallback) {
     try { var v = window.localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
@@ -794,11 +812,11 @@ var V = {
     var h = '<div class="detail-header">';
     h += '<div class="btn-close-panel" onclick="V.closeDetail()">✕</div>';
     h += '<div class="detail-teams">';
-    h += '<div class="detail-team"><img src="' + m.homeTeam.img + '" onerror="this.style.display=\'none\'"><div class="dt-name">' + m.homeTeam.shortName + '</div></div>';
-    h += '<div class="detail-score-box"><div class="detail-score' + (isLive ? ' live-ds' : '') + '">' + scoreStr + '</div>';
-    if (htStr) h += '<div class="detail-ht">' + htStr + '</div>';
+    h += '<div class="detail-team"><img src="' + safeImgUrl(m.homeTeam.img) + '" onerror="this.style.display=\'none\'"><div class="dt-name">' + esc(m.homeTeam.shortName) + '</div></div>';
+    h += '<div class="detail-score-box"><div class="detail-score' + (isLive ? ' live-ds' : '') + '">' + esc(scoreStr) + '</div>';
+    if (htStr) h += '<div class="detail-ht">' + esc(htStr) + '</div>';
     h += statusHtml + '</div>';
-    h += '<div class="detail-team"><img src="' + m.awayTeam.img + '" onerror="this.style.display=\'none\'"><div class="dt-name">' + m.awayTeam.shortName + '</div></div>';
+    h += '<div class="detail-team"><img src="' + safeImgUrl(m.awayTeam.img) + '" onerror="this.style.display=\'none\'"><div class="dt-name">' + esc(m.awayTeam.shortName) + '</div></div>';
     h += '</div>' + metaHtml + '</div>';
     h += '<div class="detail-tabs">';
     h += '<div class="detail-tab active" data-tab="summary" onclick="V.loadTab(\'summary\',' + matchId + ')">Özet</div>';
@@ -818,8 +836,8 @@ var V = {
     if (tab === 'summary') {
       var evData = this.state.matchCache[matchId].match;
       var topInfo = '<div style="font-size:13px; color:var(--text2); text-align:center; padding-bottom:16px; margin-bottom:16px; border-bottom:1px solid var(--border)">' + 
-                    (evData.stadium ? '🏟️ Stadyum: <span style="color:var(--text)">' + evData.stadium + '</span> &nbsp;&nbsp;' : '') +
-                    (evData.referee ? '👤 Hakem: <span style="color:var(--text)">' + evData.referee + '</span>' : '') + '</div>';
+                    (evData.stadium ? '🏟️ Stadyum: <span style="color:var(--text)">' + esc(evData.stadium) + '</span> &nbsp;&nbsp;' : '') +
+                    (evData.referee ? '👤 Hakem: <span style="color:var(--text)">' + esc(evData.referee) + '</span>' : '') + '</div>';
 
       this.apiFetch('/api/event/' + matchId + '/incidents').then(function(data) {
         if(data.incidents && data.incidents.length > 0) content.innerHTML = topInfo + T.incidents(data.incidents);
@@ -842,37 +860,39 @@ var T = {
     var isLive = m.status === 'live'; var isFin = m.status === 'finished'; var hasScore = m.homeScore !== null && m.homeScore !== undefined;
     var isFav = V.state.favorites.indexOf(m.id) >= 0; var isHidden = !!V.state.hiddenMatchScores[m.id];
     var isEligibleForHide = (V.state.selectedSport === 'football' || V.state.selectedSport === 'basketball' || V.state.selectedSport === 'mma');
+    var safeId = safeNum(m.id);
 
     var timeH = '';
-    if (isLive) timeH = '<div class="match-time live-time"><span class="minute-badge">' + (m.minute || '\u25CF') + '</span></div>';
+    if (isLive) timeH = '<div class="match-time live-time"><span class="minute-badge">' + esc(m.minute || '\u25CF') + '</span></div>';
     else if (isFin) timeH = '<div class="match-time"><span class="status-ft">MS</span></div>';
-    else timeH = '<div class="match-time">' + (m.time || '') + '</div>';
+    else timeH = '<div class="match-time">' + esc(m.time || '') + '</div>';
 
     var hW = hasScore && m.homeScore > m.awayScore; var aW = hasScore && m.awayScore > m.homeScore;
-    var scoreH = hasScore ? '<div class="match-score"><div class="score-num' + (aW ? ' loser' : '') + (isLive ? ' live-score' : '') + '">' + m.homeScore + '</div><div class="score-num' + (hW ? ' loser' : '') + (isLive ? ' live-score' : '') + '">' + m.awayScore + '</div></div>' : '<div class="match-score"><div class="score-num" style="color:var(--text3)">-</div><div class="score-num" style="color:var(--text3)">-</div></div>';
+    var scoreH = hasScore ? '<div class="match-score"><div class="score-num' + (aW ? ' loser' : '') + (isLive ? ' live-score' : '') + '">' + safeNum(m.homeScore) + '</div><div class="score-num' + (hW ? ' loser' : '') + (isLive ? ' live-score' : '') + '">' + safeNum(m.awayScore) + '</div></div>' : '<div class="match-score"><div class="score-num" style="color:var(--text3)">-</div><div class="score-num" style="color:var(--text3)">-</div></div>';
 
-    var hideBtnHtml = isEligibleForHide ? '<button class="hide-single-btn" title="Skoru Gizle" onclick="V.toggleSingleScore(' + m.id + ', event)">' + (isHidden ? '👁️' : '🙈') + '</button>' : '';
-    var mNameEncoded = encodeURIComponent(m.homeTeam.shortName + ' - ' + m.awayTeam.shortName);
-    var oddsContainer = (!isLive && !isFin && isEligibleForHide) ? '<div class="match-odds-wrapper" data-matchid="' + m.id + '" data-mname="' + mNameEncoded + '"></div>' : '<div class="match-odds-wrapper empty"></div>';
+    var hideBtnHtml = isEligibleForHide ? '<button class="hide-single-btn" title="Skoru Gizle" onclick="V.toggleSingleScore(' + safeId + ', event)">' + (isHidden ? '👁️' : '🙈') + '</button>' : '';
+    var mNameEncoded = encodeURIComponent(esc(m.homeTeam.shortName) + ' - ' + esc(m.awayTeam.shortName));
+    var oddsContainer = (!isLive && !isFin && isEligibleForHide) ? '<div class="match-odds-wrapper" data-matchid="' + safeId + '" data-mname="' + mNameEncoded + '"></div>' : '<div class="match-odds-wrapper empty"></div>';
 
-    return '<div class="match-card' + (isLive ? ' live-card' : '') + (isHidden ? ' hide-this-score' : '') + '" data-match="' + m.id + '">' + timeH +
-      '<div class="match-info-area" onclick="V.showDetail(' + m.id + ')">' +
-        '<div class="match-teams"><div class="team-row"><img class="team-logo" src="' + m.homeTeam.img + '" onerror="this.style.visibility=\'hidden\'"><span class="team-name' + (aW ? ' loser' : '') + '">' + m.homeTeam.shortName + '</span></div>' +
-        '<div class="team-row"><img class="team-logo" src="' + m.awayTeam.img + '" onerror="this.style.visibility=\'hidden\'"><span class="team-name' + (hW ? ' loser' : '') + '">' + m.awayTeam.shortName + '</span></div></div>' +
+    return '<div class="match-card' + (isLive ? ' live-card' : '') + (isHidden ? ' hide-this-score' : '') + '" data-match="' + safeId + '">' + timeH +
+      '<div class="match-info-area" onclick="V.showDetail(' + safeId + ')">' +
+        '<div class="match-teams"><div class="team-row"><img class="team-logo" src="' + safeImgUrl(m.homeTeam.img) + '" onerror="this.style.visibility=\'hidden\'"><span class="team-name' + (aW ? ' loser' : '') + '">' + esc(m.homeTeam.shortName) + '</span></div>' +
+        '<div class="team-row"><img class="team-logo" src="' + safeImgUrl(m.awayTeam.img) + '" onerror="this.style.visibility=\'hidden\'"><span class="team-name' + (hW ? ' loser' : '') + '">' + esc(m.awayTeam.shortName) + '</span></div></div>' +
         oddsContainer + '<div class="match-score-wrap">' + scoreH + hideBtnHtml + '</div>' +
-      '</div><div class="match-fav' + (isFav ? ' faved' : '') + '" data-fav="' + m.id + '" onclick="V.toggleFav(' + m.id + ',event)">\u2605</div></div>';
+      '</div><div class="match-fav' + (isFav ? ' faved' : '') + '" data-fav="' + safeId + '" onclick="V.toggleFav(' + safeId + ',event)">\u2605</div></div>';
   },
 
   leagueGroup: function(name, id, matches) {
     var cards = ''; for (var i = 0; i < matches.length; i++) cards += this.matchCard(matches[i]);
-    var imgHtml = id === 'fav' ? '⭐' : '<img src="https://api.sofascore.app/api/v1/unique-tournament/' + id + '/image" onerror="this.style.display=\'none\'" width="22" height="22">';
-    return '<div class="league-group"><div class="league-header">' + imgHtml + '<span style="margin-left:6px">' + name + '</span></div>' + cards + '</div>';
+    var safeId = esc(String(id));
+    var imgHtml = id === 'fav' ? '⭐' : '<img src="https://api.sofascore.app/api/v1/unique-tournament/' + safeId + '/image" onerror="this.style.display=\'none\'" width="22" height="22">';
+    return '<div class="league-group"><div class="league-header">' + imgHtml + '<span style="margin-left:6px">' + esc(name) + '</span></div>' + cards + '</div>';
   },
 
   statBar: function(s) {
     var hVal = parseFloat(String(s.home).replace('%','')) || 0; var aVal = parseFloat(String(s.away).replace('%','')) || 0;
     var tot = hVal + aVal || 1; var hP = (hVal / tot) * 100; var aP = (aVal / tot) * 100;
-    return '<div class="stat-row"><div class="stat-labels"><span class="stat-val home' + (hVal > aVal ? ' high' : '') + '">' + s.home + '</span><span class="stat-name">' + s.name + '</span><span class="stat-val away' + (aVal > hVal ? ' high' : '') + '">' + s.away + '</span></div><div class="stat-bar-track"><div class="stat-bar-home" style="width:' + hP + '%"></div><div class="stat-bar-away" style="width:' + aP + '%"></div></div></div>';
+    return '<div class="stat-row"><div class="stat-labels"><span class="stat-val home' + (hVal > aVal ? ' high' : '') + '">' + esc(s.home) + '</span><span class="stat-name">' + esc(s.name) + '</span><span class="stat-val away' + (aVal > hVal ? ' high' : '') + '">' + esc(s.away) + '</span></div><div class="stat-bar-track"><div class="stat-bar-home" style="width:' + hP + '%"></div><div class="stat-bar-away" style="width:' + aP + '%"></div></div></div>';
   },
 
   statsDetailed: function(rawStats) {
