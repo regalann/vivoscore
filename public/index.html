@@ -691,22 +691,47 @@ var SPORTS = [
 ];
 
 var STAT_DICT = {
-  goals: 'Gol', assists: 'Asist', totalShots: 'Toplam Şut', shotsOnTarget: 'İsabetli Şut',
-  shotsOffTarget: 'İsabetsiz Şut', blockedShots: 'Engellenen Şut', hitWoodwork: 'Direkten Dönen',
-  minutesPlayed: 'Oynanan Dakika', touches: 'Topla Buluşma', accuratePasses: 'İsabetli Pas',
-  keyPasses: 'Kilit Pas', crosses: 'Orta', longBalls: 'Uzun Top', dribbles: 'Çalım',
-  possessionLostCtrl: 'Top Kaybı', totalTackle: 'Müdahale', interceptions: 'Pas Arası',
+  // ⚽ HÜCUM & GENEL
+  minutesPlayed: 'Oynanan Dakika', rating: 'SofaScore Reyting',
+  goals: 'Gol', assists: 'Asist',
+  expectedGoals: 'Gol Beklentisi (xG)', expectedAssists: 'Asist Beklentisi (xA)',
+  totalShots: 'Toplam Şut', shotsOnTarget: 'İsabetli Şut', shotsOffTarget: 'İsabetsiz Şut',
+  blockedShots: 'Engellenen Şut', hitWoodwork: 'Direkten Dönen',
+  bigChancesMissed: 'Kaçan Net Fırsat', bigChancesCreated: 'Yaratılan Net Fırsat',
+  successfulDribbles: 'Başarılı Çalım', dribbleAttempts: 'Çalım Girişimi', dribbles: 'Çalım',
+  penaltyWon: 'Kazandırdığı Penaltı', ownGoals: 'Kendi Kalesine Gol',
+
+  // 👟 PAS & OYUN KURMA
+  touches: 'Topla Buluşma', passes: 'Pas', totalPasses: 'Toplam Pas',
+  accuratePasses: 'İsabetli Pas', accuratePassesPercentage: 'Pas İsabeti (%)',
+  keyPasses: 'Kilit Pas', crosses: 'Orta', accurateCrosses: 'İsabetli Orta', totalCrosses: 'Toplam Orta',
+  longBalls: 'Uzun Top', accurateLongBalls: 'İsabetli Uzun Top', totalLongBalls: 'Toplam Uzun Top',
+
+  // 🛡️ SAVUNMA
+  totalTackle: 'Top Kapma', tackles: 'Müdahale', interceptions: 'Pas Arası',
   clearances: 'Uzaklaştırma', blockedScoringAttempt: 'Şut Engelleme',
-  aerialDuelsWon: 'Kazanılan Hava Topu', groundDuelsWon: 'Kazanılan İkili Mc.',
-  fouls: 'Faul Yaptı', wasFouled: 'Faul Aldı', saves: 'Kurtarış',
-  yellowCards: 'Sarı Kart', redCards: 'Kırmızı Kart', rating: 'SofaScore Reyting',
+  errorLeadToShot: 'Şuta Neden Olan Hata', errorLeadToGoal: 'Gole Neden Olan Hata',
+  clearanceOffLine: 'Çizgiden Çıkarma', lastManTackle: 'Son Adam Müdahalesi', penaltyConceded: 'Yaptırılan Penaltı',
+
+  // ⚔️ İKİLİ MÜCADELE & DİSİPLİN
+  duelsWon: 'Kazanılan İkili Mc.', totalDuels: 'Toplam İkili Mc.', duels: 'İkili Mücadele',
+  groundDuelsWon: 'Kazanılan Yerden Mc.', totalGroundDuels: 'Toplam Yerden Mc.',
+  aerialDuelsWon: 'Kazanılan Hava Topu', totalAerialDuels: 'Toplam Hava Topu', aerialLost: 'Kaybedilen Hava Topu',
+  possessionLostCtrl: 'Top Kaybı', possessionLost: 'Top Kaybı', dispossessed: 'Top Kaptırma', challengeLost: 'Kaybedilen Mücadele',
+  fouls: 'Faul Yaptı', wasFouled: 'Faul Aldı', yellowCards: 'Sarı Kart', redCards: 'Kırmızı Kart',
+
+  // 🧤 KALECİ
+  saves: 'Kurtarış', savesFromInsideBox: 'Ceza Sahası İçi Kurt.', savesFromOutsideBox: 'Ceza Sahası Dışı Kurt.',
+  goalsPrevented: 'Önlenen Gol', punches: 'Yumruklama', runsOut: 'Kalesini Terk Etme',
+  successfulRunsOut: 'Başarılı Çıkış', highClaims: 'Hava Topu Alma', penaltySaves: 'Penaltı Kurtarışı', goalsConceded: 'Yenilen Gol',
+
+  // 🏀 BASKETBOL & DİĞER
   points: 'Sayı', rebounds: 'Ribaund', defensiveRebounds: 'Savunma Rib.', offensiveRebounds: 'Hücum Rib.',
-  steals: 'Top Çalma', blocks: 'Blok', turnovers: 'Top Kaybı',
-  personalFouls: 'Bireysel Faul', plusMinus: '+/-',
-  twoPointersMade: '2 Sayı İsabet', twoPointersAttempted: '2 Sayı Deneme',
-  threePointersMade: '3 Sayı İsabet', threePointersAttempted: '3 Sayı Deneme',
-  freeThrowsMade: 'Serbest Atış İsabet', freeThrowsAttempted: 'SA Deneme',
-  fieldGoalsMade: 'Saha İçi İsabet', fieldGoalsAttempted: 'Saha İçi Deneme'
+  steals: 'Top Çalma', blocks: 'Blok', turnovers: 'Top Kaybı', personalFouls: 'Bireysel Faul', plusMinus: '+/-',
+  twoPointersMade: '2 Sayı İsabet', twoPointersAttempted: '2 Sayı Deneme', threePointersMade: '3 Sayı İsabet',
+  threePointersAttempted: '3 Sayı Deneme', freeThrowsMade: 'Serbest Atış İsabet', freeThrowsAttempted: 'SA Deneme',
+  fieldGoalsMade: 'Saha İçi İsabet', fieldGoalsAttempted: 'Saha İçi Deneme',
+  freeThrowsCombo: 'Serbest Atış', threePointersCombo: '3 Sayı', twoPointersCombo: '2 Sayı', fieldGoalsCombo: 'Saha İçi İsabet'
 };
 
 var V = {
@@ -1165,7 +1190,6 @@ var V = {
     }
   },
 
-  // 🚀 OYUNCU İSTATİSTİK MOTORU (DOĞRU YERE TAŞINDI)
   showPlayerModal: function(playerId) {
     var p = V.state.playerData[playerId];
     if (!p) return; 
