@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="referrer" content="no-referrer" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cline x1='4' y1='3' x2='4' y2='21' stroke='%238b949e' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M4 4L19 4C19 4 21 4 21 6C21 8 19 8 19 8L4 8' fill='%233b82f6' stroke='%233b82f6' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M4 8L16 8C16 8 18 8 18 10C18 12 16 12 16 12L4 12' fill='%23ffffff' stroke='%233b82f6' stroke-width='0.8' stroke-linejoin='round'/%3E%3Ccircle cx='4' cy='3' r='1.5' fill='%233b82f6'/%3E%3C/svg%3E">
 <title>VivoScore Pro - Ultimate Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -279,10 +280,15 @@ body.hide-scores .detail-score:hover {
 <div class="app" id="app">
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="logo"><span class="v">Vivo</span><span class="s">Score</span><span class="dot"></span></div>
-    </div>
-    <div class="auth-section" id="authSection">
-      <button class="auth-btn" onclick="Auth.showModal()">🔐 Giriş Yap</button>
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <line x1="4" y1="3" x2="4" y2="21" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M4 4L19 4C19 4 21 4 21 6C21 8 19 8 19 8L4 8" fill="var(--brand)" stroke="var(--brand)" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M4 8L16 8C16 8 18 8 18 10C18 12 16 12 16 12L4 12" fill="#fff" fill-opacity="0.9" stroke="var(--brand)" stroke-width="0.8" stroke-linejoin="round"/>
+          <circle cx="4" cy="3" r="1.5" fill="var(--brand)"/>
+        </svg>
+        <span class="v">Vivo</span><span class="s">Score</span><span class="dot"></span>
+      </div>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section">
@@ -294,6 +300,9 @@ body.hide-scores .detail-score:hover {
         <div class="sport-item" id="themeToggleBtn" onclick="V.toggleTheme()">
           <span class="flag" id="themeIcon">🌙</span><span id="themeLabel">Karanlık Tema</span>
         </div>
+      </div>
+      <div class="auth-section" id="authSection" style="border-top:1px solid var(--border);margin-top:8px;padding-top:12px;">
+        <button class="auth-btn" onclick="Auth.showModal()">Oturum Aç</button>
       </div>
     </nav>
   </aside>
@@ -411,7 +420,7 @@ var Auth = {
     if (!modal || !body) return;
 
     body.innerHTML =
-      '<div class="auth-modal-title">VivoScore\'a Giriş Yap</div>' +
+      '<div class="auth-modal-title">VivoScore\'a Oturum Aç</div>' +
       '<div class="auth-modal-sub">Favori maçlarını ve ayarlarını kaydet</div>' +
       '<div class="auth-error" id="authError"></div>' +
       '<div style="display:flex;flex-direction:column;gap:10px;margin-top:20px;">' +
@@ -479,7 +488,7 @@ var Auth = {
   renderGuest: function() {
     var el = document.getElementById('authSection');
     if (!el) return;
-    el.innerHTML = '<button class="auth-btn" onclick="Auth.showModal()">🔐 Giriş Yap</button>';
+    el.innerHTML = '<button class="auth-btn" onclick="Auth.showModal()">Oturum Aç</button>';
   },
 
   renderUser: function() {
