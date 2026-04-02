@@ -355,6 +355,85 @@ app.get('/api/event/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// ═══════════════════════════════════════════════
+//  ARAMA ENDPOİNTİ
+// ═══════════════════════════════════════════════
+function validateSearchQuery(q) {
+  if (typeof q !== 'string') return false;
+  if (q.length < 2 || q.length > 80) return false;
+  // Sadece harf, rakam, boşluk ve bazı özel karakterler
+  return /^[\p{L}\p{N}\s\-'.]+$/u.test(q);
+}
+
+app.get('/api/search/:sport', async (req, res) => {
+  const { sport } = req.params;
+  const q = (req.query.q || '').trim();
+
+  if (!validateSport(sport)) return res.status(400).json({ error: 'Geçersiz spor dalı' });
+  if (!validateSearchQuery(q)) return res.status(400).json({ error: 'Geçersiz arama sorgusu (en az 2 karakter)' });
+
+  try {
+    const cacheKey = `search_${sport}_${q.toLowerCase()}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
+
+    const data = await api(`/sport/${sport}/search/${encodeURIComponent(q)}`);
+    
+    const results = { teams: [], players: [] };
+
+    // Takımları işle
+    if (data.results) {
+      data.results.forEach(r => {
+        if (r.type === 'team' && r.entity) {
+          results.teams.push(sanitizeObject({
+            id: Number(r.entity.id) || 0,
+            name: r.entity.name || '',
+            shortName: r.entity.shortName || r.entity.name || '',
+            img: `https://api.sofascore.app/api/v1/team/${Number(r.entity.id) || 0}/image`,
+            country: r.entity.country?.name || '',
+            tournament: r.entity.tournament?.uniqueTournament?.name || r.entity.tournament?.name || ''
+          }));
+        }
+        if (r.type === 'player' && r.entity) {
+          results.players.push(sanitizeObject({
+            id: Number(r.entity.id) || 0,
+            name: r.entity.name || '',
+            shortName: r.entity.shortName || r.entity.name || '',
+            img: `https://api.sofascore.app/api/v1/player/${Number(r.entity.id) || 0}/image`,
+            position: r.entity.position || '',
+            teamName: r.entity.team?.name || '',
+            teamId: Number(r.entity.team?.id) || 0
+          }));
+        }
+      });
+    }
+
+    setCache(cacheKey, results);
+    res.json(results);
+  } catch (err) {
+    console.error(`[SEARCH] ${sport}/${q}:`, err.message);
+    res.status(500).json({ error: 'Arama hatası' });
+  }
+});
+
+// Takım maçları endpoint'i
+app.get('/api/team/:id/events', async (req, res) => {
+  if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
+  try {
+    const data = await api(`/team/${req.params.id}/events/last/0`);
+    const nextData = await api(`/team/${req.params.id}/events/next/0`).catch(() => ({ events: [] }));
+    
+    const allEvents = [...(data.events || []), ...(nextData.events || [])];
+    allEvents.sort((a, b) => b.startTimestamp - a.startTimestamp);
+    
+    const matches = allEvents.slice(0, 20).map(e => formatEvent(e));
+    res.json({ matches });
+  } catch (err) {
+    console.error(`[TEAM EVENTS] ${req.params.id}:`, err.message);
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
 // Debug — sadece development'ta
 if (process.env.NODE_ENV !== 'production') {
   app.get('/api/debug', (req, res) => {
