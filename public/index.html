@@ -56,10 +56,11 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 .sport-item:hover { background: var(--surface2); color: var(--text); } .sport-item.active { background: var(--brand-dim); color: var(--brand); }
 .sport-item .flag { font-size: 18px; width: 24px; text-align: center; } 
 
-.user-profile-section { margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border); }
+/* YENİ VE SABİTLENMİŞ KULLANICI PROFİL ALANI */
+.user-profile-section { padding: 16px 14px; border-top: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; }
 .auth-btn { width: 100%; padding: 12px; background: var(--brand); color: #fff; font-weight: 800; font-size: 14px; border-radius: var(--radius-sm); transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;}
 .auth-btn:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px var(--brand-dim); }
-.user-info-box { display: none; align-items: center; gap: 10px; padding: 10px; background: var(--bg2); border-radius: var(--radius-sm); border: 1px solid var(--border);}
+.user-info-box { display: none; align-items: center; gap: 10px; padding: 10px; background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border);}
 .user-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--brand); }
 .user-details { flex: 1; min-width: 0; }
 .user-name { font-size: 13px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -201,7 +202,7 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(5px); }
 .custom-modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column;}
 @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.pm-close { position: absolute; top: 16px; right: 16px; font-size: 20px; color: var(--text3); cursor: pointer; transition: 0.2s; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--bg2); border: 1px solid var(--border); }
+.pm-close { position: absolute; top: 16px; right: 16px; font-size: 20px; color: var(--text3); cursor: pointer; transition: 0.2s; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--bg2); border: 1px solid var(--border); z-index: 50; }
 .pm-close:hover { background: var(--red-dim); color: var(--red); border-color: var(--red); }
 
 /* AUTH MODAL STYLES */
@@ -259,28 +260,28 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
         <div id="sportList"></div>
       </div>
       
-      <div class="nav-section" style="margin-top:auto; padding-top:12px; border-top:1px solid var(--border);">
+      <div class="nav-section" style="margin-top:auto; padding-top:12px;">
         <div class="nav-label">AYARLAR</div>
         <div class="sport-item" id="themeToggleBtn" onclick="V.toggleTheme()">
           <span class="flag" id="themeIcon">🌙</span><span id="themeLabel">Karanlık Tema</span>
         </div>
       </div>
+    </nav>
 
-      <div class="user-profile-section">
-        <button id="loginBtnUI" class="auth-btn" onclick="V.openAuthModal()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-          Giriş Yap / Üye Ol
-        </button>
-        <div id="userProfileUI" class="user-info-box">
-          <img id="uAvatar" src="" class="user-avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
-          <div class="user-details">
-            <div id="uName" class="user-name">Kullanıcı</div>
-            <div class="user-logout" onclick="V.signOut()">Çıkış Yap</div>
-          </div>
+    <div class="user-profile-section">
+      <button id="loginBtnUI" class="auth-btn" onclick="V.openAuthModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+        Giriş Yap / Üye Ol
+      </button>
+      <div id="userProfileUI" class="user-info-box">
+        <img id="uAvatar" src="" class="user-avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
+        <div class="user-details">
+          <div id="uName" class="user-name">Kullanıcı</div>
+          <div class="user-logout" onclick="V.signOut()">Çıkış Yap</div>
         </div>
       </div>
+    </div>
 
-    </nav>
   </aside>
 
   <main class="main">
@@ -367,7 +368,7 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 
 <script>
 // ═══════════════════════════════════════════════
-//  SUPABASE BAĞLANTISI (OTOMATİK ÇÖZÜMLENDİ)
+//  SUPABASE BAĞLANTISI
 // ═══════════════════════════════════════════════
 const SUPABASE_URL = 'https://heflhadmyaubzkaldgwz.supabase.co'; 
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlZmxoYWRteWF1YnprYWxkZ3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODcwODMsImV4cCI6MjA5MDY2MzA4M30.mpnk_9B38xDDjYQaoOZsziThLFrZW_HzF-j6XoKwOzM';
@@ -460,6 +461,10 @@ var V = {
 
   closeModal: function(ev, id) {
     if(ev && ev.target.id !== id) return;
+    if(!id) {
+       document.querySelectorAll('.modal-overlay').forEach(function(m){ m.style.display = 'none'; });
+       return;
+    }
     document.getElementById(id).style.display = 'none';
   },
 
@@ -648,36 +653,6 @@ var V = {
     safeStorage.set('vivo_fav_players', this.state.favPlayers);
     document.querySelectorAll('.player-fav[data-pid="' + p.id + '"], .ll-fav[data-pid="' + p.id + '"]').forEach(function(star) { star.classList.toggle('faved'); });
     if(this.state.page === 'favorites') this.loadFavorites();
-  },
-
-  showPlayerModal: function(pDataStr) {
-    var p = JSON.parse(decodeURIComponent(pDataStr));
-    document.getElementById('pmImg').src = p.img; document.getElementById('pmName').textContent = p.name; document.getElementById('pmPos').textContent = p.pos;
-    var rBox = document.getElementById('pmRating');
-    if(p.rating) {
-      rBox.textContent = p.rating; rBox.style.display = 'inline-block'; var r = parseFloat(p.rating);
-      rBox.className = 'pm-rating ' + (r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'));
-    } else { rBox.style.display = 'none'; }
-
-    var grid = document.getElementById('pmStatsGrid'); var html = ''; var s = p.stats || {}; var keys = Object.keys(s); var addedCount = 0;
-    for(var i=0; i<keys.length; i++) {
-      var key = keys[i]; var val = s[key]; if (typeof val === 'number' && val % 1 !== 0) val = val.toFixed(2);
-      if(STAT_DICT[key] && val !== undefined && val !== null) { html += '<div class="pm-stat-box"><div class="pm-stat-lbl">'+STAT_DICT[key]+'</div><div class="pm-stat-val">'+val+'</div></div>'; addedCount++; }
-    }
-    if(addedCount === 0) html = '<div style="grid-column:1/-1; text-align:center; color:var(--text3); font-size:12px; padding:20px 0;">Detaylı istatistik bulunmuyor.</div>';
-    grid.innerHTML = html; document.getElementById('playerModalOverlay').style.display = 'flex';
-  },
-
-  closePlayerModal: function(ev) {
-    if(ev && ev.target.id !== 'playerModalOverlay') return;
-    document.getElementById('playerModalOverlay').style.display = 'none';
-  },
-
-  closeDetail: function() {
-    document.querySelectorAll('.match-card').forEach(function(el) { el.classList.remove('selected'); });
-    var panel = document.getElementById('detailPanel');
-    if(panel) panel.innerHTML = '<div class="detail-empty"><div class="de-icon">⚽</div><div class="de-text">Detayları görmek için bir maça tıklayın</div></div>';
-    this.state.selectedMatch = null;
   },
 
   showDetail: function(matchId) {
