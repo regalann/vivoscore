@@ -18,20 +18,7 @@ const BASE_URL = 'https://sportapi7.p.rapidapi.com/api/v1';
 //  GÜVENLİK: Helmet — HTTP güvenlik başlıkları
 // ═══════════════════════════════════════════════
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "https://api.sofascore.app", "https://*.supabase.co", "https://*.googleusercontent.com", "https://avatars.githubusercontent.com", "https://*.fbcdn.net", "https://platform-lookaside.fbsbx.com", "https://cdn.discordapp.com", "https://pbs.twimg.com", "https://i.scdn.co", "data:"],
-      connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co"],
-      frameAncestors: ["'none'"],
-      objectSrc: ["'none'"],
-      baseUri: ["'self'"],
-      formAction: ["'self'"],
-    }
-  },
+  contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" },
   referrerPolicy: { policy: "no-referrer" },
