@@ -101,8 +101,12 @@ app.get('/api/schedule/:sport/:date', async (req, res) => {
     const { sport, date } = req.params;
     console.log(`[SCHEDULE] Tarih: ${date} | Spor: ${sport}`);
     const data = await api(`/sport/${sport}/scheduled-events/${date}`);
-    const events = data.events || [];
-    console.log(`[SCHEDULE] ${date} → ${events.length} maç döndü`);
+    const allEvents = data.events || [];
+    
+    // KRİTİK FİLTRE: API UTC'ye göre döndürür, biz Türkiye saatine göre filtreleriz
+    const events = allEvents.filter(e => getTRDateString(e.startTimestamp) === date);
+    console.log(`[SCHEDULE] ${date} → API: ${allEvents.length} maç, Filtre sonrası: ${events.length} maç`);
+    
     const grouped = {};
     events.forEach(e => {
       const m = formatEvent(e);
