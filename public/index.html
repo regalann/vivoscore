@@ -9,6 +9,16 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/supabase/2.38.4/supabase.min.js"></script>
+<script>
+  if (typeof supabase === 'undefined') {
+    document.write('<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"><\/script>');
+  }
+</script>
+<script>
+  if (typeof supabase === 'undefined') {
+    document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"><\/script>');
+  }
+</script>
 
 <style>
 :root {
@@ -53,8 +63,6 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .sidebar-header { padding: 20px 18px; border-bottom: 1px solid var(--border); }
 .logo { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 3px; }
 .logo .v { color: var(--text); } .logo .s { color: var(--brand); }
-.logo .dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; margin-left: 4px; animation: pulse-dot 2s infinite; }
-@keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.7); } }
 .sidebar-nav { padding: 12px 10px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
 .nav-label { font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text3); padding: 0 10px; margin-bottom: 8px; letter-spacing: 1px; margin-top:15px; }
 
@@ -222,7 +230,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .pm-stat-lbl { font-size: 13px; font-weight: 600; color: var(--text3); text-transform: uppercase; }
 .pm-stat-val { font-size: 16px; font-weight: 800; color: var(--brand); }
 
-/* INCIDENTS */
+/* REVISED INCIDENTS */
 .incident-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
 .incident-row { display: flex; align-items: center; background: var(--surface2); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
 .incident-time { font-weight: 800; font-size: 15px; width: 44px; color: var(--text2); flex-shrink: 0; }
@@ -241,7 +249,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 @keyframes spin { to { transform:rotate(360deg); } }
 .empty-state { text-align:center; padding:60px 20px; color:var(--text3); } .empty-state .es-icon { font-size:38px; margin-bottom:12px; opacity:0.4; } .empty-state .es-text { font-size:15px; line-height:1.6; }
 
-/* 🚀 AUTH UI MODAL - E-POSTA VE GITHUB ALANI 🚀 */
+/* 🚀 YENİ AUTH UI MODAL - E-POSTA VE GITHUB ALANI 🚀 */
 .auth-box { width: 380px; padding: 32px 24px; text-align: center; }
 .auth-box h2 { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
 .auth-box p { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.5; }
@@ -459,20 +467,26 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 
 <script>
 // ═══════════════════════════════════════════════
-//  SUPABASE CONFIG 
+//  SUPABASE CONFIG VE LAZY INIT 🚀
 // ═══════════════════════════════════════════════
 var SUPABASE_URL = 'https://heflhadmyaubzkaldgwz.supabase.co'; 
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlZmxoYWRteWF1YnprYWxkZ3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODcwODMsImV4cCI6MjA5MDY2MzA4M30.mpnk_9B38xDDjYQaoOZsziThLFrZW_HzF-j6XoKwOzM';
 var supabaseClient = null; 
 
-try {
-  if (typeof window.supabase !== 'undefined' && SUPABASE_URL && SUPABASE_KEY) {
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    console.log('[Auth] Supabase bağlantısı hazır');
-  } else {
-    console.log('[Auth] Supabase yüklenemedi — misafir modu');
-  }
-} catch(e) { console.warn('[Auth] Supabase başlatılamadı:', e.message); }
+// CDN kütüphanesi geç yüklenirse diye "Akıllı Başlatıcı" fonksiyon
+function initSupabase() {
+  if (supabaseClient) return supabaseClient;
+  try {
+    if (typeof supabase !== 'undefined') {
+      supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      return supabaseClient;
+    } else if (typeof window.supabase !== 'undefined') {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      return supabaseClient;
+    }
+  } catch(e) { console.warn('[Auth] Başlatılamadı:', e); }
+  return null;
+}
 
 // ═══════════════════════════════════════════════
 //  AUTH SİSTEMİ
@@ -481,14 +495,16 @@ var Auth = {
   user: null,
 
   init: function() {
-    if (!supabaseClient) { this.renderGuest(); return; }
+    var sb = initSupabase();
+    if (!sb) { this.renderGuest(); return; }
+    
     var self = this;
-    supabaseClient.auth.getSession().then(function(res) {
-      if (res.data.session) { self.user = res.data.session.user; self.renderUser(); self.loadCloudData(); }
+    sb.auth.getSession().then(function(res) {
+      if (res.data && res.data.session) { self.user = res.data.session.user; self.renderUser(); self.loadCloudData(); }
       else self.renderGuest();
     }).catch(function() { self.renderGuest(); });
 
-    supabaseClient.auth.onAuthStateChange(function(event, session) {
+    sb.auth.onAuthStateChange(function(event, session) {
       if (session) { self.user = session.user; self.renderUser(); if (event === 'SIGNED_IN') self.loadCloudData(); }
       else { self.user = null; self.renderGuest(); }
     });
@@ -532,12 +548,11 @@ var Auth = {
     var password = document.getElementById('authPassword').value;
     
     if (!email || !password) return this.showError('Lütfen e-posta ve şifre girin.');
-    if (!supabaseClient) return this.showError('Sistem bağlantı hatası. Sayfayı yenileyin.');
+    
+    var sb = initSupabase();
+    if (!sb) return this.showError('Sistem bağlantısı kurulamadı. Lütfen sayfayı yenileyin.');
 
-    supabaseClient.auth.signInWithPassword({
-      email: email,
-      password: password
-    }).then(function(res) {
+    sb.auth.signInWithPassword({ email: email, password: password }).then(function(res) {
       if (res.error) {
         if(res.error.message === 'Invalid login credentials') Auth.showError('Hatalı e-posta veya şifre.');
         else Auth.showError(res.error.message);
@@ -553,12 +568,11 @@ var Auth = {
     
     if (!email || !password) return this.showError('Lütfen e-posta ve şifre girin.');
     if (password.length < 6) return this.showError('Şifre en az 6 karakter olmalıdır.');
-    if (!supabaseClient) return this.showError('Sistem bağlantı hatası. Sayfayı yenileyin.');
+    
+    var sb = initSupabase();
+    if (!sb) return this.showError('Sistem bağlantısı kurulamadı. Lütfen sayfayı yenileyin.');
 
-    supabaseClient.auth.signUp({
-      email: email,
-      password: password
-    }).then(function(res) {
+    sb.auth.signUp({ email: email, password: password }).then(function(res) {
       if (res.error) {
         if (res.error.message.includes('already registered')) Auth.showError('Bu e-posta adresi zaten kayıtlı.');
         else Auth.showError(res.error.message);
@@ -569,16 +583,18 @@ var Auth = {
   },
 
   socialLogin: function(provider) {
-    if (!supabaseClient) return this.showError('Sistem bağlantısı kurulamadı. (Sayfayı yenileyin).');
-    supabaseClient.auth.signInWithOAuth({
+    var sb = initSupabase();
+    if (!sb) return this.showError('Sistem bağlantısı kurulamadı. (Sayfayı yenileyin).');
+    sb.auth.signInWithOAuth({
       provider: provider,
       options: { redirectTo: window.location.origin }
     });
   },
 
   logout: function() {
-    if (!supabaseClient) return;
-    supabaseClient.auth.signOut().then(function() { Auth.renderGuest(); });
+    var sb = initSupabase();
+    if (!sb) return;
+    sb.auth.signOut().then(function() { Auth.renderGuest(); });
   },
 
   renderGuest: function() {
@@ -609,7 +625,8 @@ var Auth = {
 
   _saveTimer: null,
   saveCloudData: function() {
-    if (!supabaseClient || !this.user) return;
+    var sb = initSupabase();
+    if (!sb || !this.user) return;
     var self = this;
     clearTimeout(this._saveTimer);
     this._saveTimer = setTimeout(function() {
@@ -622,16 +639,17 @@ var Auth = {
         hide_scores: V.state.hideScores,
         updated_at: new Date().toISOString()
       };
-      supabaseClient.from('user_settings').upsert(data, { onConflict: 'user_id' }).then(function(res) {
+      sb.from('user_settings').upsert(data, { onConflict: 'user_id' }).then(function(res) {
         if (res.error) console.error('[Auth] Kayıt hatası:', res.error.message);
       });
     }, 2000);
   },
 
   loadCloudData: function() {
-    if (!supabaseClient || !this.user) return;
+    var sb = initSupabase();
+    if (!sb || !this.user) return;
     var self = this;
-    supabaseClient.from('user_settings').select('*').eq('user_id', this.user.id).single().then(function(res) {
+    sb.from('user_settings').select('*').eq('user_id', this.user.id).single().then(function(res) {
       if (res.error || !res.data) return;
       var d = res.data;
       try {
@@ -726,7 +744,6 @@ var V = {
     this.applyTheme();
     if(!this.state.showOdds) document.body.classList.add('hide-odds');
     this.updateOddsBtn();
-    
     Auth.init();
   },
 
@@ -1139,7 +1156,7 @@ var V = {
     if (tab === 'summary') {
       var evData = this.state.matchCache[matchId].match;
       var topInfo = '<div style="font-size:13px; color:var(--text2); text-align:center; padding-bottom:16px; margin-bottom:16px; border-bottom:1px solid var(--border)">' + 
-                    (evData.stadium ? '🏟️ Stadyum: <span style="color:var(--text)">' + esc(evData.stadium) + '</span> &nbsp;&nbsp;' : '') +
+                    (evData.stadium ? '🏟️ Stadyum: <span style="color:var(--text)">' + esc(evData.stadium) + '</span>   ' : '') +
                     (evData.referee ? '👤 Hakem: <span style="color:var(--text)">' + esc(evData.referee) + '</span>' : '') + '</div>';
 
       this.apiFetch('/api/event/' + matchId + '/incidents').then(function(data) {
