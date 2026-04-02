@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="referrer" content="no-referrer" />
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cline x1='4' y1='3' x2='4' y2='21' stroke='%238b949e' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M4 4L19 4C19 4 21 4 21 6C21 8 19 8 19 8L4 8' fill='%233b82f6' stroke='%233b82f6' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M4 8L16 8C16 8 18 8 18 10C18 12 16 12 16 12L4 12' fill='%23ffffff' stroke='%233b82f6' stroke-width='0.8' stroke-linejoin='round'/%3E%3Ccircle cx='4' cy='3' r='1.5' fill='%233b82f6'/%3E%3C/svg%3E">
 <title>VivoScore Pro - Ultimate Edition</title>
@@ -47,7 +47,7 @@ body.hide-odds .bet-slip { display: none !important; }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; -webkit-font-smoothing: antialiased; }
 ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
 img { display: block; } button { font-family: inherit; cursor: pointer; border: none; outline: none; }
-.app { display: flex; height: 100vh; width: 100vw; position: relative; }
+.app { display: flex; height: 100vh; width: 100vw; position: relative; overflow: hidden; }
 
 /* GLOBAL HIDE SCORES */
 body.hide-scores .score-num, 
@@ -60,7 +60,7 @@ body.hide-scores .detail-score:hover {
 }
 
 /* SIDEBAR */
-.sidebar { width: 240px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; z-index: 10; }
+.sidebar { width: 240px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; }
 .sidebar-header { padding: 20px 18px; border-bottom: 1px solid var(--border); }
 .logo { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 3px; }
 .logo .v { color: var(--text); } .logo .s { color: var(--brand); }
@@ -85,7 +85,7 @@ body.hide-scores .detail-score:hover {
 .user-logout { font-size: 11px; color: var(--red); cursor: pointer; margin-top: 2px; font-weight: 600; }
 .user-logout:hover { text-decoration: underline; }
 
-.main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg); }
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg); position: relative; }
 .topbar { display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--bg2); gap: 12px; }
 .date-nav { display: flex; align-items: center; gap: 4px; background: var(--surface); border-radius: var(--radius); padding: 3px; border: 1px solid var(--border); transition: 0.3s; }
 .date-nav.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(1); }
@@ -218,23 +218,12 @@ body.hide-scores .detail-score:hover {
 .ll-fav { color: var(--text3); font-size: 20px; margin-left: 12px; transition: 0.2s; }
 .ll-fav:hover, .ll-fav.faved { color: var(--yellow); }
 
-/* MODALLAR (OYUNCU & AUTH) */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(5px); }
-.custom-modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column;}
+/* OYUNCU MODAL */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+.player-modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 420px; max-height: 80vh; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column;}
 @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.pm-close { position: absolute; top: 16px; right: 16px; font-size: 20px; color: var(--text3); cursor: pointer; transition: 0.2s; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--bg2); border: 1px solid var(--border); z-index: 50; }
-.pm-close:hover { background: var(--red-dim); color: var(--red); border-color: var(--red); }
-
-/* AUTH MODAL STYLES */
-.auth-box { width: 380px; padding: 32px 24px; text-align: center; }
-.auth-box h2 { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
-.auth-box p { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.5; }
-.social-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; margin-bottom: 12px; }
-.social-btn:hover { background: var(--surface2); border-color: var(--text3); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-.social-btn svg { width: 22px; height: 22px; }
-
-/* PLAYER MODAL STYLES */
-.player-modal { width: 420px; max-height: 80vh; padding: 24px; }
+.pm-close { position: absolute; top: 12px; right: 12px; font-size: 18px; color: var(--text3); cursor: pointer; transition: 0.2s; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+.pm-close:hover { background: var(--surface2); color: var(--text); }
 .pm-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); flex-shrink:0;}
 .pm-header img { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; background: var(--bg2); border: 2px solid var(--border); }
 .pm-name { font-size: 20px; font-weight: 800; color: var(--text); }
@@ -256,13 +245,131 @@ body.hide-scores .detail-score:hover {
 .incident-desc { font-size: 13px; color: var(--text3); margin-top: 2px; }
 .incident-score { font-size: 16px; font-weight: 800; background: var(--bg); padding: 4px 10px; border-radius: 6px; color: var(--brand); margin-left: 12px; flex-shrink: 0; border: 1px solid var(--border); }
 
+/* FAVORITE PLAYERS GRID */
 .fav-players-grid { display:flex; flex-wrap:wrap; gap:10px; padding:0 14px; }
+
+/* UTILITY */
 .loading { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 0; gap:12px; }
 .spinner { width:28px; height:28px; border:3px solid var(--border); border-top-color:var(--brand); border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
 .empty-state { text-align:center; padding:60px 20px; color:var(--text3); } .empty-state .es-icon { font-size:38px; margin-bottom:12px; opacity:0.4; } .empty-state .es-text { font-size:15px; line-height:1.6; }
 @media (max-width:1200px) { .detail-panel { width:340px; } }
-@media (max-width:1000px) { .sidebar { width:60px; } .sidebar .logo .s, .sidebar .nav-label, .sidebar .sport-item span:not(.flag), .user-name { display:none; } .sidebar .sport-item { justify-content:center; padding:12px; } .match-teams { flex: 1; border-right:none;} .match-odds-wrapper {display:none;} }
+
+/* AUTH UI MODAL */
+.auth-box { width: 380px; padding: 32px 24px; text-align: center; }
+.auth-box h2 { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.auth-box p { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.5; }
+.social-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; margin-bottom: 12px; }
+.social-btn:hover { background: var(--surface2); border-color: var(--text3); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.social-btn svg { width: 22px; height: 22px; }
+.auth-error { background: var(--red-dim); color: var(--red); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 12px; margin-bottom: 10px; display: none; }
+
+/* 🚀 MOBİL (RESPONSIVE) TASARIM KODLARI 🚀 */
+@media (max-width: 768px) {
+    .app { flex-direction: column; }
+    
+    /* BOTTOM NAVIGATION BAR */
+    .sidebar { 
+        order: 3; 
+        width: 100%; 
+        height: 65px; 
+        flex-direction: row; 
+        border-right: none; 
+        border-top: 1px solid var(--border); 
+        padding: 0;
+        background: var(--surface);
+        z-index: 50;
+    }
+    .sidebar-header { display: none; }
+    .sidebar-nav { 
+        flex-direction: row; 
+        width: 100%; 
+        padding: 0; 
+        overflow-x: auto; 
+        overflow-y: hidden;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .nav-section { display: flex; flex-direction: row; align-items: center; margin: 0 !important; padding: 0 5px !important; border: none !important; }
+    .nav-label { display: none; }
+    .sport-item { margin: 0 2px; padding: 8px 12px; flex-direction: column; gap: 4px; border-radius: 8px; }
+    .sport-item .flag { font-size: 20px; width: auto; }
+    .sport-item span:not(.flag) { display: none; }
+    
+    .user-profile-section { 
+        padding: 0 10px; 
+        margin: 0; 
+        border: none !important; 
+        display: flex; 
+        align-items: center; 
+    }
+    .auth-btn { padding: 8px; font-size: 0; background: transparent; color: var(--text2); }
+    .auth-btn svg { margin: 0; width: 24px; height: 24px; }
+    .auth-btn:hover { background: var(--surface2); color: var(--text); box-shadow: none; transform: none; }
+    .user-info-box { padding: 0; border: none; background: transparent; cursor: pointer; }
+    .user-avatar { width: 28px; height: 28px; }
+    .user-details { display: none; }
+    
+    /* MAIN CONTENT AREA */
+    .main { order: 1; flex: 1; overflow: hidden; }
+    
+    /* YENİLENEN TOPBAR (MOBİL İÇİN 2 SATIRLI GRID) */
+    .topbar { padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .live-toggle { order: 1; margin: 0; }
+    .fav-toggle { order: 2; margin: 0; }
+    .right-actions { order: 3; flex: 1; justify-content: flex-end; gap: 4px; }
+    .topbar > button.date-arrow:nth-of-type(1) { order: 4; margin-top: 4px; width: 32px; height: 32px; }
+    .date-nav { order: 5; flex: 1; justify-content: space-between; margin-top: 4px; min-width: 200px; padding: 2px; }
+    .topbar > button.date-arrow:nth-of-type(2) { order: 6; margin-top: 4px; width: 32px; height: 32px; }
+    
+    .date-btn { padding: 6px 2px; font-size: 11px; flex: 1; text-align: center; }
+    .date-btn .day { font-size: 10px; margin-top: 2px; }
+    .btn-toggle { font-size: 13px; padding: 6px 10px; }
+    .hide-mobile { display: none !important; }
+    .match-scroll { padding: 10px 12px; padding-bottom: 20px; }
+    
+    /* MATCH CARDS */
+    .match-card { padding: 10px 8px; }
+    .match-time { width: 40px; font-size: 11px; }
+    .match-teams { min-width: 0; flex: 1; padding: 0 8px; border-right: none; }
+    .team-name { font-size: 13px; }
+    .match-score-wrap { gap: 8px; }
+    .match-score { width: 40px; }
+    .score-num { font-size: 14px; }
+    .hide-single-btn { font-size: 14px; }
+    .match-fav { width: 24px; font-size: 16px; }
+    .match-odds-wrapper { display: none !important; }
+    
+    /* DETAIL PANEL - FULL SCREEN MOBILE (Soldan sağa kayarak açılır) */
+    .detail-panel { 
+        position: fixed; 
+        top: 0; left: 0; 
+        width: 100vw; height: 100vh; 
+        z-index: 1000; 
+        transform: translateX(100%); 
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-left: none;
+    }
+    .detail-panel.open { 
+        transform: translateX(0); 
+    }
+    .btn-close-panel { 
+        width: 40px; height: 40px; 
+        font-size: 20px; 
+        top: 10px; right: 10px; 
+        background: var(--surface2); 
+        z-index: 1001; 
+        border-radius: 50%;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    /* BET SLIP */
+    .bet-slip { width: 90%; left: 5%; bottom: 80px; }
+    
+    /* MODALS */
+    .custom-modal { width: 95%; max-width: 350px; padding: 16px; }
+    .pm-grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -277,7 +384,6 @@ body.hide-scores .detail-score:hover {
           <path d="M4 8L16 8C16 8 18 8 18 10C18 12 16 12 16 12L4 12" fill="#fff" fill-opacity="0.9" stroke="var(--brand)" stroke-width="0.8" stroke-linejoin="round"/>
           <circle cx="4" cy="3" r="1.5" fill="var(--brand)"/>
         </svg>
-        <span class="dot" style="margin-left:4px;"></span>
       </div>
     </div>
     <nav class="sidebar-nav">
@@ -288,13 +394,13 @@ body.hide-scores .detail-score:hover {
       <div class="nav-section" style="margin-top:auto; padding-top:12px; border-top:1px solid var(--border);">
         <div class="nav-label">AYARLAR</div>
         <div class="sport-item" id="themeToggleBtn" onclick="V.toggleTheme()">
-          <span class="flag" id="themeIcon">🌙</span><span id="themeLabel">Karanlık Tema</span>
+          <span class="flag" id="themeIcon">🌙</span><span id="themeLabel" class="hide-mobile">Karanlık Tema</span>
         </div>
       </div>
-      <div class="user-profile-section" id="authSection" style="border-top:1px solid var(--border);margin-top:8px;padding:12px;">
-        <button class="auth-btn" onclick="Auth.showModal()">
+      <div class="user-profile-section" id="authSection">
+        <button class="auth-btn" id="loginBtnUI" onclick="Auth.showModal()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-          Giriş Yap / Üye Ol
+          <span class="hide-mobile">Giriş Yap / Üye Ol</span>
         </button>
       </div>
     </nav>
@@ -307,16 +413,16 @@ body.hide-scores .detail-score:hover {
       <button class="date-arrow" onclick="V.shiftDate(1)">▶</button>
       
       <button class="btn-toggle live-toggle" id="liveToggleBtn" onclick="V.toggleLive()">
-        <span class="pulse-dot-btn"></span> Canlı
+        <span class="pulse-dot-btn"></span> <span class="hide-mobile">Canlı</span>
       </button>
 
       <button class="btn-toggle fav-toggle" id="favToggleBtn" onclick="V.toggleFavView()">
-        ⭐ Favoriler
+        ⭐ <span class="hide-mobile">Favoriler</span>
       </button>
 
       <div class="right-actions">
-        <button class="btn-toggle" id="oddsToggleBtn" onclick="V.toggleOddsVisibility()" style="border:1px solid var(--border)">📊 Oranları Göster</button>
-        <button class="btn-toggle" id="hideScoresBtn" onclick="V.toggleHideScores()" style="border:1px solid var(--border)">🙈 Tüm Skorları Gizle</button>
+        <button class="btn-toggle" id="oddsToggleBtn" onclick="V.toggleOddsVisibility()" style="border:1px solid var(--border)">📊 <span class="hide-mobile">Oranları Göster</span></button>
+        <button class="btn-toggle" id="hideScoresBtn" onclick="V.toggleHideScores()" style="border:1px solid var(--border)">🙈 <span class="hide-mobile">Tüm Skorları Gizle</span></button>
       </div>
     </div>
     <div class="match-scroll" id="matchScroll"></div>
@@ -343,7 +449,7 @@ body.hide-scores .detail-score:hover {
 </div>
 
 <div class="modal-overlay" id="playerModalOverlay" onclick="V.closePlayerModal(event)">
-  <div class="player-modal" id="playerModalContent">
+  <div class="custom-modal player-modal" id="playerModalContent">
     <div class="pm-close" onclick="V.closePlayerModal()">✕</div>
     <div class="pm-header">
       <img id="pmImg" src="" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='">
@@ -384,11 +490,6 @@ body.hide-scores .detail-score:hover {
     <button class="social-btn" onclick="Auth.socialLogin('github')" style="background:#24292f;color:#fff;border:1px solid #24292f;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
       GitHub ile Devam Et
-    </button>
-
-    <button class="social-btn" onclick="Auth.socialLogin('discord')" style="background:#5865F2;color:#fff;border:1px solid #5865F2;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
-      Discord ile Devam Et
     </button>
 
     <div style="font-size:10px; color:var(--text3); margin-top:20px;">
@@ -440,7 +541,7 @@ var Auth = {
   },
 
   hideModal: function(ev) {
-    if(ev && ev.target.id !== 'authModalOverlay') return;
+    if(ev && ev.target.id !== 'authModalOverlay' && ev !== 'force') return;
     var modal = document.getElementById('authModalOverlay');
     if (modal) modal.style.display = 'none';
   },
@@ -466,8 +567,8 @@ var Auth = {
   renderGuest: function() {
     var el = document.getElementById('authSection');
     if (!el) return;
-    el.innerHTML = '<button class="auth-btn" onclick="Auth.showModal()">' +
-      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg> Giriş Yap / Üye Ol</button>';
+    el.innerHTML = '<button class="auth-btn" id="loginBtnUI" onclick="Auth.showModal()">' +
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg> <span class="hide-mobile">Giriş Yap / Üye Ol</span></button>';
   },
 
   renderUser: function() {
@@ -483,8 +584,11 @@ var Auth = {
       ? '<img src="' + safeImgUrl(avatar) + '" class="user-avatar" onerror="this.outerHTML=\'<div class=auth-avatar>' + displayName.charAt(0).toUpperCase() + '</div>\'">'
       : '<div class="user-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;font-weight:800;font-size:16px;">' + displayName.charAt(0).toUpperCase() + '</div>';
 
+    // 🚀 MOBİLDE AVATARA TIKLAYINCA ÇIKIŞ YAPMASI İÇİN
+    var mobileLogout = 'onclick="if(window.innerWidth <= 768) Auth.logout()"';
+
     el.innerHTML =
-      '<div class="user-info-box" style="display:flex;">' +
+      '<div class="user-info-box" style="display:flex;" ' + mobileLogout + '>' +
         avatarHtml +
         '<div class="user-details">' +
           '<div class="user-name">' + displayName + '</div>' +
@@ -539,7 +643,7 @@ function esc(str) {
   if (str === null || str === undefined) return '';
   var s = String(str);
   var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;' };
-  return s.replace(/[&<>"']/g, function(c) { return map[c]; });
+  return s.replace(/[&<>"'/]/g, function(c) { return map[c]; });
 }
 function safeNum(val) { var n = Number(val); return isNaN(n) ? 0 : n; }
 function safeImgUrl(url) {
@@ -653,7 +757,7 @@ var V = {
     for(var i=0; i<this.state.betSlip.length; i++) {
       var item = this.state.betSlip[i]; totalOdds *= item.odd;
       html += '<div class="bs-item">' +
-        '<div><div class="bs-match-name">' + item.matchName + '</div><div class="bs-market">' + item.market + ' - ' + item.selection + '</div></div>' +
+        '<div><div class="bs-match-name">' + esc(item.matchName) + '</div><div class="bs-market">' + esc(item.market) + ' - ' + esc(item.selection) + '</div></div>' +
         '<div class="bs-val-box"><div class="bs-odd-val">' + item.odd.toFixed(2) + '</div><div class="bs-remove" onclick="V.removeBetItem(\''+item.matchId+'\')">✕</div></div>' +
         '</div>';
     }
@@ -686,7 +790,7 @@ var V = {
     var btn = document.getElementById('hideScoresBtn');
     if(btn) {
       btn.classList.toggle('active', this.state.hideScores);
-      btn.innerHTML = this.state.hideScores ? '👁️ Tüm Skorları Göster' : '🙈 Tüm Skorları Gizle';
+      btn.innerHTML = this.state.hideScores ? '👁️ Tüm Skorları Göster' : '🙈 <span class="hide-mobile">Tüm Skorları Gizle</span>';
     }
   },
 
@@ -716,7 +820,7 @@ var V = {
     var btn = document.getElementById('oddsToggleBtn');
     if(btn) {
       btn.classList.toggle('active', this.state.showOdds);
-      btn.innerHTML = this.state.showOdds ? '📊 Oranları Gizle' : '📊 Oranları Göster';
+      btn.innerHTML = this.state.showOdds ? '📊 <span class="hide-mobile">Oranları Gizle</span>' : '📊 <span class="hide-mobile">Oranları Göster</span>';
       if(this.state.showOdds) { btn.style.background = 'var(--brand-dim)'; btn.style.color = 'var(--brand)'; btn.style.borderColor = 'var(--brand)'; }
       else { btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = ''; }
     }
@@ -950,47 +1054,33 @@ var V = {
     if(this.state.page === 'favorites') this.loadFavorites();
   },
 
-  showPlayerModal: function(pDataStr) {
-    var p = JSON.parse(decodeURIComponent(pDataStr));
-    document.getElementById('pmImg').src = p.img; document.getElementById('pmName').textContent = p.name; document.getElementById('pmPos').textContent = p.pos;
-    var rBox = document.getElementById('pmRating');
-    if(p.rating) {
-      rBox.textContent = p.rating; rBox.style.display = 'inline-block'; var r = parseFloat(p.rating);
-      rBox.className = 'pm-rating ' + (r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'));
-    } else { rBox.style.display = 'none'; }
-
-    var grid = document.getElementById('pmStatsGrid'); var html = ''; var s = p.stats || {}; var keys = Object.keys(s); var addedCount = 0;
-    for(var i=0; i<keys.length; i++) {
-      var key = keys[i]; var val = s[key]; if (typeof val === 'number' && val % 1 !== 0) val = val.toFixed(2);
-      if(STAT_DICT[key] && val !== undefined && val !== null) { html += '<div class="pm-stat-box"><div class="pm-stat-lbl">'+STAT_DICT[key]+'</div><div class="pm-stat-val">'+val+'</div></div>'; addedCount++; }
-    }
-    if(addedCount === 0) html = '<div style="grid-column:1/-1; text-align:center; color:var(--text3); font-size:12px; padding:20px 0;">Detaylı istatistik bulunmuyor.</div>';
-    grid.innerHTML = html; document.getElementById('playerModalOverlay').style.display = 'flex';
-  },
-
-  closePlayerModal: function(ev) {
-    if(ev && ev.target.id !== 'playerModalOverlay') return;
-    document.getElementById('playerModalOverlay').style.display = 'none';
-  },
-
-  closeDetail: function() {
-    document.querySelectorAll('.match-card').forEach(function(el) { el.classList.remove('selected'); });
-    var panel = document.getElementById('detailPanel');
-    if(panel) panel.innerHTML = '<div class="detail-empty"><div class="de-icon">⚽</div><div class="de-text">Detayları görmek için bir maça tıklayın</div></div>';
-    this.state.selectedMatch = null;
-  },
-
+  // 🚀 MÜHENDİSLİK DÜZELTMESİ: Mobilde açılan yan panel mantığı
   showDetail: function(matchId) {
     this.state.selectedMatch = matchId; this.state.detailTab = 'summary';
     document.querySelectorAll('.match-card').forEach(function(el) { el.classList.remove('selected'); });
     var card = document.querySelector('.match-card[data-match="' + matchId + '"]'); if (card) card.classList.add('selected');
+    
     var panel = document.getElementById('detailPanel'); if (!panel) return;
+    panel.classList.add('open'); 
     panel.innerHTML = '<div class="loading" style="height:100%"><div class="spinner"></div><div class="loading-text">Pro Detaylar Yükleniyor...</div></div>';
 
     var self = this;
     this.apiFetch('/api/event/' + matchId).then(function(data) {
       self.state.matchCache[matchId] = { match: data.event }; self.renderDetail(matchId);
     }).catch(function() { panel.innerHTML = T.empty('Maç detayları yüklenemedi'); });
+  },
+
+  closeDetail: function() {
+    document.querySelectorAll('.match-card').forEach(function(el) { el.classList.remove('selected'); });
+    var panel = document.getElementById('detailPanel');
+    if(panel) {
+        panel.classList.remove('open');
+        // CSS animasyonu bitene kadar içeriği silme
+        setTimeout(function() {
+            panel.innerHTML = '<div class="detail-empty"><div class="de-icon">⚽</div><div class="de-text">Detayları görmek için bir maça tıklayın</div></div>';
+        }, 300);
+    }
+    this.state.selectedMatch = null;
   },
 
   renderDetail: function(matchId) {
@@ -1039,7 +1129,7 @@ var V = {
     if (tab === 'summary') {
       var evData = this.state.matchCache[matchId].match;
       var topInfo = '<div style="font-size:13px; color:var(--text2); text-align:center; padding-bottom:16px; margin-bottom:16px; border-bottom:1px solid var(--border)">' + 
-                    (evData.stadium ? '🏟️ Stadyum: <span style="color:var(--text)">' + esc(evData.stadium) + '</span> &nbsp;&nbsp;' : '') +
+                    (evData.stadium ? '🏟️ Stadyum: <span style="color:var(--text)">' + esc(evData.stadium) + '</span>   ' : '') +
                     (evData.referee ? '👤 Hakem: <span style="color:var(--text)">' + esc(evData.referee) + '</span>' : '') + '</div>';
 
       this.apiFetch('/api/event/' + matchId + '/incidents').then(function(data) {
@@ -1113,6 +1203,34 @@ var T = {
     return html || this.empty('Detaylı istatistik mevcut değil');
   },
 
+  playerRow: function(p) {
+    var rc = '';
+    if (p.rating) {
+        var r = parseFloat(p.rating);
+        rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low');
+    }
+    
+    var posMap = {};
+    if (V.state.selectedSport === 'basketball') {
+        posMap = { G:'Guard', F:'Forvet', C:'Pivot', SG:'Şutör G.', PG:'Oyun K.', SF:'Kısa F.', PF:'Uzun F.' };
+    } else if (V.state.selectedSport === 'volleyball') {
+        posMap = { L:'Libero', S:'Pasör', MB:'Orta O.', OH:'Smaçör', OP:'Pasör Ç.' };
+    } else {
+        posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' };
+    }
+
+    var finalPos = posMap[p.position] || p.position || '';
+    var pDataStr = encodeURIComponent(JSON.stringify({ id: p.id, name: p.name, pos: finalPos, img: p.img, rating: p.rating, stats: p.stats || {} }));
+    var isFavP = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(p.id); });
+    var favIcon = '<div class="ll-fav ' + (isFavP ? 'faved' : '') + '" data-pid="' + p.id + '" onclick="V.toggleFavPlayer(\'' + pDataStr + '\', event)">★</div>';
+
+    return '<div class="ll-item" onclick="V.showPlayerModal(\'' + pDataStr + '\')">' +
+            '<div class="ll-num">' + (p.number || '-') + '</div>' +
+            '<div class="ll-info"><div class="ll-name">' + esc(p.name) + '</div><div class="ll-pos">' + finalPos + '</div></div>' +
+            (p.rating ? '<div class="ll-rating ' + rc + '">' + p.rating + '</div>' : '') +
+            favIcon + '</div>';
+  },
+
   lineups: function(data) {
     if (!data) return this.empty('Kadro bilgisi henüz açıklanmadı');
     var hp = (data.home && data.home.players) ? data.home.players : []; 
@@ -1167,21 +1285,10 @@ var T = {
         var lHtml = '<div class="lineup-section-title">' + title + '</div><div class="lineup-list">';
         players.forEach(function(p) {
             var rc = ''; if (p.rating) { var r = parseFloat(p.rating); rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'); }
-            
-            var posMap = {};
-            if (V.state.selectedSport === 'basketball') {
-                posMap = { G:'Guard', F:'Forvet', C:'Pivot', SG:'Şutör G.', PG:'Oyun K.', SF:'Kısa F.', PF:'Uzun F.' };
-            } else if (V.state.selectedSport === 'volleyball') {
-                posMap = { L:'Libero', S:'Pasör', MB:'Orta O.', OH:'Smaçör', OP:'Pasör Ç.' };
-            } else {
-                posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' };
-            }
-            
-            var finalPos = posMap[p.position] || p.position || '';
+            var posMap = (V.state.selectedSport === 'basketball') ? { G:'Guard', F:'Forvet', C:'Pivot' } : { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' }; var finalPos = posMap[p.position] || p.position || '';
             var pDataStr = encodeURIComponent(JSON.stringify({ id: p.id, name: p.name, pos: finalPos, img: p.img, rating: p.rating, stats: p.stats || {} }));
-            var isFavP = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(p.id); });
+            var isFavP = V.state.favPlayers.some(function(fp){ return fp.id === p.id; });
             var favIcon = '<div class="ll-fav ' + (isFavP ? 'faved' : '') + '" data-pid="' + p.id + '" onclick="V.toggleFavPlayer(\'' + pDataStr + '\', event)">★</div>';
-            
             lHtml += '<div class="ll-item" onclick="V.showPlayerModal(\'' + pDataStr + '\')"><div class="ll-num">' + (p.number || '-') + '</div>' +
                     '<div class="ll-info"><div class="ll-name">' + esc(p.name) + '</div><div class="ll-pos">' + finalPos + '</div></div>' +
                     (p.rating ? '<div class="ll-rating ' + rc + '">' + p.rating + '</div>' : '') + favIcon + '</div>';
@@ -1220,9 +1327,11 @@ var T = {
 
     for (var i = 0; i < incidents.length; i++) {
       var inc = incidents[i]; 
+      
       var type = inc.incidentType || inc.type;
       var iClass = inc.incidentClass || '';
       var pName = inc.player ? (inc.player.shortName || inc.player.name) : (inc.playerName || '');
+      
       var icon = '⏱️', detail = '';
       var playerNameHtml = pName ? '<div class="incident-player">' + esc(pName) + '</div>' : '';
       
@@ -1319,15 +1428,6 @@ var T = {
         STAT_DICT['fieldGoalsCombo'] = 'Saha İçi İsabet';
         delete s.fieldGoalsMade; delete s.fieldGoalsAttempted;
     }
-    
-    STAT_DICT['points'] = 'Sayı';
-    STAT_DICT['assists'] = 'Asist';
-    STAT_DICT['rebounds'] = 'Ribaund';
-    STAT_DICT['steals'] = 'Top Çalma';
-    STAT_DICT['blocks'] = 'Blok';
-    STAT_DICT['turnovers'] = 'Top Kaybı';
-    STAT_DICT['personalFouls'] = 'Bireysel Faul';
-    STAT_DICT['plusMinus'] = '+/-';
 
     var keys = Object.keys(s); var addedCount = 0;
     for(var i=0; i<keys.length; i++) {
