@@ -1029,8 +1029,8 @@ var V = {
         if(s.points !== undefined) sHtml += '<span style="font-size:12px; color:var(--text2); margin-left:6px;">🏀 '+s.points+' Sayı</span>';
         if(s.assists !== undefined) sHtml += '<span style="font-size:12px; color:var(--text2); margin-left:6px;">👟 '+s.assists+'</span>';
 
-        playersHtml += '<div onclick="V.showPlayerModal(' + fp.id + ')" style="background:var(--surface); border:1px solid var(--border); padding:14px; border-radius:var(--radius); width:210px; position:relative; cursor:pointer; transition:0.2s;" onmouseover="this.style.borderColor=\'var(--brand)\'" onmouseout="this.style.borderColor=\'var(--border)\'">' +
-          '<div onclick="V.toggleFavPlayer(' + fp.id + ', event)" style="position:absolute; top:12px; right:12px; color:var(--yellow); cursor:pointer; font-size:18px;">★</div>' +
+        playersHtml += '<div onclick="V.showPlayerModal(\'' + fp.id + '\')" style="background:var(--surface); border:1px solid var(--border); padding:14px; border-radius:var(--radius); width:210px; position:relative; cursor:pointer; transition:0.2s;" onmouseover="this.style.borderColor=\'var(--brand)\'" onmouseout="this.style.borderColor=\'var(--border)\'">' +
+          '<div onclick="V.toggleFavPlayer(\'' + fp.id + '\', event)" style="position:absolute; top:12px; right:12px; color:var(--yellow); cursor:pointer; font-size:18px;">★</div>' +
           '<div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;"><img src="'+safeImgUrl(fp.img)+'" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'" style="width:40px; height:40px; border-radius:50%; background:var(--bg2); object-fit:cover;">' +
           '<div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">'+esc(fp.name)+'</div><div style="font-size:11px; color:var(--text3)">'+esc(fp.pos)+'</div></div></div>' +
           '<div style="display:flex; align-items:center;">' + (sHtml || '<span style="font-size:11px; color:var(--text3)">İstatistik henüz yok</span>') + '</div>' +
@@ -1151,7 +1151,7 @@ var V = {
     if (tab === 'summary') {
       var evData = this.state.matchCache[matchId].match;
       var topInfo = '<div style="font-size:13px; color:var(--text2); text-align:center; padding-bottom:16px; margin-bottom:16px; border-bottom:1px solid var(--border)">' + 
-                    (evData.stadium ? '🏟️ Stadyum: <span style="color:var(--text)">' + esc(evData.stadium) + '</span>   ' : '') +
+                    (evData.stadium ? '🏟️ Stadyum: <span style="color:var(--text)">' + esc(evData.stadium) + '</span>   ' : '') +
                     (evData.referee ? '👤 Hakem: <span style="color:var(--text)">' + esc(evData.referee) + '</span>' : '') + '</div>';
 
       this.apiFetch('/api/event/' + matchId + '/incidents').then(function(data) {
@@ -1225,7 +1225,7 @@ var T = {
     return html || this.empty('Detaylı istatistik mevcut değil');
   },
 
-  // 🚀 DÜZELTİLDİ: Kadro motoru
+  // 🚀 DÜZELTİLDİ: Kadro motoru (API esnekliği ve String sarmalama eklendi)
   lineups: function(data) {
     if (!data) return this.empty('Kadro bilgisi henüz açıklanmadı');
     var hp = (data.home && data.home.players) ? data.home.players : []; 
@@ -1248,8 +1248,9 @@ var T = {
         var starters = players.filter(function(p){ return !p.substitute; });
         var groups = { G: [], D: [], M: [], F: [] }; var unknown = [];
         starters.forEach(function(p) {
-            if(p.position === 'G') groups.G.push(p); else if(p.position === 'D') groups.D.push(p);
-            else if(p.position === 'M') groups.M.push(p); else if(p.position === 'F') groups.F.push(p); else unknown.push(p);
+            var pPosRaw = p.position || (p.player && p.player.position) || '';
+            if(pPosRaw === 'G') groups.G.push(p); else if(pPosRaw === 'D') groups.D.push(p);
+            else if(pPosRaw === 'M') groups.M.push(p); else if(pPosRaw === 'F') groups.F.push(p); else unknown.push(p);
         });
         groups.M = groups.M.concat(unknown); 
         var lines = [groups.G, groups.D, groups.M, groups.F];
@@ -1259,21 +1260,31 @@ var T = {
             if(line.length === 0) return;
             pitchHtml += '<div class="pitch-row">';
             line.forEach(function(p) {
-                var posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' };
-                var finalPos = posMap[p.position] || p.position || '';
-                
-                // 🚀 RAM'E KAYDET (Tıklanınca açılması için)
-                var pObj = { id: p.id, name: p.name, pos: finalPos, img: p.img, rating: p.rating, stats: p.stats || {} };
-                V.state.playerData[p.id] = pObj;
+                // Güvenli Veri Ayıklama
+                var pId = p.id || (p.player && p.player.id) || '';
+                var pName = p.name || (p.player && (p.player.shortName || p.player.name)) || '';
+                var pImg = p.img || (p.player && p.player.id ? 'https://api.sofascore.app/api/v1/player/' + p.player.id + '/image' : '');
+                var pStats = p.stats || p.statistics || {};
+                var pRating = p.rating || (p.statistics && p.statistics.rating) || '';
+                var pPosRaw = p.position || (p.player && p.player.position) || '';
+                var pNum = p.number || p.shirtNumber || '';
 
-                var rc = ''; if (p.rating) { var r = parseFloat(p.rating); rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'); }
-                var num = p.number ? '<div class="p-num">'+p.number+'</div>' : '';
-                var isFavP = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(p.id); });
+                var posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' };
+                var finalPos = posMap[pPosRaw] || pPosRaw || '';
+                
+                // RAM'e Güvenli Kayıt
+                var pObj = { id: pId, name: pName, pos: finalPos, img: pImg, rating: pRating, stats: pStats };
+                V.state.playerData[pId] = pObj;
+
+                var rc = ''; if (pRating) { var r = parseFloat(pRating); rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'); }
+                var numHtml = pNum ? '<div class="p-num">'+pNum+'</div>' : '';
+                var isFavP = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(pId); });
                 var favStar = isFavP ? '<div style="position:absolute; top:-5px; right:-5px; font-size:14px; color:var(--yellow); z-index:3; text-shadow:0 0 2px #000">★</div>' : '';
 
-                pitchHtml += '<div class="pitch-player" onclick="V.showPlayerModal(' + p.id + ')">' +
-                             '<div class="p-img-wrap"><img src="'+safeImgUrl(p.img)+'" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'">' + num + favStar + '</div>' +
-                             (p.rating ? '<div class="p-rating '+rc+'">'+p.rating+'</div>' : '') + '<div class="p-name">'+esc(p.name)+'</div></div>';
+                // DİKKAT: ID, metin olması ihtimaline karşı tırnak işaretleriyle sarmalandı
+                pitchHtml += '<div class="pitch-player" onclick="V.showPlayerModal(\'' + pId + '\')">' +
+                             '<div class="p-img-wrap"><img src="'+safeImgUrl(pImg)+'" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'">' + numHtml + favStar + '</div>' +
+                             (pRating ? '<div class="p-rating '+rc+'">'+pRating+'</div>' : '') + '<div class="p-name">'+esc(pName)+'</div></div>';
             });
             pitchHtml += '</div>';
         });
@@ -1283,20 +1294,30 @@ var T = {
     var renderList = function(players, title) {
         var lHtml = '<div class="lineup-section-title">' + title + '</div><div class="lineup-list">';
         players.forEach(function(p) {
-            var posMap = (V.state.selectedSport === 'basketball') ? { G:'Guard', F:'Forvet', C:'Pivot' } : { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' }; 
-            var finalPos = posMap[p.position] || p.position || '';
-            
-            // 🚀 RAM'E KAYDET (Tıklanınca açılması için)
-            var pObj = { id: p.id, name: p.name, pos: finalPos, img: p.img, rating: p.rating, stats: p.stats || {} };
-            V.state.playerData[p.id] = pObj;
+            // Güvenli Veri Ayıklama
+            var pId = p.id || (p.player && p.player.id) || '';
+            var pName = p.name || (p.player && (p.player.shortName || p.player.name)) || '';
+            var pImg = p.img || (p.player && p.player.id ? 'https://api.sofascore.app/api/v1/player/' + p.player.id + '/image' : '');
+            var pStats = p.stats || p.statistics || {};
+            var pRating = p.rating || (p.statistics && p.statistics.rating) || '';
+            var pPosRaw = p.position || (p.player && p.player.position) || '';
+            var pNum = p.number || p.shirtNumber || '-';
 
-            var rc = ''; if (p.rating) { var r = parseFloat(p.rating); rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'); }
-            var isFavP = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(p.id); });
-            var favIcon = '<div class="ll-fav ' + (isFavP ? 'faved' : '') + '" data-pid="' + p.id + '" onclick="V.toggleFavPlayer(' + p.id + ', event)">★</div>';
+            var posMap = (V.state.selectedSport === 'basketball') ? { G:'Guard', F:'Forvet', C:'Pivot' } : { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' };
+            var finalPos = posMap[pPosRaw] || pPosRaw || '';
             
-            lHtml += '<div class="ll-item" onclick="V.showPlayerModal(' + p.id + ')"><div class="ll-num">' + (p.number || '-') + '</div>' +
-                    '<div class="ll-info"><div class="ll-name">' + esc(p.name) + '</div><div class="ll-pos">' + finalPos + '</div></div>' +
-                    (p.rating ? '<div class="ll-rating ' + rc + '">' + p.rating + '</div>' : '') + favIcon + '</div>';
+            // RAM'e Güvenli Kayıt
+            var pObj = { id: pId, name: pName, pos: finalPos, img: pImg, rating: pRating, stats: pStats };
+            V.state.playerData[pId] = pObj;
+
+            var rc = ''; if (pRating) { var r = parseFloat(pRating); rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'); }
+            var isFavP = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(pId); });
+            var favIcon = '<div class="ll-fav ' + (isFavP ? 'faved' : '') + '" data-pid="' + pId + '" onclick="V.toggleFavPlayer(\'' + pId + '\', event)">★</div>';
+            
+            // DİKKAT: ID metin olması ihtimaline karşı tırnak işaretleriyle sarmalandı
+            lHtml += '<div class="ll-item" onclick="V.showPlayerModal(\'' + pId + '\')"><div class="ll-num">' + pNum + '</div>' +
+                     '<div class="ll-info"><div class="ll-name">' + esc(pName) + '</div><div class="ll-pos">' + finalPos + '</div></div>' +
+                     (pRating ? '<div class="ll-rating ' + rc + '">' + pRating + '</div>' : '') + favIcon + '</div>';
         });
         return lHtml + '</div>';
     };
