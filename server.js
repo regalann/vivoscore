@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const cache = new Map();
-const CACHE_TTL = 2 * 60 * 1000; 
+const CACHE_TTL = 5 * 60 * 1000; // 5 dakika (2 API call/tarih olduğu için biraz uzun tutuyoruz)
 
 function getCached(key) {
   const entry = cache.get(key);
@@ -99,13 +99,34 @@ app.get('/api/odds/:matchId', async (req, res) => {
 app.get('/api/schedule/:sport/:date', async (req, res) => {
   try {
     const { sport, date } = req.params;
-    console.log(`[SCHEDULE] Tarih: ${date} | Spor: ${sport}`);
-    const data = await api(`/sport/${sport}/scheduled-events/${date}`);
-    const allEvents = data.events || [];
+    console.log(`[SCHEDULE] İstenen tarih (TR): ${date} | Spor: ${sport}`);
     
-    // KRİTİK FİLTRE: API UTC'ye göre döndürür, biz Türkiye saatine göre filtreleriz
-    const events = allEvents.filter(e => getTRDateString(e.startTimestamp) === date);
-    console.log(`[SCHEDULE] ${date} → API: ${allEvents.length} maç, Filtre sonrası: ${events.length} maç`);
+    // İstanbul UTC+3 olduğu için, TR gününün maçları 2 UTC gününe yayılır:
+    // TR 3 Nisan 00:00 = UTC 2 Nisan 21:00
+    // TR 3 Nisan 23:59 = UTC 3 Nisan 20:59
+    // Bu yüzden hem istenen günü hem bir önceki UTC günü çekip TR'ye göre filtreleriz
+    const prevDay = new Date(date + 'T00:00:00Z');
+    prevDay.setUTCDate(prevDay.getUTCDate() - 1);
+    const prevDateStr = prevDay.toISOString().slice(0, 10);
+    
+    const [todayData, prevData] = await Promise.all([
+      api(`/sport/${sport}/scheduled-events/${date}`).catch(() => ({ events: [] })),
+      api(`/sport/${sport}/scheduled-events/${prevDateStr}`).catch(() => ({ events: [] }))
+    ]);
+    
+    // İki günün maçlarını birleştir, ID bazında tekilleştir
+    const seen = new Set();
+    const combined = [];
+    for (const e of [...(todayData.events || []), ...(prevData.events || [])]) {
+      if (!seen.has(e.id)) { seen.add(e.id); combined.push(e); }
+    }
+    
+    // Türkiye saatine göre filtrele
+    const events = combined.filter(e => getTRDateString(e.startTimestamp) === date);
+    console.log(`[SCHEDULE] ${date} → API toplamı: ${combined.length}, TR filtre sonrası: ${events.length}`);
+    
+    // Saate göre sırala
+    events.sort((a, b) => a.startTimestamp - b.startTimestamp);
     
     const grouped = {};
     events.forEach(e => {
