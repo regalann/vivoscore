@@ -56,11 +56,10 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 .sport-item:hover { background: var(--surface2); color: var(--text); } .sport-item.active { background: var(--brand-dim); color: var(--brand); }
 .sport-item .flag { font-size: 18px; width: 24px; text-align: center; } 
 
-/* YENİ VE SABİTLENMİŞ KULLANICI PROFİL ALANI */
-.user-profile-section { padding: 16px 14px; border-top: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; }
+.user-profile-section { margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border); }
 .auth-btn { width: 100%; padding: 12px; background: var(--brand); color: #fff; font-weight: 800; font-size: 14px; border-radius: var(--radius-sm); transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;}
 .auth-btn:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px var(--brand-dim); }
-.user-info-box { display: none; align-items: center; gap: 10px; padding: 10px; background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border);}
+.user-info-box { display: none; align-items: center; gap: 10px; padding: 10px; background: var(--bg2); border-radius: var(--radius-sm); border: 1px solid var(--border);}
 .user-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--brand); }
 .user-details { flex: 1; min-width: 0; }
 .user-name { font-size: 13px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -260,28 +259,28 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
         <div id="sportList"></div>
       </div>
       
-      <div class="nav-section" style="margin-top:auto; padding-top:12px;">
+      <div class="nav-section" style="margin-top:auto; padding-top:12px; border-top:1px solid var(--border);">
         <div class="nav-label">AYARLAR</div>
         <div class="sport-item" id="themeToggleBtn" onclick="V.toggleTheme()">
           <span class="flag" id="themeIcon">🌙</span><span id="themeLabel">Karanlık Tema</span>
         </div>
       </div>
-    </nav>
 
-    <div class="user-profile-section">
-      <button id="loginBtnUI" class="auth-btn" onclick="V.openAuthModal()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-        Giriş Yap / Üye Ol
-      </button>
-      <div id="userProfileUI" class="user-info-box">
-        <img id="uAvatar" src="" class="user-avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
-        <div class="user-details">
-          <div id="uName" class="user-name">Kullanıcı</div>
-          <div class="user-logout" onclick="V.signOut()">Çıkış Yap</div>
+      <div class="user-profile-section">
+        <button id="loginBtnUI" class="auth-btn" onclick="V.openAuthModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+          Giriş Yap / Üye Ol
+        </button>
+        <div id="userProfileUI" class="user-info-box">
+          <img id="uAvatar" src="" class="user-avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
+          <div class="user-details">
+            <div id="uName" class="user-name">Kullanıcı</div>
+            <div class="user-logout" onclick="V.signOut()">Çıkış Yap</div>
+          </div>
         </div>
       </div>
-    </div>
 
+    </nav>
   </aside>
 
   <main class="main">
@@ -368,14 +367,21 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 
 <script>
 // ═══════════════════════════════════════════════
-//  SUPABASE BAĞLANTISI
+//  SUPABASE BAĞLANTISI (GÜVENLİ BAŞLATMA)
 // ═══════════════════════════════════════════════
 const SUPABASE_URL = 'https://heflhadmyaubzkaldgwz.supabase.co'; 
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlZmxoYWRteWF1YnprYWxkZ3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODcwODMsImV4cCI6MjA5MDY2MzA4M30.mpnk_9B38xDDjYQaoOZsziThLFrZW_HzF-j6XoKwOzM';
 
 let supabase = null;
-if(SUPABASE_URL !== 'SUPABASE_URL_BURAYA') {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+try {
+  // Eğer tarayıcı eklentileri (adblocker vb.) kütüphaneyi engellediyse site çökmesin diye zırh eklendi
+  if (typeof window.supabase !== 'undefined' && SUPABASE_URL !== 'SUPABASE_URL_BURAYA') {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } else {
+    console.warn("⚠️ Supabase yüklenemedi (Reklam engelleyici/Adblocker devrede olabilir). Üyelik sistemi devre dışı bırakıldı, ancak canlı skorlar çalışmaya devam ediyor.");
+  }
+} catch(e) {
+  console.error("Supabase Hatası:", e);
 }
 
 function esc(str) {
@@ -432,7 +438,7 @@ var V = {
     theme: safeStorage.get('vivo_theme', 'dark'),
     showOdds: safeStorage.get('vivo_show_odds', false),
     betSlip: [],
-    user: null // Supabase Kullanıcısı
+    user: null
   },
 
   init: function() { 
@@ -443,11 +449,11 @@ var V = {
     if(!this.state.showOdds) document.body.classList.add('hide-odds');
     this.updateOddsBtn();
     
-    // SUPABASE AUTH DİNLEYİCİSİ
     if(supabase) {
       supabase.auth.getSession().then(function(res) {
         if(res.data && res.data.session) V.updateAuthUI(res.data.session.user);
-      });
+      }).catch(function(e){ console.error("Auth error:", e); });
+      
       supabase.auth.onAuthStateChange(function(event, session) {
         V.updateAuthUI(session ? session.user : null);
       });
@@ -455,7 +461,7 @@ var V = {
   },
 
   openAuthModal: function() {
-    if(!supabase) { alert("Supabase API anahtarları eksik. Lütfen index.html dosyasına ekleyin."); return; }
+    if(!supabase) { alert("Güvenlik duvarı nedeniyle üyelik sistemi şu an başlatılamadı. (Adblocker veya tarayıcı kalkanı kullanıyor olabilirsiniz)."); return; }
     document.getElementById('authModalOverlay').style.display = 'flex';
   },
 
@@ -624,8 +630,8 @@ var V = {
         var s = fp.stats || {}; if(s.goals !== undefined) sHtml += '<span style="font-size:12px; color:var(--text2); margin-left:6px;">⚽ '+s.goals+'</span>'; if(s.assists !== undefined) sHtml += '<span style="font-size:12px; color:var(--text2); margin-left:6px;">👟 '+s.assists+'</span>';
         playersHtml += '<div onclick="V.showPlayerModal(\'' + pDataStr + '\')" style="background:var(--surface); border:1px solid var(--border); padding:14px; border-radius:var(--radius); width:210px; position:relative; cursor:pointer; transition:0.2s;" onmouseover="this.style.borderColor=\'var(--brand)\'" onmouseout="this.style.borderColor=\'var(--border)\'">' +
           '<div onclick="V.toggleFavPlayer(\'' + pDataStr + '\', event)" style="position:absolute; top:12px; right:12px; color:var(--yellow); cursor:pointer; font-size:18px;">★</div>' +
-          '<div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;"><img src="'+fp.img+'" style="width:40px; height:40px; border-radius:50%; background:var(--bg2); object-fit:cover;">' +
-          '<div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">'+fp.name+'</div><div style="font-size:11px; color:var(--text3)">'+fp.pos+'</div></div></div>' +
+          '<div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;"><img src="'+safeImgUrl(fp.img)+'" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'" style="width:40px; height:40px; border-radius:50%; background:var(--bg2); object-fit:cover;">' +
+          '<div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">'+esc(fp.name)+'</div><div style="font-size:11px; color:var(--text3)">'+esc(fp.pos)+'</div></div></div>' +
           '<div style="display:flex; align-items:center;">' + (sHtml || '<span style="font-size:11px; color:var(--text3)">İstatistik henüz yok</span>') + '</div></div>';
       }
       playersHtml += '</div></div>';
@@ -931,7 +937,11 @@ var T = {
   }
 };
 
-try { V.init(); } catch(err) { console.error("VivoScore Başlatılma Hatası:", err); }
+try {
+  V.init();
+} catch(err) {
+  console.error("VivoScore Başlatılma Hatası:", err);
+}
 </script>
 </body>
 </html>
