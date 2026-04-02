@@ -1,19 +1,126 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const RAPID_API_KEY = process.env.RAPID_API_KEY || "03947fd0b1mshc18ef7cc86815b9p1068cdjsnca79c2737b74";
+// ═══════════════════════════════════════════════
+//  GÜVENLİK: API Key sadece environment variable'dan
+// ═══════════════════════════════════════════════
+const RAPID_API_KEY = process.env.RAPID_API_KEY;
+if (!RAPID_API_KEY) console.warn('⚠️ RAPID_API_KEY env değişkeni tanımlı değil!');
 const BASE_URL = 'https://sportapi7.p.rapidapi.com/api/v1';
 
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+// ═══════════════════════════════════════════════
+//  GÜVENLİK: Helmet — HTTP güvenlik başlıkları
+// ═══════════════════════════════════════════════
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],  // inline script kullandığımız için
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "https://api.sofascore.app", "data:"],
+      connectSrc: ["'self'"],
+      frameAncestors: ["'none'"],      // clickjacking koruması
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+    }
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" },  // sofascore görselleri için
+  referrerPolicy: { policy: "no-referrer" },
+  hsts: { maxAge: 31536000, includeSubDomains: true },
+}));
 
+// ═══════════════════════════════════════════════
+//  GÜVENLİK: CORS — sadece kendi origin'imiz
+// ═══════════════════════════════════════════════
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGIN || true,  // Render'da kendi domain'ini set et
+  methods: ['GET'],
+  optionsSuccessStatus: 200
+}));
+
+// ═══════════════════════════════════════════════
+//  GÜVENLİK: Rate Limiting — DDoS & brute force koruması
+// ═══════════════════════════════════════════════
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,   // 1 dakika
+  max: 60,                     // dakikada max 60 istek
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Çok fazla istek gönderdiniz. Lütfen bekleyin.' }
+});
+app.use('/api/', apiLimiter);
+
+app.use(express.json({ limit: '10kb' }));  // Body size limiti
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '1h',
+  setHeaders: (res) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+  }
+}));
+
+// ═══════════════════════════════════════════════
+//  GÜVENLİK: Input Validation
+// ═══════════════════════════════════════════════
+const ALLOWED_SPORTS = new Set([
+  'football', 'basketball', 'tennis', 'esports', 'volleyball',
+  'ice-hockey', 'american-football', 'motorsport', 'mma',
+  'cricket', 'handball', 'rugby', 'baseball'
+]);
+
+function validateSport(sport) {
+  return ALLOWED_SPORTS.has(sport);
+}
+
+function validateDate(date) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(date) && !isNaN(new Date(date + 'T00:00:00Z').getTime());
+}
+
+function validateId(id) {
+  return /^\d+$/.test(id);
+}
+
+// ═══════════════════════════════════════════════
+//  GÜVENLİK: XSS Sanitization — HTML etiketlerini temizle
+// ═══════════════════════════════════════════════
+function sanitizeString(str) {
+  if (typeof str !== 'string') return str;
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+function sanitizeObject(obj) {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj === 'string') return sanitizeString(obj);
+  if (typeof obj === 'number' || typeof obj === 'boolean') return obj;
+  if (Array.isArray(obj)) return obj.map(sanitizeObject);
+  if (typeof obj === 'object') {
+    const clean = {};
+    for (const [key, val] of Object.entries(obj)) {
+      clean[key] = sanitizeObject(val);
+    }
+    return clean;
+  }
+  return obj;
+}
+
+// ═══════════════════════════════════════════════
+//  CACHE & API
+// ═══════════════════════════════════════════════
 const cache = new Map();
-const CACHE_TTL = 5 * 60 * 1000; // 5 dakika (2 API call/tarih olduğu için biraz uzun tutuyoruz)
+const CACHE_TTL = 5 * 60 * 1000;
 
 function getCached(key) {
   const entry = cache.get(key);
@@ -22,69 +129,60 @@ function getCached(key) {
 }
 function setCache(key, data) {
   cache.set(key, { data, ts: Date.now() });
+  // Cache boyutunu kontrol et (memory leak önleme)
+  if (cache.size > 500) {
+    const oldest = [...cache.entries()].sort((a, b) => a[1].ts - b[1].ts);
+    for (let i = 0; i < 100; i++) cache.delete(oldest[i][0]);
+  }
 }
 
 async function api(endpoint) {
+  if (!RAPID_API_KEY) throw new Error('API anahtarı tanımlı değil');
   const cached = getCached(endpoint);
-  if (cached) { console.log(`[CACHE HIT] ${endpoint}`); return cached; }
-  console.log(`[API CALL] ${endpoint}`);
+  if (cached) return cached;
+  console.log(`[API] ${endpoint}`);
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     headers: {
       'x-rapidapi-key': RAPID_API_KEY,
       'x-rapidapi-host': 'sportapi7.p.rapidapi.com'
-    }
+    },
+    signal: AbortSignal.timeout(10000)  // 10 saniye timeout
   });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
-    console.error(`[API HATA] ${endpoint} → ${res.status} ${res.statusText}`, body.slice(0, 200));
-    throw new Error(`API ${res.status}: ${res.statusText}`);
+    console.error(`[API HATA] ${endpoint} → ${res.status}`, body.slice(0, 200));
+    throw new Error(`API ${res.status}`);
   }
   const data = await res.json();
-  console.log(`[API OK] ${endpoint} → ${data.events ? data.events.length + ' events' : 'data received'}`);
   setCache(endpoint, data);
   return data;
 }
 
-// ─── GÜVENİLİR TÜRKİYE TARİH FONKSİYONU ───
-// Intl 'en-CA' locale bazı Node.js sürümlerinde YYYY-MM-DD yerine farklı format verebilir
-// Bu yüzden formatToParts kullanarak elle birleştiriyoruz
+// ═══════════════════════════════════════════════
+//  TÜRKİYE TARİH FONKSİYONLARI
+// ═══════════════════════════════════════════════
 function getTRDateString(timestamp) {
   const d = new Date(timestamp * 1000);
   const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Europe/Istanbul',
-    year: 'numeric', month: '2-digit', day: '2-digit'
+    timeZone: 'Europe/Istanbul', year: 'numeric', month: '2-digit', day: '2-digit'
   }).formatToParts(d);
-  const y = parts.find(p => p.type === 'year').value;
-  const m = parts.find(p => p.type === 'month').value;
-  const dd = parts.find(p => p.type === 'day').value;
-  return y + '-' + m + '-' + dd;
+  return parts.find(p => p.type === 'year').value + '-' +
+         parts.find(p => p.type === 'month').value + '-' +
+         parts.find(p => p.type === 'day').value;
 }
 
 function getTRTimeString(timestamp) {
   const d = new Date(timestamp * 1000);
   const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Europe/Istanbul',
-    hour: '2-digit', minute: '2-digit', hour12: false
+    timeZone: 'Europe/Istanbul', hour: '2-digit', minute: '2-digit', hour12: false
   }).formatToParts(d);
-  const h = parts.find(p => p.type === 'hour').value;
-  const min = parts.find(p => p.type === 'minute').value;
-  return h + ':' + min;
+  return parts.find(p => p.type === 'hour').value + ':' +
+         parts.find(p => p.type === 'minute').value;
 }
 
-// Debug endpoint — tarayıcıdan /api/debug çağırarak tarih fonksiyonlarını test et
-app.get('/api/debug', (req, res) => {
-  const now = Math.floor(Date.now() / 1000);
-  const testDate = getTRDateString(now);
-  const testTime = getTRTimeString(now);
-  res.json({
-    serverTime: new Date().toISOString(),
-    trDate: testDate,
-    trTime: testTime,
-    nodeVersion: process.version,
-    test: 'Bu değerler YYYY-MM-DD ve HH:MM formatında olmalı'
-  });
-});
-
+// ═══════════════════════════════════════════════
+//  EVENT FORMATTER (sanitized output)
+// ═══════════════════════════════════════════════
 function formatEvent(e) {
   const ts = e.startTimestamp * 1000;
   const status = e.status || {};
@@ -99,122 +197,122 @@ function formatEvent(e) {
   } else if (status.type === 'finished') statusText = 'finished';
   else if (status.type === 'notstarted' || status.type === 'canceled') statusText = 'scheduled';
 
-  return {
-    id: e.id, status: statusText, minute, timestamp: ts,
+  // TÜM string alanlar sanitize edilir
+  return sanitizeObject({
+    id: Number(e.id) || 0,
+    status: statusText,
+    minute,
+    timestamp: ts,
     date: getTRDateString(e.startTimestamp),
     time: getTRTimeString(e.startTimestamp),
-    tournament: { id: e.tournament?.uniqueTournament?.id, name: e.tournament?.uniqueTournament?.name || e.tournament?.name },
-    homeTeam: { id: e.homeTeam?.id, name: e.homeTeam?.name, shortName: e.homeTeam?.shortName || e.homeTeam?.name, img: `https://api.sofascore.app/api/v1/team/${e.homeTeam?.id}/image` },
-    awayTeam: { id: e.awayTeam?.id, name: e.awayTeam?.name, shortName: e.awayTeam?.shortName || e.awayTeam?.name, img: `https://api.sofascore.app/api/v1/team/${e.awayTeam?.id}/image` },
-    homeScore: e.homeScore?.current ?? null, awayScore: e.awayScore?.current ?? null,
-    htHome: e.homeScore?.period1 ?? null, htAway: e.awayScore?.period1 ?? null,
-    referee: e.referee?.name || null, stadium: e.venue?.stadium?.name || null
-  };
+    tournament: {
+      id: Number(e.tournament?.uniqueTournament?.id) || 0,
+      name: e.tournament?.uniqueTournament?.name || e.tournament?.name || ''
+    },
+    homeTeam: {
+      id: Number(e.homeTeam?.id) || 0,
+      name: e.homeTeam?.name || '',
+      shortName: e.homeTeam?.shortName || e.homeTeam?.name || '',
+      img: `https://api.sofascore.app/api/v1/team/${Number(e.homeTeam?.id) || 0}/image`
+    },
+    awayTeam: {
+      id: Number(e.awayTeam?.id) || 0,
+      name: e.awayTeam?.name || '',
+      shortName: e.awayTeam?.shortName || e.awayTeam?.name || '',
+      img: `https://api.sofascore.app/api/v1/team/${Number(e.awayTeam?.id) || 0}/image`
+    },
+    homeScore: e.homeScore?.current ?? null,
+    awayScore: e.awayScore?.current ?? null,
+    htHome: e.homeScore?.period1 ?? null,
+    htAway: e.awayScore?.period1 ?? null,
+    referee: e.referee?.name || null,
+    stadium: e.venue?.stadium?.name || null
+  });
 }
 
-// ORAN MOTORU
-app.get('/api/odds/:matchId', async (req, res) => {
+// ═══════════════════════════════════════════════
+//  ORAN MOTORU
+// ═══════════════════════════════════════════════
+app.get('/api/odds/:matchId', (req, res) => {
+  if (!validateId(req.params.matchId)) return res.status(400).json({ error: 'Geçersiz ID' });
   const { matchId } = req.params;
-  try {
-    const cachedOdds = getCached(`odds_${matchId}`);
-    if (cachedOdds) return res.json(cachedOdds);
-    const oddsData = {
-      match: { home: (Math.random()*(1.5)+1.2).toFixed(2), draw: (Math.random()*(1.2)+2.8).toFixed(2), away: (Math.random()*(2.5)+2.5).toFixed(2) },
-      goals: { over: (Math.random()*(0.6)+1.5).toFixed(2), under: (Math.random()*(0.6)+1.6).toFixed(2) },
-      btts: { yes: (Math.random()*(0.4)+1.6).toFixed(2), no: (Math.random()*(0.4)+1.8).toFixed(2) }
-    };
-    setCache(`odds_${matchId}`, oddsData);
-    res.json(oddsData);
-  } catch (err) { res.status(500).json({ error: "error" }); }
+  const cachedOdds = getCached(`odds_${matchId}`);
+  if (cachedOdds) return res.json(cachedOdds);
+  const oddsData = {
+    match: { home: (Math.random()*(1.5)+1.2).toFixed(2), draw: (Math.random()*(1.2)+2.8).toFixed(2), away: (Math.random()*(2.5)+2.5).toFixed(2) },
+    goals: { over: (Math.random()*(0.6)+1.5).toFixed(2), under: (Math.random()*(0.6)+1.6).toFixed(2) },
+    btts: { yes: (Math.random()*(0.4)+1.6).toFixed(2), no: (Math.random()*(0.4)+1.8).toFixed(2) }
+  };
+  setCache(`odds_${matchId}`, oddsData);
+  res.json(oddsData);
 });
 
-// ─── HAVUZ SİSTEMİ: Tüm maçları depola, client filtrelesin ───
-const eventPool = new Map();  // eventId -> raw event
-const poolFetchLog = new Map(); // "sport:utcDate" -> fetch zamanı
+// ═══════════════════════════════════════════════
+//  HAVUZ SİSTEMİ
+// ═══════════════════════════════════════════════
+const eventPool = new Map();
+const poolFetchLog = new Map();
 
 app.get('/api/schedule/:sport/:date', async (req, res) => {
+  const { sport, date } = req.params;
+
+  // GÜVENLİK: Input validation
+  if (!validateSport(sport)) return res.status(400).json({ error: 'Geçersiz spor dalı' });
+  if (!validateDate(date)) return res.status(400).json({ error: 'Geçersiz tarih formatı (YYYY-MM-DD)' });
+
   try {
-    const { sport, date } = req.params;
-    console.log(`[SCHEDULE] İstenen TR tarih: ${date} | Spor: ${sport}`);
-    
-    // İstanbul UTC+3 → TR gününü kapsamak için hem istenilen hem önceki UTC günü çekmeliyiz
-    // Ama akıllı cache ile gereksiz API çağrısı yapmayız
     const prevDay = new Date(date + 'T00:00:00Z');
     prevDay.setUTCDate(prevDay.getUTCDate() - 1);
     const prevDateStr = prevDay.toISOString().slice(0, 10);
-    
-    const datesToFetch = [date, prevDateStr];
-    
-    for (const d of datesToFetch) {
+
+    for (const d of [date, prevDateStr]) {
       const poolKey = sport + ':' + d;
       const lastFetch = poolFetchLog.get(poolKey);
       if (!lastFetch || Date.now() - lastFetch > CACHE_TTL) {
         try {
           const data = await api(`/sport/${sport}/scheduled-events/${d}`);
-          const evts = data.events || [];
-          console.log(`[POOL] ${sport}/${d} → ${evts.length} maç havuza eklendi`);
-          evts.forEach(e => { e._sport = sport; eventPool.set(e.id, e); });
+          (data.events || []).forEach(e => { e._sport = sport; eventPool.set(e.id, e); });
           poolFetchLog.set(poolKey, Date.now());
         } catch(apiErr) {
-          console.error(`[POOL HATA] ${d}: ${apiErr.message}`);
+          console.error(`[POOL] ${sport}/${d}: ${apiErr.message}`);
         }
-      } else {
-        console.log(`[POOL CACHE] ${d} zaten havuzda`);
       }
     }
-    
-    // Havuzdan spor + Türkiye tarihine göre filtrele
+
     const events = [];
     for (const [id, e] of eventPool) {
-      if (e._sport !== sport) continue;
-      const trDate = getTRDateString(e.startTimestamp);
-      if (trDate === date) events.push(e);
+      if (e._sport === sport && getTRDateString(e.startTimestamp) === date) events.push(e);
     }
-    
     events.sort((a, b) => a.startTimestamp - b.startTimestamp);
-    console.log(`[SCHEDULE] ${sport}/${date} → Havuz: ${eventPool.size} toplam, Bu spor+gün: ${events.length} maç`);
-    
-    // Debug: ilk 3 maçın bilgilerini logla
-    if (events.length > 0) {
-      events.slice(0, 3).forEach(e => {
-        console.log(`  → ${getTRDateString(e.startTimestamp)} ${getTRTimeString(e.startTimestamp)} | ${e.homeTeam?.shortName} vs ${e.awayTeam?.shortName}`);
-      });
-    } else if (eventPool.size > 0) {
-      // Filtre 0 döndüyse havuzdaki tarihleri göster (debug)
-      const sampleDates = new Set();
-      for (const [id, e] of eventPool) {
-        sampleDates.add(getTRDateString(e.startTimestamp));
-        if (sampleDates.size >= 5) break;
-      }
-      console.log(`[DEBUG] Havuzdaki TR tarihleri: ${[...sampleDates].join(', ')} | Aranan: ${date}`);
-    }
-    
+
     const grouped = {};
     events.forEach(e => {
-      const m = formatEvent(e);
+      const m = formatEvent(e);  // sanitize edilmiş
       const tId = e.tournament?.uniqueTournament?.id || 'other';
       if (!grouped[tId]) grouped[tId] = { name: m.tournament.name, matches: [] };
       grouped[tId].matches.push(m);
     });
-    
-    res.json({ groups: grouped, date: date, total: events.length, poolSize: eventPool.size });
+
+    res.json({ groups: grouped, date, total: events.length });
   } catch (err) {
-    console.error(`[SCHEDULE HATA] ${req.params.date}:`, err.message);
-    res.status(500).json({ error: err.message, date: req.params.date });
+    console.error(`[SCHEDULE] ${date}:`, err.message);
+    res.status(500).json({ error: 'Sunucu hatası' });  // detay sızdırma
   }
 });
 
-// Havuzu periyodik temizle (24 saatten eski maçları sil)
+// Havuz temizliği
 setInterval(() => {
-  const cutoff = Math.floor(Date.now() / 1000) - 172800; // 48 saat
-  let cleaned = 0;
+  const cutoff = Math.floor(Date.now() / 1000) - 172800;
   for (const [id, e] of eventPool) {
-    if (e.startTimestamp < cutoff) { eventPool.delete(id); cleaned++; }
+    if (e.startTimestamp < cutoff) eventPool.delete(id);
   }
-  if (cleaned > 0) console.log(`[POOL CLEANUP] ${cleaned} eski maç silindi, kalan: ${eventPool.size}`);
 }, 30 * 60 * 1000);
 
+// ═══════════════════════════════════════════════
+//  CANLI MAÇLAR
+// ═══════════════════════════════════════════════
 app.get('/api/live/:sport', async (req, res) => {
+  if (!validateSport(req.params.sport)) return res.status(400).json({ error: 'Geçersiz spor' });
   try {
     const data = await api(`/sport/${req.params.sport}/events/live`);
     const grouped = {};
@@ -225,46 +323,74 @@ app.get('/api/live/:sport', async (req, res) => {
       grouped[tId].matches.push(m);
     });
     res.json({ groups: grouped });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// ═══════════════════════════════════════════════
+//  MAÇ DETAYLARI (tümü ID validation'lı ve sanitized)
+// ═══════════════════════════════════════════════
 app.get('/api/event/:id/stats', async (req, res) => {
+  if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
     const data = await api(`/event/${req.params.id}/statistics`);
-    res.json({ statistics: [], raw: data.statistics });
-  } catch (err) { res.status(500).json({ error: "err" }); }
+    res.json(sanitizeObject({ statistics: [], raw: data.statistics }));
+  } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
 app.get('/api/event/:id/lineups', async (req, res) => {
+  if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
     const data = await api(`/event/${req.params.id}/lineups`);
-    const formatPlayers = (td) => (td?.players || []).map(p => ({
-        id: p.player?.id, name: p.player?.shortName || p.player?.name,
-        number: p.shirtNumber, position: p.position, substitute: p.substitute || false,
-        rating: p.statistics?.rating ? parseFloat(p.statistics.rating).toFixed(1) : null,
-        img: `https://api.sofascore.app/api/v1/player/${p.player?.id}/image`,
-        stats: p.statistics || {}
+    const formatPlayers = (td) => (td?.players || []).map(p => sanitizeObject({
+      id: Number(p.player?.id) || 0,
+      name: p.player?.shortName || p.player?.name || '',
+      number: p.shirtNumber,
+      position: p.position,
+      substitute: p.substitute || false,
+      rating: p.statistics?.rating ? parseFloat(p.statistics.rating).toFixed(1) : null,
+      img: `https://api.sofascore.app/api/v1/player/${Number(p.player?.id) || 0}/image`,
+      stats: p.statistics || {}
     }));
     res.json({
-      home: { formation: data.home?.formation, players: formatPlayers(data.home) },
-      away: { formation: data.away?.formation, players: formatPlayers(data.away) }
+      home: { formation: sanitizeString(data.home?.formation || ''), players: formatPlayers(data.home) },
+      away: { formation: sanitizeString(data.away?.formation || ''), players: formatPlayers(data.away) }
     });
-  } catch (err) { res.status(500).json({ error: "err" }); }
+  } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
 app.get('/api/event/:id/incidents', async (req, res) => {
+  if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
     const data = await api(`/event/${req.params.id}/incidents`);
-    res.json({ incidents: data.incidents || [] });
-  } catch (err) { res.status(500).json({ error: "err" }); }
+    res.json(sanitizeObject({ incidents: data.incidents || [] }));
+  } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
 app.get('/api/event/:id', async (req, res) => {
+  if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
     const data = await api(`/event/${req.params.id}`);
     res.json({ event: formatEvent(data.event) });
-  } catch (err) { res.status(500).json({ error: "err" }); }
+  } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// Debug — sadece development'ta
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/api/debug', (req, res) => {
+    const now = Math.floor(Date.now() / 1000);
+    res.json({ trDate: getTRDateString(now), trTime: getTRTimeString(now), node: process.version });
+  });
+}
+
+// Catch-all: 404 yerine index.html
 app.get('*', (_, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.listen(PORT, () => console.log(`🟢 VivoScore Pro Fix Aktif: ${PORT}`));
+
+// ═══════════════════════════════════════════════
+//  GLOBAL ERROR HANDLER
+// ═══════════════════════════════════════════════
+app.use((err, req, res, next) => {
+  console.error('[UNHANDLED]', err.message);
+  res.status(500).json({ error: 'Beklenmeyen sunucu hatası' });
+});
+
+app.listen(PORT, () => console.log(`🟢 VivoScore Güvenli Mod: ${PORT}`));
