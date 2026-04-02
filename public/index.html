@@ -127,7 +127,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .match-fav { width: 32px; flex-shrink: 0; text-align: center; font-size: 18px; color: var(--text3); cursor: pointer; transition: var(--transition); }
 .match-fav:hover, .match-fav.faved { color: var(--yellow); }
 
-.match-odds-wrapper { flex: 1; display: flex; gap: 12px; align-items: center; padding-left: 16px; min-height: 40px; overflow-x: auto; justify-content: flex-start; }
+.match-odds-wrapper { flex: 1; display: flex; gap: 12px; align-items: center; padding-left: 16px; min-height: 40px; overflow-x: auto; justify-content: flex-start; min-width: 0; }
 .odds-group { display: flex; gap: 2px; background: var(--bg2); padding: 8px 4px 4px; border-radius: 6px; border: 1px solid var(--border); position: relative; margin-top: 6px;}
 .odds-group-title { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 800; color: var(--text3); background: var(--surface); padding: 0 6px; border-radius: 4px; white-space: nowrap;}
 .odd-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; text-align: center; min-width: 42px; cursor: pointer; transition: 0.2s; user-select: none; }
@@ -183,7 +183,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .stat-bar-track { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: var(--surface2); gap: 2px; }
 .stat-bar-home { height:100%; border-radius:3px; background:var(--brand); transition:width 0.6s ease; } .stat-bar-away { height:100%; border-radius:3px; background:var(--orange); transition:width 0.6s ease; margin-left:auto; }
 
-/* 🚀 YENİ SAHA GÖRÜNÜMÜ & YEDEKLER LİSTESİ 🚀 */
+/* SAHA GÖRÜNÜMÜ & YEDEKLER LİSTESİ */
 .team-lineup-wrapper { margin-bottom: 30px; }
 .team-lineup-header { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 12px; text-align: center; background: var(--bg2); padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border);}
 .formation-label { text-align:center; font-size:14px; font-weight:700; color:var(--brand); margin-bottom:12px; }
@@ -275,6 +275,38 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .social-btn:hover { background: var(--surface2); border-color: var(--text3); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 .social-btn svg { width: 22px; height: 22px; }
 .auth-error { padding: 10px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 14px; display: none; font-weight: 600; }
+
+/* 💻 LAPTOP & KÜÇÜK EKRANLAR (13" ve 14" - 1025px ile 1440px arası) */
+@media (max-width: 1440px) and (min-width: 1025px) {
+    .sidebar { width: 200px; }
+    .detail-panel { width: 340px; }
+    .match-teams { min-width: 150px; max-width: 210px; padding: 0 8px; }
+    .team-name { font-size: 14px; }
+    .match-odds-wrapper { padding-left: 8px; gap: 6px; min-width: 0; }
+    .odds-group { padding: 6px 2px 2px; gap: 2px; }
+    .odd-btn { min-width: 36px; padding: 4px; }
+    .odd-val { font-size: 12px; }
+    .odd-lbl { font-size: 10px; }
+    .match-score-wrap { gap: 8px; }
+    .detail-team { width: 90px; }
+    .detail-team img { width: 44px; height: 44px; }
+    .detail-score { font-size: 26px; }
+    .pm-grid { grid-template-columns: 1fr; }
+}
+
+/* 📱 TABLET (769px ile 1024px arası) */
+@media (max-width: 1024px) and (min-width: 769px) { 
+    .sidebar { width: 180px; }
+    .detail-panel { width: 320px; }
+    .match-teams { min-width: 130px; max-width: 180px; padding: 0 8px; }
+    .team-name { font-size: 13px; }
+    .match-odds-wrapper { display: none !important; }
+    .nav-label { font-size: 10px; }
+    .detail-team { width: 80px; }
+    .detail-team img { width: 40px; height: 40px; }
+    .detail-score { font-size: 24px; }
+    .pm-grid { grid-template-columns: 1fr; }
+}
 
 /* MOBİL TASARIM */
 @media (max-width: 768px) {
@@ -444,13 +476,6 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     .pitch-player img { width: 30px; height: 30px; }
     .pitch-player .p-name { font-size: 9px; max-width: 42px; }
     .pm-grid { grid-template-columns: 1fr; }
-}
-
-/* TABLET */
-@media (max-width: 1200px) and (min-width: 769px) { 
-    .detail-panel { width: 340px; }
-    .match-teams { min-width: 140px; max-width: 200px; }
-    .match-odds-wrapper { display: none !important; }
 }
 
 /* LANDSCAPE MOBİL */
@@ -1692,5 +1717,3 @@ try { V.init(); } catch(err) { console.error("VivoScore Başlatılma Hatası:", 
 </script>
 </body>
 </html>
-
-}
