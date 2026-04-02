@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
 const app = express();
@@ -15,24 +14,19 @@ if (!RAPID_API_KEY) console.warn('⚠️ RAPID_API_KEY env değişkeni tanımlı
 const BASE_URL = 'https://sportapi7.p.rapidapi.com/api/v1';
 
 // ═══════════════════════════════════════════════
-//  GÜVENLİK: Helmet — HTTP güvenlik başlıkları
+//  GÜVENLİK: Temel HTTP başlıkları (Helmet yerine manuel)
 // ═══════════════════════════════════════════════
-app.use(helmet({
-  contentSecurityPolicy: false,
-  crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-  referrerPolicy: { policy: "no-referrer" },
-  hsts: { maxAge: 31536000, includeSubDomains: true },
-}));
+app.use(function(req, res, next) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  next();
+});
 
 // ═══════════════════════════════════════════════
-//  GÜVENLİK: CORS — sadece kendi origin'imiz
+//  GÜVENLİK: CORS
 // ═══════════════════════════════════════════════
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN || true,  // Render'da kendi domain'ini set et
-  methods: ['GET'],
-  optionsSuccessStatus: 200
-}));
+app.use(cors());
 
 // ═══════════════════════════════════════════════
 //  GÜVENLİK: Rate Limiting — DDoS & brute force koruması
