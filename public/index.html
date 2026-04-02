@@ -7,7 +7,9 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cline x1='4' y1='3' x2='4' y2='21' stroke='%238b949e' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M4 4L19 4C19 4 21 4 21 6C21 8 19 8 19 8L4 8' fill='%233b82f6' stroke='%233b82f6' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M4 8L16 8C16 8 18 8 18 10C18 12 16 12 16 12L4 12' fill='%23ffffff' stroke='%233b82f6' stroke-width='0.8' stroke-linejoin='round'/%3E%3Ccircle cx='4' cy='3' r='1.5' fill='%233b82f6'/%3E%3C/svg%3E">
 <title>VivoScore Pro - Ultimate Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/supabase/2.38.4/supabase.min.js"></script>
+
 <style>
 :root {
   --bg: #0d1117; --bg2: #131920; --surface: #161b22; --surface2: #1c2230;
@@ -64,7 +66,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .auth-btn { width: 100%; padding: 12px; background: var(--brand); color: #fff; font-weight: 800; font-size: 14px; border-radius: var(--radius-sm); transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;}
 .auth-btn:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px var(--brand-dim); }
 .user-info-box { display: none; align-items: center; gap: 10px; padding: 10px; background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border);}
-.user-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--brand); }
+.user-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--brand); display:flex; align-items:center; justify-content:center; background:var(--brand); color:#fff; font-weight:800; font-size:16px; }
 .user-details { flex: 1; min-width: 0; }
 .user-name { font-size: 13px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .user-logout { font-size: 11px; color: var(--red); cursor: pointer; margin-top: 2px; font-weight: 600; }
@@ -239,14 +241,20 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 @keyframes spin { to { transform:rotate(360deg); } }
 .empty-state { text-align:center; padding:60px 20px; color:var(--text3); } .empty-state .es-icon { font-size:38px; margin-bottom:12px; opacity:0.4; } .empty-state .es-text { font-size:15px; line-height:1.6; }
 
-/* AUTH UI MODAL */
+/* 🚀 AUTH UI MODAL - E-POSTA VE GITHUB ALANI 🚀 */
 .auth-box { width: 380px; padding: 32px 24px; text-align: center; }
 .auth-box h2 { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
 .auth-box p { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.5; }
+.auth-input { width: 100%; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg2); color: var(--text); font-family: inherit; font-size: 14px; margin-bottom: 12px; outline: none; transition: var(--transition); }
+.auth-input:focus { border-color: var(--brand); }
+.auth-btn-main { width: 100%; display: flex; align-items: center; justify-content: center; padding: 14px; background: var(--brand); border: none; border-radius: var(--radius-sm); color: #fff; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; margin-bottom: 10px; }
+.auth-btn-main:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 4px 12px var(--brand-dim); }
+.auth-btn-sec { width: 100%; display: flex; align-items: center; justify-content: center; padding: 14px; background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text2); font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.2s; }
+.auth-btn-sec:hover { background: var(--surface2); color: var(--text); }
 .social-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; margin-bottom: 12px; }
 .social-btn:hover { background: var(--surface2); border-color: var(--text3); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 .social-btn svg { width: 22px; height: 22px; }
-.auth-error { background: var(--red-dim); color: var(--red); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 12px; margin-bottom: 10px; display: none; }
+.auth-error { padding: 10px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 14px; display: none; font-weight: 600; }
 
 /* MOBİL TASARIM */
 @media (max-width: 768px) {
@@ -421,24 +429,26 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
         <circle cx="4" cy="3" r="1.5" fill="var(--brand)"/>
       </svg>
     </div>
-    <h2>Hesabınıza Giriş Yapın</h2>
-    <p>Favori takımlarınızı ve oyuncularınızı buluta kaydedin, tüm cihazlardan erişin.</p>
+    <div style="font-size:20px; font-weight:800; margin-bottom:6px;">Hesabınıza Giriş Yapın</div>
+    <div style="font-size:13px; color:var(--text2); margin-bottom:20px;">Favori takımlarınızı ve oyuncularınızı buluta kaydedin.</div>
     
     <div class="auth-error" id="authError"></div>
 
-    <button class="social-btn" onclick="Auth.socialLogin('google')" style="background:#fff;color:#3c4043;border:1px solid var(--border);">
-      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-      Google ile Devam Et
-    </button>
+    <input type="email" id="authEmail" class="auth-input" placeholder="E-posta adresiniz" autocomplete="email">
+    <input type="password" id="authPassword" class="auth-input" placeholder="Şifreniz">
+    
+    <button class="auth-btn-main" onclick="Auth.loginWithEmail()">Giriş Yap</button>
+    <button class="auth-btn-sec" onclick="Auth.registerWithEmail()">Yeni Hesap Oluştur</button>
+
+    <div style="display: flex; align-items: center; gap: 12px; margin: 16px 0; color: var(--text3); font-size: 12px;">
+        <div style="flex: 1; height: 1px; background: var(--border);"></div>
+        VEYA
+        <div style="flex: 1; height: 1px; background: var(--border);"></div>
+    </div>
 
     <button class="social-btn" onclick="Auth.socialLogin('github')" style="background:#24292f;color:#fff;border:1px solid #24292f;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
       GitHub ile Devam Et
-    </button>
-
-    <button class="social-btn" onclick="Auth.socialLogin('discord')" style="background:#5865F2;color:#fff;border:1px solid #5865F2;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
-      Discord ile Devam Et
     </button>
 
     <div style="font-size:10px; color:var(--text3); margin-top:20px;">
@@ -451,9 +461,9 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 // ═══════════════════════════════════════════════
 //  SUPABASE CONFIG 
 // ═══════════════════════════════════════════════
-var SUPABASE_URL = 'https://heflhadmyaubzkaldgwz.supabase.co';
+var SUPABASE_URL = 'https://heflhadmyaubzkaldgwz.supabase.co'; 
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlZmxoYWRteWF1YnprYWxkZ3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODcwODMsImV4cCI6MjA5MDY2MzA4M30.mpnk_9B38xDDjYQaoOZsziThLFrZW_HzF-j6XoKwOzM';
-var supabaseClient = null;
+var supabaseClient = null; 
 
 try {
   if (typeof window.supabase !== 'undefined' && SUPABASE_URL && SUPABASE_KEY) {
@@ -486,6 +496,8 @@ var Auth = {
 
   showModal: function() {
     var modal = document.getElementById('authModalOverlay');
+    var err = document.getElementById('authError');
+    if(err) err.style.display = 'none';
     if (modal) modal.style.display = 'flex';
   },
 
@@ -497,7 +509,63 @@ var Auth = {
 
   showError: function(msg) {
     var el = document.getElementById('authError');
-    if (el) { el.textContent = msg; el.style.display = 'block'; }
+    if (el) { 
+        el.textContent = msg; 
+        el.style.display = 'block'; 
+        el.style.background = 'var(--red-dim)';
+        el.style.color = 'var(--red)';
+    }
+  },
+
+  showSuccess: function(msg) {
+    var el = document.getElementById('authError');
+    if (el) { 
+        el.textContent = msg; 
+        el.style.display = 'block'; 
+        el.style.background = 'var(--green-dim)';
+        el.style.color = 'var(--green)';
+    }
+  },
+
+  loginWithEmail: function() {
+    var email = document.getElementById('authEmail').value;
+    var password = document.getElementById('authPassword').value;
+    
+    if (!email || !password) return this.showError('Lütfen e-posta ve şifre girin.');
+    if (!supabaseClient) return this.showError('Sistem bağlantı hatası. Sayfayı yenileyin.');
+
+    supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: password
+    }).then(function(res) {
+      if (res.error) {
+        if(res.error.message === 'Invalid login credentials') Auth.showError('Hatalı e-posta veya şifre.');
+        else Auth.showError(res.error.message);
+      } else {
+        Auth.hideModal('force');
+      }
+    });
+  },
+
+  registerWithEmail: function() {
+    var email = document.getElementById('authEmail').value;
+    var password = document.getElementById('authPassword').value;
+    
+    if (!email || !password) return this.showError('Lütfen e-posta ve şifre girin.');
+    if (password.length < 6) return this.showError('Şifre en az 6 karakter olmalıdır.');
+    if (!supabaseClient) return this.showError('Sistem bağlantı hatası. Sayfayı yenileyin.');
+
+    supabaseClient.auth.signUp({
+      email: email,
+      password: password
+    }).then(function(res) {
+      if (res.error) {
+        if (res.error.message.includes('already registered')) Auth.showError('Bu e-posta adresi zaten kayıtlı.');
+        else Auth.showError(res.error.message);
+      } else {
+        Auth.showSuccess('Kayıt başarılı! Giriş Yap butonuna tıklayabilirsiniz.');
+      }
+    });
   },
 
   socialLogin: function(provider) {
@@ -517,29 +585,23 @@ var Auth = {
     var el = document.getElementById('authSection');
     if (!el) return;
     el.innerHTML = '<button class="auth-btn" id="loginBtnUI" onclick="Auth.showModal()">' +
-      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg> <span class="hide-mobile">Giriş Yap / Üye Ol</span></button>';
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg> <span class="hide-mobile">Giriş Yap / Kayıt Ol</span></button>';
   },
 
   renderUser: function() {
     var el = document.getElementById('authSection');
     if (!el || !this.user) return;
-    var meta = this.user.user_metadata || {};
-    var name = esc(meta.full_name || meta.name || meta.user_name || '');
     var email = esc(this.user.email || '');
-    var avatar = meta.avatar_url || meta.picture || '';
-    var displayName = name || email.split('@')[0] || 'Kullanıcı';
+    var displayName = email.split('@')[0] || 'Kullanıcı';
     
-    var avatarHtml = avatar
-      ? '<img src="' + safeImgUrl(avatar) + '" class="user-avatar" onerror="this.outerHTML=\'<div class=auth-avatar>' + displayName.charAt(0).toUpperCase() + '</div>\'">'
-      : '<div class="user-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;font-weight:800;font-size:16px;">' + displayName.charAt(0).toUpperCase() + '</div>';
-
+    var avatarHtml = '<div class="user-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;font-weight:800;font-size:16px;">' + displayName.charAt(0).toUpperCase() + '</div>';
     var mobileLogout = 'onclick="if(window.innerWidth <= 768) Auth.logout()"';
 
     el.innerHTML =
       '<div class="user-info-box" style="display:flex;" ' + mobileLogout + '>' +
         avatarHtml +
         '<div class="user-details">' +
-          '<div class="user-name">' + displayName + '</div>' +
+          '<div class="user-name" title="'+email+'">' + displayName + '</div>' +
           '<div class="user-logout" onclick="Auth.logout()">Çıkış Yap</div>' +
         '</div>' +
       '</div>';
@@ -591,9 +653,6 @@ function esc(str) {
   if (str === null || str === undefined) return '';
   var s = String(str);
   var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;' };
-  
-  // 🚀 KRİTİK HATA BURADAYDI: '/' işareti Regex içinde kaçış (escape) karakteri olmadan yazılmıştı!
-  // / işareti regex'i böldüğü için tüm site çöküyordu. ŞİMDİ DÜZELTİLDİ: \/
   return s.replace(/[&<>"'\/\\]/g, function(c) { return map[c] || c; });
 }
 
@@ -1080,7 +1139,7 @@ var V = {
     if (tab === 'summary') {
       var evData = this.state.matchCache[matchId].match;
       var topInfo = '<div style="font-size:13px; color:var(--text2); text-align:center; padding-bottom:16px; margin-bottom:16px; border-bottom:1px solid var(--border)">' + 
-                    (evData.stadium ? '🏟️ Stadyum: <span style="color:var(--text)">' + esc(evData.stadium) + '</span>   ' : '') +
+                    (evData.stadium ? '🏟️ Stadyum: <span style="color:var(--text)">' + esc(evData.stadium) + '</span> &nbsp;&nbsp;' : '') +
                     (evData.referee ? '👤 Hakem: <span style="color:var(--text)">' + esc(evData.referee) + '</span>' : '') + '</div>';
 
       this.apiFetch('/api/event/' + matchId + '/incidents').then(function(data) {
@@ -1154,6 +1213,36 @@ var T = {
     return html || this.empty('Detaylı istatistik mevcut değil');
   },
 
+  playerRow: function(p) {
+    var rc = '';
+    if (p.rating) {
+        var r = parseFloat(p.rating);
+        rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low');
+    }
+    
+    var posMap = {};
+    if (V.state.selectedSport === 'basketball') {
+        posMap = { G:'Guard', F:'Forvet', C:'Pivot', SG:'Şutör G.', PG:'Oyun K.', SF:'Kısa F.', PF:'Uzun F.' };
+    } else if (V.state.selectedSport === 'volleyball') {
+        posMap = { L:'Libero', S:'Pasör', MB:'Orta O.', OH:'Smaçör', OP:'Pasör Ç.' };
+    } else {
+        posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' };
+    }
+
+    var finalPos = posMap[p.position] || p.position || '';
+    
+    var pDataStr = encodeURIComponent(JSON.stringify({ id: p.id, name: p.name, pos: finalPos, img: p.img, rating: p.rating, stats: p.stats || {} })).replace(/'/g, "%27");
+    
+    var isFavP = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(p.id); });
+    var favIcon = '<div class="ll-fav ' + (isFavP ? 'faved' : '') + '" data-pid="' + p.id + '" onclick="V.toggleFavPlayer(\'' + pDataStr + '\', event)">★</div>';
+
+    return '<div class="ll-item" onclick="V.showPlayerModal(\'' + pDataStr + '\')">' +
+            '<div class="ll-num">' + (p.number || '-') + '</div>' +
+            '<div class="ll-info"><div class="ll-name">' + esc(p.name) + '</div><div class="ll-pos">' + finalPos + '</div></div>' +
+            (p.rating ? '<div class="ll-rating ' + rc + '">' + p.rating + '</div>' : '') +
+            favIcon + '</div>';
+  },
+
   lineups: function(data) {
     if (!data) return this.empty('Kadro bilgisi henüz açıklanmadı');
     var hp = (data.home && data.home.players) ? data.home.players : []; 
@@ -1214,7 +1303,7 @@ var T = {
             
             var pDataStr = encodeURIComponent(JSON.stringify({ id: p.id, name: p.name, pos: finalPos, img: p.img, rating: p.rating, stats: p.stats || {} })).replace(/'/g, "%27");
             
-            var isFavP = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(p.id); });
+            var isFavP = V.state.favPlayers.some(function(fp){ return fp.id === p.id; });
             var favIcon = '<div class="ll-fav ' + (isFavP ? 'faved' : '') + '" data-pid="' + p.id + '" onclick="V.toggleFavPlayer(\'' + pDataStr + '\', event)">★</div>';
             lHtml += '<div class="ll-item" onclick="V.showPlayerModal(\'' + pDataStr + '\')"><div class="ll-num">' + (p.number || '-') + '</div>' +
                     '<div class="ll-info"><div class="ll-name">' + esc(p.name) + '</div><div class="ll-pos">' + finalPos + '</div></div>' +
