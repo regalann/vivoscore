@@ -15,10 +15,23 @@ if (!RAPID_API_KEY) console.warn('⚠️ RAPID_API_KEY env değişkeni tanımlı
 const BASE_URL = 'https://sportapi7.p.rapidapi.com/api/v1';
 
 // ═══════════════════════════════════════════════
-//  GÜVENLİK: Helmet — CSP Kapatıldı
+//  GÜVENLİK: Helmet — HTTP güvenlik başlıkları
 // ═══════════════════════════════════════════════
 app.use(helmet({
-  contentSecurityPolicy: false, 
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "https://api.sofascore.app", "https://*.supabase.co", "https://*.googleusercontent.com", "https://avatars.githubusercontent.com", "https://*.fbcdn.net", "https://platform-lookaside.fbsbx.com", "https://cdn.discordapp.com", "https://pbs.twimg.com", "https://i.scdn.co", "data:"],
+      connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co"],
+      frameAncestors: ["'none'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+    }
+  },
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" },
   referrerPolicy: { policy: "no-referrer" },
@@ -26,44 +39,31 @@ app.use(helmet({
 }));
 
 // ═══════════════════════════════════════════════
-//  GÜVENLİK: CORS
+//  GÜVENLİK: CORS — sadece kendi origin'imiz
 // ═══════════════════════════════════════════════
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN || true,
+  origin: process.env.ALLOWED_ORIGIN || true,  // Render'da kendi domain'ini set et
   methods: ['GET'],
   optionsSuccessStatus: 200
 }));
 
 // ═══════════════════════════════════════════════
-//  GÜVENLİK: Rate Limiting
+//  GÜVENLİK: Rate Limiting — DDoS & brute force koruması
 // ═══════════════════════════════════════════════
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,   // 1 dakika
-  max: 60,                   // dakikada max 60 istek
+  max: 60,                     // dakikada max 60 istek
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Çok fazla istek gönderdiniz. Lütfen bekleyin.' }
 });
 app.use('/api/', apiLimiter);
 
-app.use(express.json({ limit: '10kb' }));
-
-// ═══════════════════════════════════════════════
-//  🚀 KRİTİK DÜZELTME: AKILLI ÖNBELLEK (SMART CACHE)
-// ═══════════════════════════════════════════════
+app.use(express.json({ limit: '10kb' }));  // Body size limiti
 app.use(express.static(path.join(__dirname, 'public'), {
-  setHeaders: (res, filePath) => {
+  maxAge: '1h',
+  setHeaders: (res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    
-    // Eğer dosya HTML ise ASLA önbelleğe alma (Anında güncellensin)
-    if (filePath.endsWith('.html')) {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-    } else {
-      // JS, CSS vb. diğer dosyaları 1 saat önbellekte tut
-      res.setHeader('Cache-Control', 'public, max-age=3600');
-    }
   }
 }));
 
@@ -89,7 +89,7 @@ function validateId(id) {
 }
 
 // ═══════════════════════════════════════════════
-//  GÜVENLİK: XSS Sanitization
+//  GÜVENLİK: XSS Sanitization — HTML etiketlerini temizle
 // ═══════════════════════════════════════════════
 function sanitizeString(str) {
   if (typeof str !== 'string') return str;
@@ -129,6 +129,7 @@ function getCached(key) {
 }
 function setCache(key, data) {
   cache.set(key, { data, ts: Date.now() });
+  // Cache boyutunu kontrol et (memory leak önleme)
   if (cache.size > 500) {
     const oldest = [...cache.entries()].sort((a, b) => a[1].ts - b[1].ts);
     for (let i = 0; i < 100; i++) cache.delete(oldest[i][0]);
@@ -145,7 +146,7 @@ async function api(endpoint) {
       'x-rapidapi-key': RAPID_API_KEY,
       'x-rapidapi-host': 'sportapi7.p.rapidapi.com'
     },
-    signal: AbortSignal.timeout(10000)
+    signal: AbortSignal.timeout(10000)  // 10 saniye timeout
   });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
@@ -196,6 +197,7 @@ function formatEvent(e) {
   } else if (status.type === 'finished') statusText = 'finished';
   else if (status.type === 'notstarted' || status.type === 'canceled') statusText = 'scheduled';
 
+  // TÜM string alanlar sanitize edilir
   return sanitizeObject({
     id: Number(e.id) || 0,
     status: statusText,
@@ -254,8 +256,9 @@ const poolFetchLog = new Map();
 app.get('/api/schedule/:sport/:date', async (req, res) => {
   const { sport, date } = req.params;
 
+  // GÜVENLİK: Input validation
   if (!validateSport(sport)) return res.status(400).json({ error: 'Geçersiz spor dalı' });
-  if (!validateDate(date)) return res.status(400).json({ error: 'Geçersiz tarih formatı' });
+  if (!validateDate(date)) return res.status(400).json({ error: 'Geçersiz tarih formatı (YYYY-MM-DD)' });
 
   try {
     const prevDay = new Date(date + 'T00:00:00Z');
@@ -284,7 +287,7 @@ app.get('/api/schedule/:sport/:date', async (req, res) => {
 
     const grouped = {};
     events.forEach(e => {
-      const m = formatEvent(e);
+      const m = formatEvent(e);  // sanitize edilmiş
       const tId = e.tournament?.uniqueTournament?.id || 'other';
       if (!grouped[tId]) grouped[tId] = { name: m.tournament.name, matches: [] };
       grouped[tId].matches.push(m);
@@ -293,10 +296,11 @@ app.get('/api/schedule/:sport/:date', async (req, res) => {
     res.json({ groups: grouped, date, total: events.length });
   } catch (err) {
     console.error(`[SCHEDULE] ${date}:`, err.message);
-    res.status(500).json({ error: 'Sunucu hatası' });
+    res.status(500).json({ error: 'Sunucu hatası' });  // detay sızdırma
   }
 });
 
+// Havuz temizliği
 setInterval(() => {
   const cutoff = Math.floor(Date.now() / 1000) - 172800;
   for (const [id, e] of eventPool) {
@@ -305,7 +309,7 @@ setInterval(() => {
 }, 30 * 60 * 1000);
 
 // ═══════════════════════════════════════════════
-//  CANLI MAÇLAR VE DETAYLAR
+//  CANLI MAÇLAR
 // ═══════════════════════════════════════════════
 app.get('/api/live/:sport', async (req, res) => {
   if (!validateSport(req.params.sport)) return res.status(400).json({ error: 'Geçersiz spor' });
@@ -322,6 +326,9 @@ app.get('/api/live/:sport', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// ═══════════════════════════════════════════════
+//  MAÇ DETAYLARI (tümü ID validation'lı ve sanitized)
+// ═══════════════════════════════════════════════
 app.get('/api/event/:id/stats', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
@@ -367,14 +374,23 @@ app.get('/api/event/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// Debug — sadece development'ta
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/api/debug', (req, res) => {
+    const now = Math.floor(Date.now() / 1000);
+    res.json({ trDate: getTRDateString(now), trTime: getTRTimeString(now), node: process.version });
+  });
+}
+
+// Catch-all: 404 yerine index.html
 app.get('*', (_, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
+// ═══════════════════════════════════════════════
+//  GLOBAL ERROR HANDLER
+// ═══════════════════════════════════════════════
 app.use((err, req, res, next) => {
   console.error('[UNHANDLED]', err.message);
   res.status(500).json({ error: 'Beklenmeyen sunucu hatası' });
 });
 
-// Parantez hatasını kalıcı olarak çözecek güvenli kapanış formatı
-app.listen(PORT, () => {
-    console.log("🟢 VivoScore Güvenli Mod: " + PORT);
-});
+app.listen(PORT, () => console.log(`🟢 VivoScore Güvenli Mod: ${PORT}`));
