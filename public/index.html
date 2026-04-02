@@ -63,7 +63,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .sport-item:hover { background: var(--surface2); color: var(--text); } .sport-item.active { background: var(--brand-dim); color: var(--brand); }
 .sport-item .flag { font-size: 18px; width: 24px; text-align: center; } 
 
-.user-profile-section { padding: 16px 14px; border-top: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; }
+.user-profile-section { padding: 16px 14px; border-top: 1px solid var(--border); flex-shrink: 0; }
 .auth-btn { width: 100%; padding: 12px; background: var(--brand); color: #fff; font-weight: 800; font-size: 14px; border-radius: var(--radius-sm); transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;}
 .auth-btn:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px var(--brand-dim); }
 .user-info-box { display: none; align-items: center; gap: 10px; padding: 10px; background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border);}
@@ -332,7 +332,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 <div class="app" id="app">
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="logo">
+      <div class="logo" onclick="V.goHome()" style="cursor:pointer">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
           <line x1="4" y1="3" x2="4" y2="21" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"/>
           <path d="M4 4L19 4C19 4 21 4 21 6C21 8 19 8 19 8L4 8" fill="var(--brand)" stroke="var(--brand)" stroke-width="1.5" stroke-linejoin="round"/>
@@ -738,6 +738,18 @@ var V = {
     this.updateOddsBtn();
     
     Auth.init();
+  },
+
+  goHome: function() {
+    this.state.dateOffset = 0;
+    this.state.isLiveOnly = false;
+    this.state.page = 'matches';
+    var lb = document.getElementById('liveToggleBtn'); if(lb) lb.classList.remove('active');
+    var fb = document.getElementById('favToggleBtn'); if(fb) fb.classList.remove('active');
+    var dn = document.getElementById('dateNav'); if(dn) dn.classList.remove('disabled');
+    this.renderDateNav();
+    this.loadMatches();
+    this.closeDetail();
   },
 
   toggleOdd: function(matchId, matchNameRaw, market, selection, oddVal, btnElement, ev) {
