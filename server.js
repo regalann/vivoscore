@@ -26,15 +26,21 @@ function setCache(key, data) {
 
 async function api(endpoint) {
   const cached = getCached(endpoint);
-  if (cached) return cached;
+  if (cached) { console.log(`[CACHE HIT] ${endpoint}`); return cached; }
+  console.log(`[API CALL] ${endpoint}`);
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     headers: {
       'x-rapidapi-key': RAPID_API_KEY,
       'x-rapidapi-host': 'sportapi7.p.rapidapi.com'
     }
   });
-  if (!res.ok) throw new Error(`API ${res.status}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    console.error(`[API HATA] ${endpoint} → ${res.status} ${res.statusText}`, body.slice(0, 200));
+    throw new Error(`API ${res.status}: ${res.statusText}`);
+  }
   const data = await res.json();
+  console.log(`[API OK] ${endpoint} → ${data.events ? data.events.length + ' events' : 'data received'}`);
   setCache(endpoint, data);
   return data;
 }
@@ -93,16 +99,22 @@ app.get('/api/odds/:matchId', async (req, res) => {
 app.get('/api/schedule/:sport/:date', async (req, res) => {
   try {
     const { sport, date } = req.params;
+    console.log(`[SCHEDULE] Tarih: ${date} | Spor: ${sport}`);
     const data = await api(`/sport/${sport}/scheduled-events/${date}`);
+    const events = data.events || [];
+    console.log(`[SCHEDULE] ${date} → ${events.length} maç döndü`);
     const grouped = {};
-    (data.events || []).forEach(e => {
+    events.forEach(e => {
       const m = formatEvent(e);
       const tId = e.tournament?.uniqueTournament?.id || 'other';
       if (!grouped[tId]) grouped[tId] = { name: m.tournament.name, matches: [] };
       grouped[tId].matches.push(m);
     });
-    res.json({ groups: grouped });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    res.json({ groups: grouped, date: date, total: events.length });
+  } catch (err) {
+    console.error(`[SCHEDULE HATA] ${req.params.date}:`, err.message);
+    res.status(500).json({ error: err.message, date: req.params.date });
+  }
 });
 
 app.get('/api/live/:sport', async (req, res) => {
