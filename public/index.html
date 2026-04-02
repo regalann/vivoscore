@@ -6,7 +6,7 @@
 <meta name="referrer" content="no-referrer" />
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cline x1='4' y1='3' x2='4' y2='21' stroke='%238b949e' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M4 4L19 4C19 4 21 4 21 6C21 8 19 8 19 8L4 8' fill='%233b82f6' stroke='%233b82f6' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M4 8L16 8C16 8 18 8 18 10C18 12 16 12 16 12L4 12' fill='%23ffffff' stroke='%233b82f6' stroke-width='0.8' stroke-linejoin='round'/%3E%3Ccircle cx='4' cy='3' r='1.5' fill='%233b82f6'/%3E%3C/svg%3E">
 <title>VivoScore Pro - Ultimate Edition</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/supabase/2.38.4/supabase.min.js"></script>
 <script>
@@ -42,7 +42,7 @@
 body.hide-odds .match-odds-wrapper { display: none !important; }
 body.hide-odds .bet-slip { display: none !important; }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
 ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
 img { display: block; } button { font-family: inherit; cursor: pointer; border: none; outline: none; touch-action: manipulation; }
 .app { display: flex; height: 100vh; height: 100dvh; width: 100vw; position: relative; overflow: hidden; }
@@ -268,22 +268,24 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     
     /* SIDEBAR → ALT NAV BAR */
     .sidebar { 
-        order: 3; width: 100%; height: auto; flex-direction: row; border-right: none; 
+        order: 3; width: 100%; height: 56px; flex-direction: row; border-right: none; 
         border-top: 1px solid var(--border); padding: 0; background: var(--surface); z-index: 50;
-        padding-bottom: env(safe-area-inset-bottom, 0);
+        flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom, 0);
     }
     .sidebar-header { display: none; }
     .sidebar-nav { 
         flex-direction: row; width: 100%; padding: 0; overflow-x: auto; overflow-y: hidden;
-        align-items: center; justify-content: center; gap: 0;
+        align-items: center; justify-content: flex-start; gap: 0;
         -webkit-overflow-scrolling: touch; scrollbar-width: none;
     }
     .sidebar-nav::-webkit-scrollbar { display: none; }
-    .nav-section { display: flex; flex-direction: row; align-items: center; margin: 0 !important; padding: 0 2px !important; border: none !important; gap: 0; }
+    .nav-section { display: contents; margin: 0 !important; padding: 0 !important; border: none !important; }
+    #sportList { display: flex; flex-direction: row; align-items: center; }
     .nav-label { display: none; }
-    .sport-item { margin: 0; padding: 10px 10px; flex-direction: column; gap: 2px; border-radius: 8px; flex-shrink: 0; }
-    .sport-item .flag { font-size: 20px; width: auto; }
+    .sport-item { margin: 0; padding: 10px 14px; flex-direction: column; gap: 2px; border-radius: 0; flex-shrink: 0; }
+    .sport-item .flag { font-size: 22px; width: auto; }
     .sport-item span:not(.flag) { display: none; }
+    .sport-item.active { background: var(--brand-dim); border-radius: 0; }
     
     .user-profile-section { padding: 0 8px; margin: 0; border: none !important; display: flex; align-items: center; flex-shrink: 0; }
     .auth-btn { padding: 8px; font-size: 0; background: transparent; color: var(--text2); width: auto; }
@@ -313,7 +315,9 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     
     .date-btn { padding: 6px 4px; font-size: 12px; flex: 1; text-align: center; min-width: 0; }
     .date-btn .day { font-size: 10px; margin-top: 2px; }
-    .btn-toggle { font-size: 13px; padding: 6px 10px; }
+    .btn-toggle { font-size: 13px; padding: 6px 10px; min-height: 36px; }
+    .live-toggle { min-width: 36px; justify-content: center; }
+    .fav-toggle { min-width: 36px; justify-content: center; }
     .hide-mobile { display: none !important; }
     
     /* MATCH SCROLL */
@@ -413,8 +417,8 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 
 /* LANDSCAPE MOBİL */
 @media (max-height: 500px) and (max-width: 900px) {
-    .sidebar { height: auto; }
-    .sport-item { padding: 6px 8px; }
+    .sidebar { height: 48px; }
+    .sport-item { padding: 6px 10px; }
     .topbar { padding: 4px 8px; gap: 4px; }
     .match-scroll { padding: 6px 8px; padding-bottom: 10px; }
     .detail-header { padding: 10px 12px 8px; }
