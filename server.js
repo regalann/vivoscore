@@ -22,6 +22,7 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'"],  // inline script kullandığımız için
+      scriptSrcAttr: ["'unsafe-inline'"],        // KRİTİK DÜZELTME: onclick butonlarının çalışması için izin verir!
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "https://api.sofascore.app", "data:"],
@@ -52,7 +53,7 @@ app.use(cors({
 // ═══════════════════════════════════════════════
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,   // 1 dakika
-  max: 60,                     // dakikada max 60 istek
+  max: 60,                   // dakikada max 60 istek
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Çok fazla istek gönderdiniz. Lütfen bekleyin.' }
