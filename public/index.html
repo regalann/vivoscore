@@ -458,15 +458,20 @@ var V = {
   },
 
   getDateStr: function(offset) {
-    var d = new Date(); d.setDate(d.getDate() + (offset || 0) + this.state.dateOffset);
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    var d = new Date();
+    d.setDate(d.getDate() + (offset || 0) + this.state.dateOffset);
+    // Türkiye saatine göre tarih üret (UTC+3)
+    var parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+    return parts; // "YYYY-MM-DD" formatında döner
   },
   getDateLabel: function(offset) {
     var d = new Date(); var total = (offset || 0) + this.state.dateOffset; d.setDate(d.getDate() + total);
+    // İstanbul timezone'unda doğru gün/ay
+    var trDate = new Date(d.toLocaleString('en-US', { timeZone: 'Europe/Istanbul' }));
     var days = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt']; var months = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
-    var sub = d.getDate() + ' ' + months[d.getMonth()];
+    var sub = trDate.getDate() + ' ' + months[trDate.getMonth()];
     if (total === 0) return { main: 'Bugün', sub: sub }; if (total === -1) return { main: 'Dün', sub: sub }; if (total === 1) return { main: 'Yarın', sub: sub };
-    return { main: d.getDate() + ' ' + months[d.getMonth()], sub: days[d.getDay()] };
+    return { main: trDate.getDate() + ' ' + months[trDate.getMonth()], sub: days[trDate.getDay()] };
   },
   renderDateNav: function() {
     var nav = document.getElementById('dateNav'); if (!nav) return;
@@ -477,8 +482,25 @@ var V = {
     }
     nav.innerHTML = parts.join('');
   },
-  goToDate: function(rel) { this.state.dateOffset += rel; this.renderDateNav(); if (this.state.page === 'matches') this.loadMatches(); },
-  shiftDate: function(dir) { this.state.dateOffset += dir; this.renderDateNav(); if (this.state.page === 'matches') this.loadMatches(); },
+  goToDate: function(rel) {
+    this.state.dateOffset += rel;
+    this.renderDateNav();
+    // Tarih değiştiğinde her zaman matches moduna geç
+    if (this.state.isLiveOnly) { this.state.isLiveOnly = false; var lb = document.getElementById('liveToggleBtn'); if(lb) lb.classList.remove('active'); var dn = document.getElementById('dateNav'); if(dn) dn.classList.remove('disabled'); }
+    if (this.state.page === 'favorites') { this.state.page = 'matches'; var fb = document.getElementById('favToggleBtn'); if(fb) fb.classList.remove('active'); }
+    this.state.page = 'matches';
+    document.querySelectorAll('.nav-item').forEach(function(el) { el.classList.toggle('active', el.getAttribute('data-page') === 'matches'); });
+    this.loadMatches();
+  },
+  shiftDate: function(dir) {
+    this.state.dateOffset += dir;
+    this.renderDateNav();
+    // Aynı şekilde matches moduna zorla
+    if (this.state.isLiveOnly) { this.state.isLiveOnly = false; var lb = document.getElementById('liveToggleBtn'); if(lb) lb.classList.remove('active'); var dn = document.getElementById('dateNav'); if(dn) dn.classList.remove('disabled'); }
+    if (this.state.page === 'favorites') { this.state.page = 'matches'; var fb = document.getElementById('favToggleBtn'); if(fb) fb.classList.remove('active'); }
+    this.state.page = 'matches';
+    this.loadMatches();
+  },
 
   renderSports: function() {
     var el = document.getElementById('sportList'); if (!el) return;
@@ -497,17 +519,36 @@ var V = {
   },
 
   apiFetch: function(url) {
-    return fetch(url).then(function(r) { if (!r.ok) throw new Error('API Error'); return r.json(); });
+    console.log('[VivoScore] Fetch:', url);
+    return fetch(url).then(function(r) {
+      if (!r.ok) {
+        return r.text().then(function(body) {
+          var msg = 'API ' + r.status;
+          try { var j = JSON.parse(body); if(j.error) msg = j.error; } catch(e) {}
+          throw new Error(msg);
+        });
+      }
+      return r.json();
+    });
   },
 
   loadMatches: function() {
     var el = document.getElementById('matchScroll'); if (!el) return;
-    el.innerHTML = T.loading(this.state.isLiveOnly ? 'Canlı maçlar aranıyor...' : 'Maçlar yükleniyor...');
+    var dateStr = this.getDateStr(0);
+    var endpoint = this.state.isLiveOnly ? '/api/live/' + this.state.selectedSport : '/api/schedule/' + this.state.selectedSport + '/' + dateStr;
     
-    var endpoint = this.state.isLiveOnly ? '/api/live/' + this.state.selectedSport : '/api/schedule/' + this.state.selectedSport + '/' + this.getDateStr(0);
+    console.log('[VivoScore] Tarih:', dateStr, '| Endpoint:', endpoint, '| dateOffset:', this.state.dateOffset);
+    
+    var loadingText = this.state.isLiveOnly ? 'Canlı maçlar aranıyor...' : dateStr + ' tarihli maçlar yükleniyor...';
+    el.innerHTML = T.loading(loadingText);
 
     this.apiFetch(endpoint).then(function(data) {
-      if (!data.groups || Object.keys(data.groups).length === 0) return el.innerHTML = T.empty(V.state.isLiveOnly ? 'Şu anda canlı maç bulunmuyor.' : 'Bu tarihte maç bulunamadı.');
+      console.log('[VivoScore] API Yanıt:', dateStr, '| Grup sayısı:', data.groups ? Object.keys(data.groups).length : 0, '| Toplam:', data.total || '?');
+      
+      if (!data.groups || Object.keys(data.groups).length === 0) {
+        var emptyMsg = V.state.isLiveOnly ? 'Şu anda canlı maç bulunmuyor.' : '<strong>' + dateStr + '</strong> tarihinde maç bulunamadı.<br><span style="font-size:12px;margin-top:8px;display:block;opacity:0.6;">API bu tarih için veri döndürmedi. Başka bir tarih deneyin.</span>';
+        return el.innerHTML = T.empty(emptyMsg);
+      }
       var html = ''; var gKeys = Object.keys(data.groups);
       for (var i = 0; i < gKeys.length; i++) html += T.leagueGroup(data.groups[gKeys[i]].name, gKeys[i], data.groups[gKeys[i]].matches);
       el.innerHTML = html;
@@ -520,7 +561,10 @@ var V = {
           if(btn) btn.classList.add('selected');
         }
       }, 500);
-    }).catch(function() { el.innerHTML = T.empty('Veri yüklenirken hata oluştu'); });
+    }).catch(function(err) {
+      console.error('[VivoScore] HATA:', dateStr, err);
+      el.innerHTML = T.empty('Veri yüklenirken hata oluştu.<br><span style="font-size:12px;opacity:0.6;">' + dateStr + ' | ' + (err.message || 'Bağlantı hatası') + '</span>');
+    });
   },
 
   loadOddsForAll: function() {
