@@ -110,7 +110,6 @@ function getCached(key) {
 }
 function setCache(key, data) {
   cache.set(key, { data, ts: Date.now() });
-  // Cache boyutunu kontrol et (memory leak önleme)
   if (cache.size > 500) {
     const oldest = [...cache.entries()].sort((a, b) => a[1].ts - b[1].ts);
     for (let i = 0; i < 100; i++) cache.delete(oldest[i][0]);
@@ -118,22 +117,25 @@ function setCache(key, data) {
 }
 
 async function api(endpoint) {
-  if (!RAPID_API_KEY) throw new Error('API anahtarı tanımlı değil');
+  if (!RAPID_API_KEY) throw new Error('API_KEY_MISSING');
   const cached = getCached(endpoint);
   if (cached) return cached;
-  console.log(`[API] ${endpoint}`);
+  console.log(`[API İSTEĞİ] ${endpoint}`);
+  
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     headers: {
       'x-rapidapi-key': RAPID_API_KEY,
       'x-rapidapi-host': 'sportapi7.p.rapidapi.com'
     },
-    signal: AbortSignal.timeout(10000)  // 10 saniye timeout
+    signal: AbortSignal.timeout(10000)
   });
+  
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     console.error(`[API HATA] ${endpoint} → ${res.status}`, body.slice(0, 200));
-    throw new Error(`API ${res.status}`);
+    throw new Error(res.status.toString()); // Sadece status kodunu fırlat ki aşağıda yakalayabilelim
   }
+  
   const data = await res.json();
   setCache(endpoint, data);
   return data;
@@ -162,7 +164,7 @@ function getTRTimeString(timestamp) {
 }
 
 // ═══════════════════════════════════════════════
-//  EVENT FORMATTER (sanitized output)
+//  EVENT FORMATTER
 // ═══════════════════════════════════════════════
 function formatEvent(e) {
   const ts = e.startTimestamp * 1000;
@@ -178,7 +180,6 @@ function formatEvent(e) {
   } else if (status.type === 'finished') statusText = 'finished';
   else if (status.type === 'notstarted' || status.type === 'canceled') statusText = 'scheduled';
 
-  // TÜM string alanlar sanitize edilir
   return sanitizeObject({
     id: Number(e.id) || 0,
     status: statusText,
@@ -236,8 +237,6 @@ const poolFetchLog = new Map();
 
 app.get('/api/schedule/:sport/:date', async (req, res) => {
   const { sport, date } = req.params;
-
-  // GÜVENLİK: Input validation
   if (!validateSport(sport)) return res.status(400).json({ error: 'Geçersiz spor dalı' });
   if (!validateDate(date)) return res.status(400).json({ error: 'Geçersiz tarih formatı (YYYY-MM-DD)' });
 
@@ -268,7 +267,7 @@ app.get('/api/schedule/:sport/:date', async (req, res) => {
 
     const grouped = {};
     events.forEach(e => {
-      const m = formatEvent(e);  // sanitize edilmiş
+      const m = formatEvent(e); 
       const tId = e.tournament?.uniqueTournament?.id || 'other';
       if (!grouped[tId]) grouped[tId] = { name: m.tournament.name, matches: [] };
       grouped[tId].matches.push(m);
@@ -277,11 +276,10 @@ app.get('/api/schedule/:sport/:date', async (req, res) => {
     res.json({ groups: grouped, date, total: events.length });
   } catch (err) {
     console.error(`[SCHEDULE] ${date}:`, err.message);
-    res.status(500).json({ error: 'Sunucu hatası' });  // detay sızdırma
+    res.status(500).json({ error: 'Sunucu hatası' });
   }
 });
 
-// Havuz temizliği
 setInterval(() => {
   const cutoff = Math.floor(Date.now() / 1000) - 172800;
   for (const [id, e] of eventPool) {
@@ -308,7 +306,7 @@ app.get('/api/live/:sport', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════
-//  MAÇ DETAYLARI (tümü ID validation'lı ve sanitized)
+//  MAÇ DETAYLARI
 // ═══════════════════════════════════════════════
 app.get('/api/event/:id/stats', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
@@ -356,12 +354,11 @@ app.get('/api/event/:id', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════
-//  ARAMA ENDPOİNTİ (SAYFALANDIRMA İÇİN GÜNCELLENDİ)
+//  ARAMA ENDPOİNTİ (HATA YÖNETİMİ & FALLBACK EKLENDİ)
 // ═══════════════════════════════════════════════
 function validateSearchQuery(q) {
   if (typeof q !== 'string') return false;
   if (q.length < 2 || q.length > 80) return false;
-  // Sadece harf, rakam, boşluk ve bazı özel karakterler
   return /^[\p{L}\p{N}\s\-'.]+$/u.test(q);
 }
 
@@ -372,20 +369,27 @@ app.get('/api/search/:sport', async (req, res) => {
   if (!validateSport(sport)) return res.status(400).json({ error: 'Geçersiz spor dalı' });
   if (!validateSearchQuery(q)) return res.status(400).json({ error: 'Geçersiz arama sorgusu (en az 2 karakter)' });
 
+  const cacheKey = `search_${sport}_${q.toLowerCase()}`;
+  const cached = getCached(cacheKey);
+  if (cached) return res.json(cached);
+
+  let data;
   try {
-    const cacheKey = `search_${sport}_${q.toLowerCase()}`;
-    const cached = getCached(cacheKey);
-    if (cached) return res.json(cached);
-
-    const data = await api(`/sport/${sport}/search/${encodeURIComponent(q)}`);
-    const results = { teams: [], players: [] };
-
-    // API limitlenmişse veya boş dönerse kodun kırılmasını engelle
-    if (!data || !data.results) {
-        return res.json(results); 
+    // API sağlayıcının sağı solu belli olmuyor, önce spesifik rotayı deneyelim
+    try {
+      data = await api(`/sport/${sport}/search/${encodeURIComponent(q)}`);
+    } catch (apiErr) {
+      if (apiErr.message === '404' || apiErr.message === '403') {
+        console.log(`[BİLGİ] Spor bazlı arama başarısız (${apiErr.message}). Global rota deneniyor...`);
+        data = await api(`/search/${encodeURIComponent(q)}`);
+      } else {
+        throw apiErr; // 429 vb. ise direkt aşağı düşsün
+      }
     }
 
-    // Takımları ve oyuncuları işle
+    const results = { teams: [], players: [] };
+    if (!data || !data.results) return res.json(results);
+
     data.results.forEach(r => {
       if (r.type === 'team' && r.entity) {
         results.teams.push(sanitizeObject({
@@ -412,10 +416,16 @@ app.get('/api/search/:sport', async (req, res) => {
 
     setCache(cacheKey, results);
     res.json(results);
+
   } catch (err) {
-    console.error(`[SEARCH] ${sport}/${q}:`, err.message);
-    // 500 fırlatmak yerine frontend'e açıklamalı bir json dön
-    res.status(500).json({ error: 'API Hatası: Kotanızı veya RapidAPI anahtarınızı kontrol edin.' });
+    let hataMesaji = 'Arama servisi şu an yanıt vermiyor.';
+    if (err.message === 'API_KEY_MISSING') hataMesaji = 'API Anahtarı eksik.';
+    else if (err.message === '429') hataMesaji = 'Çok hızlı arama yaptın, RapidAPI kotan doldu (429). Lütfen biraz bekle.';
+    else if (err.message === '404') hataMesaji = 'Arama servisi kullanılamıyor veya böyle bir veri yok (404).';
+    else if (err.message === '403') hataMesaji = 'RapidAPI anahtarının bu işlem için yetkisi yok (403).';
+
+    console.error(`[SEARCH HATA] ${sport}/${q} -> Kod: ${err.message}`);
+    res.status(500).json({ error: hataMesaji });
   }
 });
 
@@ -437,7 +447,7 @@ app.get('/api/team/:id/events', async (req, res) => {
   }
 });
 
-// Debug — sadece development'ta
+// Debug
 if (process.env.NODE_ENV !== 'production') {
   app.get('/api/debug', (req, res) => {
     const now = Math.floor(Date.now() / 1000);
@@ -445,7 +455,7 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-// Catch-all: 404 yerine index.html
+// Catch-all
 app.get('*', (_, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 // ═══════════════════════════════════════════════
@@ -456,4 +466,4 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Beklenmeyen sunucu hatası' });
 });
 
-app.listen(PORT, () => console.log(`🟢 VivoScore Güvenli Mod: ${PORT}`));
+app.listen(PORT, () => console.log(`🟢 VivoScore Güvenli Mod Aktif: Port ${PORT}`));
