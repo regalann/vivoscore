@@ -152,8 +152,8 @@ app.get('/api/schedule/:sport/:date', async (req, res) => {
         try {
           const data = await api(`/sport/${sport}/scheduled-events/${d}`);
           const evts = data.events || [];
-          console.log(`[POOL] ${d} → ${evts.length} maç havuza eklendi`);
-          evts.forEach(e => eventPool.set(e.id, e));
+          console.log(`[POOL] ${sport}/${d} → ${evts.length} maç havuza eklendi`);
+          evts.forEach(e => { e._sport = sport; eventPool.set(e.id, e); });
           poolFetchLog.set(poolKey, Date.now());
         } catch(apiErr) {
           console.error(`[POOL HATA] ${d}: ${apiErr.message}`);
@@ -163,15 +163,16 @@ app.get('/api/schedule/:sport/:date', async (req, res) => {
       }
     }
     
-    // Havuzdan Türkiye tarihine göre filtrele
+    // Havuzdan spor + Türkiye tarihine göre filtrele
     const events = [];
     for (const [id, e] of eventPool) {
+      if (e._sport !== sport) continue;
       const trDate = getTRDateString(e.startTimestamp);
       if (trDate === date) events.push(e);
     }
     
     events.sort((a, b) => a.startTimestamp - b.startTimestamp);
-    console.log(`[SCHEDULE] ${date} → Havuz: ${eventPool.size} toplam, Bu gün: ${events.length} maç`);
+    console.log(`[SCHEDULE] ${sport}/${date} → Havuz: ${eventPool.size} toplam, Bu spor+gün: ${events.length} maç`);
     
     // Debug: ilk 3 maçın bilgilerini logla
     if (events.length > 0) {
