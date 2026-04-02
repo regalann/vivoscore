@@ -6,7 +6,6 @@
 <meta name="referrer" content="no-referrer" />
 <title>VivoScore Pro - Ultimate Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg: #0d1117; --bg2: #131920; --surface: #161b22; --surface2: #1c2230;
@@ -55,16 +54,6 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 .sport-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; color: var(--text2); cursor: pointer; transition: var(--transition); margin-bottom: 2px;}
 .sport-item:hover { background: var(--surface2); color: var(--text); } .sport-item.active { background: var(--brand-dim); color: var(--brand); }
 .sport-item .flag { font-size: 18px; width: 24px; text-align: center; } 
-
-.user-profile-section { margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border); }
-.auth-btn { width: 100%; padding: 12px; background: var(--brand); color: #fff; font-weight: 800; font-size: 14px; border-radius: var(--radius-sm); transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;}
-.auth-btn:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px var(--brand-dim); }
-.user-info-box { display: none; align-items: center; gap: 10px; padding: 10px; background: var(--bg2); border-radius: var(--radius-sm); border: 1px solid var(--border);}
-.user-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--brand); }
-.user-details { flex: 1; min-width: 0; }
-.user-name { font-size: 13px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.user-logout { font-size: 11px; color: var(--red); cursor: pointer; margin-top: 2px; font-weight: 600; }
-.user-logout:hover { text-decoration: underline; }
 
 .main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg); }
 .topbar { display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--bg2); gap: 12px; }
@@ -153,7 +142,7 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 .detail-team { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 110px; }
 .detail-team img { width: 56px; height: 56px; object-fit: contain; background: transparent; } .detail-team .dt-name { font-size: 14px; font-weight: 700; text-align: center; line-height: 1.3; }
 
-/* 🚀 KRİTİK DÜZELTME: SKOR GÖRÜNÜMÜ KUSURSUZ (BASKETBOL DAHİL) */
+/* 🚀 BASKETBOL VE 3 HANELİ SKORLAR İÇİN DÜZELTME */
 .detail-score-box { display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; } 
 .detail-score { font-size: 34px; font-weight: 800; letter-spacing: 2px; white-space: nowrap; text-align: center; } 
 .detail-score.live-ds { color: var(--green); }
@@ -201,23 +190,12 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 .ll-fav { color: var(--text3); font-size: 20px; margin-left: 12px; transition: 0.2s; }
 .ll-fav:hover, .ll-fav.faved { color: var(--yellow); }
 
-/* MODALLAR (OYUNCU & AUTH) */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(5px); }
-.custom-modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column;}
+/* OYUNCU MODAL */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); }
+.player-modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 420px; max-height: 80vh; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column;}
 @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .pm-close { position: absolute; top: 16px; right: 16px; font-size: 20px; color: var(--text3); cursor: pointer; transition: 0.2s; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--bg2); border: 1px solid var(--border); z-index: 50; }
 .pm-close:hover { background: var(--red-dim); color: var(--red); border-color: var(--red); }
-
-/* AUTH MODAL STYLES */
-.auth-box { width: 380px; padding: 32px 24px; text-align: center; }
-.auth-box h2 { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
-.auth-box p { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.5; }
-.social-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; margin-bottom: 12px; }
-.social-btn:hover { background: var(--surface2); border-color: var(--text3); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-.social-btn svg { width: 22px; height: 22px; }
-
-/* PLAYER MODAL STYLES */
-.player-modal { width: 420px; max-height: 80vh; padding: 24px; }
 .pm-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); flex-shrink:0;}
 .pm-header img { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; background: var(--bg2); border: 2px solid var(--border); }
 .pm-name { font-size: 20px; font-weight: 800; color: var(--text); }
@@ -248,7 +226,7 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 @keyframes spin { to { transform:rotate(360deg); } }
 .empty-state { text-align:center; padding:60px 20px; color:var(--text3); } .empty-state .es-icon { font-size:38px; margin-bottom:12px; opacity:0.4; } .empty-state .es-text { font-size:15px; line-height:1.6; }
 @media (max-width:1200px) { .detail-panel { width:340px; } }
-@media (max-width:1000px) { .sidebar { width:60px; } .sidebar .logo .s, .sidebar .nav-label, .sidebar .sport-item span:not(.flag), .user-name { display:none; } .sidebar .sport-item { justify-content:center; padding:12px; } .match-teams { flex: 1; border-right:none;} .match-odds-wrapper {display:none;} }
+@media (max-width:1000px) { .sidebar { width:60px; } .sidebar .logo .s, .sidebar .nav-label, .sidebar .sport-item span:not(.flag) { display:none; } .sidebar .sport-item { justify-content:center; padding:12px; } .match-teams { flex: 1; border-right:none;} .match-odds-wrapper {display:none;} }
 </style>
 </head>
 <body>
@@ -270,21 +248,6 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
         </div>
       </div>
     </nav>
-
-    <div class="user-profile-section">
-      <button id="loginBtnUI" class="auth-btn" onclick="V.openAuthModal()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-        Giriş Yap / Üye Ol
-      </button>
-      <div id="userProfileUI" class="user-info-box">
-        <img id="uAvatar" src="" class="user-avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
-        <div class="user-details">
-          <div id="uName" class="user-name">Kullanıcı</div>
-          <div class="user-logout" onclick="V.signOut()">Çıkış Yap</div>
-        </div>
-      </div>
-    </div>
-
   </aside>
 
   <main class="main">
@@ -329,9 +292,9 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
   </div>
 </div>
 
-<div class="modal-overlay" id="playerModalOverlay" onclick="V.closeModal(event, 'playerModalOverlay')">
+<div class="modal-overlay" id="playerModalOverlay" onclick="V.closePlayerModal(event)">
   <div class="custom-modal player-modal">
-    <div class="pm-close" onclick="V.closeModal(null, 'playerModalOverlay')">✕</div>
+    <div class="pm-close" onclick="V.closePlayerModal()">✕</div>
     <div class="pm-header">
       <img id="pmImg" src="" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='">
       <div>
@@ -346,47 +309,7 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
   </div>
 </div>
 
-<div class="modal-overlay" id="authModalOverlay" onclick="V.closeModal(event, 'authModalOverlay')">
-  <div class="custom-modal auth-box">
-    <div class="pm-close" onclick="V.closeModal(null, 'authModalOverlay')">✕</div>
-    <div class="logo" style="justify-content:center; margin-bottom:16px;"><span class="v">Vivo</span><span class="s">Score</span><div class="dot"></div></div>
-    <h2>Hesabınıza Giriş Yapın</h2>
-    <p>Favori takımlarınızı ve oyuncularınızı buluta kaydedin, tüm cihazlardan erişin.</p>
-    
-    <button class="social-btn" onclick="V.signInWithProvider('google')">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-      Google ile Devam Et
-    </button>
-
-    <button class="social-btn" onclick="V.signInWithProvider('github')">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-      GitHub ile Devam Et
-    </button>
-
-    <div style="font-size:10px; color:var(--text3); margin-top:20px;">
-      Giriş yaparak Kullanım Şartları ve Gizlilik Politikamızı kabul etmiş sayılırsınız.
-    </div>
-  </div>
-</div>
-
 <script>
-// ═══════════════════════════════════════════════
-//  SUPABASE BAĞLANTISI (KENDİ ANAHTARLARIN İLE)
-// ═══════════════════════════════════════════════
-const SUPABASE_URL = 'https://heflhadmyaubzkaldgwz.supabase.co'; 
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlZmxoYWRteWF1YnprYWxkZ3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODcwODMsImV4cCI6MjA5MDY2MzA4M30.mpnk_9B38xDDjYQaoOZsziThLFrZW_HzF-j6XoKwOzM';
-
-let supabase = null;
-try {
-  if (typeof window.supabase !== 'undefined' && SUPABASE_URL !== 'SUPABASE_URL_BURAYA') {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  } else {
-    console.warn("⚠️ Supabase yüklenemedi (Reklam engelleyici devrede olabilir). Üyelik sistemi devre dışı.");
-  }
-} catch(e) {
-  console.error("Supabase Hatası:", e);
-}
-
 function esc(str) {
   if (str === null || str === undefined) return '';
   var s = String(str);
@@ -443,8 +366,7 @@ var V = {
     hiddenMatchScores: safeStorage.get('vivo_hidden_matches', {}),
     theme: safeStorage.get('vivo_theme', 'dark'),
     showOdds: safeStorage.get('vivo_show_odds', false),
-    betSlip: [],
-    user: null
+    betSlip: []
   },
 
   init: function() { 
@@ -454,59 +376,6 @@ var V = {
     this.applyTheme();
     if(!this.state.showOdds) document.body.classList.add('hide-odds');
     this.updateOddsBtn();
-    
-    if(supabase) {
-      supabase.auth.getSession().then(function(res) {
-        if(res.data && res.data.session) V.updateAuthUI(res.data.session.user);
-      }).catch(function(e){ console.error("Auth error:", e); });
-      
-      supabase.auth.onAuthStateChange(function(event, session) {
-        V.updateAuthUI(session ? session.user : null);
-      });
-    }
-  },
-
-  openAuthModal: function() {
-    if(!supabase) { alert("Güvenlik duvarı nedeniyle üyelik sistemi şu an başlatılamadı. (Adblocker veya tarayıcı kalkanı kullanıyor olabilirsiniz)."); return; }
-    document.getElementById('authModalOverlay').style.display = 'flex';
-  },
-
-  closeModal: function(ev, id) {
-    if(ev && ev.target.id !== id) return;
-    if(!id) {
-       document.querySelectorAll('.modal-overlay').forEach(function(m){ m.style.display = 'none'; });
-       return;
-    }
-    document.getElementById(id).style.display = 'none';
-  },
-
-  signInWithProvider: function(provider) {
-    if(!supabase) return;
-    supabase.auth.signInWithOAuth({ provider: provider });
-  },
-
-  signOut: function() {
-    if(!supabase) return;
-    supabase.auth.signOut();
-  },
-
-  updateAuthUI: function(user) {
-    this.state.user = user;
-    var loginBtn = document.getElementById('loginBtnUI');
-    var profileBox = document.getElementById('userProfileUI');
-    
-    if(user) {
-      loginBtn.style.display = 'none';
-      profileBox.style.display = 'flex';
-      var name = user.user_metadata.full_name || user.user_metadata.name || user.email.split('@')[0];
-      var avatar = user.user_metadata.avatar_url || 'https://ui-avatars.com/api/?name='+name+'&background=2563eb&color=fff';
-      document.getElementById('uName').textContent = name;
-      document.getElementById('uAvatar').src = avatar;
-      this.closeModal(null, 'authModalOverlay');
-    } else {
-      loginBtn.style.display = 'flex';
-      profileBox.style.display = 'none';
-    }
   },
 
   toggleOdd: function(matchId, matchNameRaw, market, selection, oddVal, btnElement, ev) {
@@ -635,7 +504,7 @@ var V = {
         var sHtml = ''; if(fp.rating) sHtml += '<span style="background:var(--green); color:#000; padding:2px 6px; border-radius:4px; font-weight:800; font-size:11px;">⭐ ' + fp.rating + '</span> ';
         var s = fp.stats || {}; 
         
-        // 🚀 BASKETBOL İSTATİSTİKLERİ YÜKLENİYOR
+        // 🚀 BASKETBOL İSTATİSTİKLERİ EKLENDİ
         if(s.goals !== undefined) sHtml += '<span style="font-size:12px; color:var(--text2); margin-left:6px;">⚽ '+s.goals+'</span>'; 
         if(s.points !== undefined) sHtml += '<span style="font-size:12px; color:var(--text2); margin-left:6px;">🏀 '+s.points+' Sayı</span>'; 
         if(s.assists !== undefined) sHtml += '<span style="font-size:12px; color:var(--text2); margin-left:6px;">👟 '+s.assists+' Asist</span>';
@@ -672,61 +541,6 @@ var V = {
     safeStorage.set('vivo_fav_players', this.state.favPlayers);
     document.querySelectorAll('.player-fav[data-pid="' + p.id + '"], .ll-fav[data-pid="' + p.id + '"]').forEach(function(star) { star.classList.toggle('faved'); });
     if(this.state.page === 'favorites') this.loadFavorites();
-  },
-
-  showPlayerModal: function(pDataStr) {
-    var p = JSON.parse(decodeURIComponent(pDataStr));
-    document.getElementById('pmImg').src = p.img; document.getElementById('pmName').textContent = p.name; document.getElementById('pmPos').textContent = p.pos;
-    var rBox = document.getElementById('pmRating');
-    if(p.rating) {
-      rBox.textContent = p.rating; rBox.style.display = 'inline-block'; var r = parseFloat(p.rating);
-      rBox.className = 'pm-rating ' + (r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'));
-    } else { rBox.style.display = 'none'; }
-
-    var grid = document.getElementById('pmStatsGrid'); var html = ''; 
-    var s = Object.assign({}, p.stats || {}); 
-    
-    // 🚀 BASKETBOL İÇİN KOMBİNE (X/Y) İSTATİSTİKLER 
-    if (s.freeThrowsMade !== undefined && s.freeThrowsAttempted !== undefined) {
-        s.freeThrowsCombo = s.freeThrowsMade + '/' + s.freeThrowsAttempted;
-        STAT_DICT['freeThrowsCombo'] = 'Serbest Atış';
-        delete s.freeThrowsMade; delete s.freeThrowsAttempted;
-    }
-    if (s.threePointersMade !== undefined && s.threePointersAttempted !== undefined) {
-        s.threePointersCombo = s.threePointersMade + '/' + s.threePointersAttempted;
-        STAT_DICT['threePointersCombo'] = '3 Sayı';
-        delete s.threePointersMade; delete s.threePointersAttempted;
-    }
-    if (s.twoPointersMade !== undefined && s.twoPointersAttempted !== undefined) {
-        s.twoPointersCombo = s.twoPointersMade + '/' + s.twoPointersAttempted;
-        STAT_DICT['twoPointersCombo'] = '2 Sayı';
-        delete s.twoPointersMade; delete s.twoPointersAttempted;
-    }
-    if (s.fieldGoalsMade !== undefined && s.fieldGoalsAttempted !== undefined) {
-        s.fieldGoalsCombo = s.fieldGoalsMade + '/' + s.fieldGoalsAttempted;
-        STAT_DICT['fieldGoalsCombo'] = 'Saha İçi İsabet';
-        delete s.fieldGoalsMade; delete s.fieldGoalsAttempted;
-    }
-
-    var keys = Object.keys(s); var addedCount = 0;
-    for(var i=0; i<keys.length; i++) {
-      var key = keys[i]; var val = s[key]; if (typeof val === 'number' && val % 1 !== 0) val = val.toFixed(2);
-      if(STAT_DICT[key] && val !== undefined && val !== null) { html += '<div class="pm-stat-box"><div class="pm-stat-lbl">'+STAT_DICT[key]+'</div><div class="pm-stat-val">'+val+'</div></div>'; addedCount++; }
-    }
-    if(addedCount === 0) html = '<div style="grid-column:1/-1; text-align:center; color:var(--text3); font-size:12px; padding:20px 0;">Detaylı istatistik bulunmuyor.</div>';
-    grid.innerHTML = html; document.getElementById('playerModalOverlay').style.display = 'flex';
-  },
-
-  closePlayerModal: function(ev) {
-    if(ev && ev.target.id !== 'playerModalOverlay') return;
-    document.getElementById('playerModalOverlay').style.display = 'none';
-  },
-
-  closeDetail: function() {
-    document.querySelectorAll('.match-card').forEach(function(el) { el.classList.remove('selected'); });
-    var panel = document.getElementById('detailPanel');
-    if(panel) panel.innerHTML = '<div class="detail-empty"><div class="de-icon">⚽</div><div class="de-text">Detayları görmek için bir maça tıklayın</div></div>';
-    this.state.selectedMatch = null;
   },
 
   showDetail: function(matchId) {
@@ -952,12 +766,12 @@ var T = {
       var pName = inc.player ? (inc.player.shortName || inc.player.name) : (inc.playerName || '');
       
       var icon = '⏱️', detail = '';
-      var playerNameHtml = pName ? '<div class="incident-player">' + pName + '</div>' : '';
+      var playerNameHtml = pName ? '<div class="incident-player">' + esc(pName) + '</div>' : '';
       
       if (type === 'goal') { 
         icon = '⚽'; 
         var extra = iClass === 'penalty' ? '(Penaltı)' : (iClass === 'ownGoal' ? '(Kendi Kalesine)' : ''); 
-        playerNameHtml = '<div class="incident-player" style="color:var(--brand); font-weight:800;">' + (pName || 'Gol') + ' ' + extra + '</div>';
+        playerNameHtml = '<div class="incident-player" style="color:var(--brand); font-weight:800;">' + esc(pName || 'Gol') + ' ' + extra + '</div>';
       }
       else if (type === 'card') {
         if (iClass === 'yellow') { icon = '🟨'; detail = 'Sarı Kart'; }
@@ -968,12 +782,12 @@ var T = {
         icon = '🔄'; 
         var pIn = inc.playerIn ? (inc.playerIn.shortName || inc.playerIn.name) : (pName || '?');
         var pOut = inc.playerOut ? (inc.playerOut.shortName || inc.playerOut.name) : '?';
-        playerNameHtml = '<div class="incident-player"><span style="color:var(--green)">▲ ' + pIn + '</span></div>';
-        detail = '<span style="color:var(--red)">▼ ' + pOut + '</span>'; 
+        playerNameHtml = '<div class="incident-player"><span style="color:var(--green)">▲ ' + esc(pIn) + '</span></div>';
+        detail = '<span style="color:var(--red)">▼ ' + esc(pOut) + '</span>'; 
       }
       else if (type === 'period') { 
         icon = '🏁'; 
-        playerNameHtml = '<div class="incident-player" style="color:var(--text2)">' + (inc.text || inc.description || 'Devre / Maç Sonu') + '</div>'; 
+        playerNameHtml = '<div class="incident-player" style="color:var(--text2)">' + esc(inc.text || inc.description || 'Devre / Maç Sonu') + '</div>'; 
       }
       else if (type === 'injuryTime') {
         icon = '⏱️';
@@ -983,15 +797,15 @@ var T = {
       else if (type === 'varDecision') {
         icon = '📺';
         playerNameHtml = '<div class="incident-player" style="color:var(--brand)">VAR Kararı</div>';
-        detail = inc.text || inc.description || '';
+        detail = esc(inc.text || inc.description || '');
       }
       else { 
         icon = 'ℹ️'; 
-        detail = inc.text || inc.description || type || ''; 
+        detail = esc(inc.text || inc.description || type || ''); 
       }
 
       var scoreBadge = (inc.homeScore !== undefined && inc.awayScore !== undefined && type === 'goal') 
-        ? '<div class="incident-score">' + inc.homeScore + ' - ' + inc.awayScore + '</div>' : '';
+        ? '<div class="incident-score">' + safeNum(inc.homeScore) + ' - ' + safeNum(inc.awayScore) + '</div>' : '';
         
       var timeStr = '';
       if (inc.time !== undefined && inc.time !== null) {
@@ -1013,6 +827,55 @@ var T = {
       '</div>';
     }
     return html + '</div>';
+  },
+
+  // 🚀 OYUNCU İSTATİSTİKLERİ KUSURSUZ FORMAT
+  showPlayerModal: function(pDataStr) {
+    var p = JSON.parse(decodeURIComponent(pDataStr));
+    document.getElementById('pmImg').src = p.img; document.getElementById('pmName').textContent = p.name; document.getElementById('pmPos').textContent = p.pos;
+    var rBox = document.getElementById('pmRating');
+    if(p.rating) {
+      rBox.textContent = p.rating; rBox.style.display = 'inline-block'; var r = parseFloat(p.rating);
+      rBox.className = 'pm-rating ' + (r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'));
+    } else { rBox.style.display = 'none'; }
+
+    var grid = document.getElementById('pmStatsGrid'); var html = ''; 
+    var s = Object.assign({}, p.stats || {}); 
+    
+    // KOMBİNE (X/Y) İSTATİSTİKLER 
+    if (s.freeThrowsMade !== undefined && s.freeThrowsAttempted !== undefined) {
+        s.freeThrowsCombo = s.freeThrowsMade + '/' + s.freeThrowsAttempted;
+        STAT_DICT['freeThrowsCombo'] = 'Serbest Atış';
+        delete s.freeThrowsMade; delete s.freeThrowsAttempted;
+    }
+    if (s.threePointersMade !== undefined && s.threePointersAttempted !== undefined) {
+        s.threePointersCombo = s.threePointersMade + '/' + s.threePointersAttempted;
+        STAT_DICT['threePointersCombo'] = '3 Sayı';
+        delete s.threePointersMade; delete s.threePointersAttempted;
+    }
+    if (s.twoPointersMade !== undefined && s.twoPointersAttempted !== undefined) {
+        s.twoPointersCombo = s.twoPointersMade + '/' + s.twoPointersAttempted;
+        STAT_DICT['twoPointersCombo'] = '2 Sayı';
+        delete s.twoPointersMade; delete s.twoPointersAttempted;
+    }
+    if (s.fieldGoalsMade !== undefined && s.fieldGoalsAttempted !== undefined) {
+        s.fieldGoalsCombo = s.fieldGoalsMade + '/' + s.fieldGoalsAttempted;
+        STAT_DICT['fieldGoalsCombo'] = 'Saha İçi İsabet';
+        delete s.fieldGoalsMade; delete s.fieldGoalsAttempted;
+    }
+
+    var keys = Object.keys(s); var addedCount = 0;
+    for(var i=0; i<keys.length; i++) {
+      var key = keys[i]; var val = s[key]; if (typeof val === 'number' && val % 1 !== 0) val = val.toFixed(2);
+      if(STAT_DICT[key] && val !== undefined && val !== null) { html += '<div class="pm-stat-box"><div class="pm-stat-lbl">'+STAT_DICT[key]+'</div><div class="pm-stat-val">'+val+'</div></div>'; addedCount++; }
+    }
+    if(addedCount === 0) html = '<div style="grid-column:1/-1; text-align:center; color:var(--text3); font-size:12px; padding:20px 0;">Detaylı istatistik bulunmuyor.</div>';
+    grid.innerHTML = html; document.getElementById('playerModalOverlay').style.display = 'flex';
+  },
+
+  closePlayerModal: function(ev) {
+    if(ev && ev.target.id !== 'playerModalOverlay') return;
+    document.getElementById('playerModalOverlay').style.display = 'none';
   }
 };
 
