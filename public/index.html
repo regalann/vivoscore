@@ -31,7 +31,6 @@
 [data-theme="light"] .date-btn.active { background: var(--brand); color: #fff; }
 [data-theme="light"] .date-btn.active .day { color: rgba(255,255,255,0.8); }
 [data-theme="light"] .minute-badge { color: #fff; }
-[data-theme="light"] .pitch-container { background-color: var(--pitch-bg); border-color: var(--pitch-border); }
 
 body.hide-odds .match-odds-wrapper { display: none !important; }
 body.hide-odds .bet-slip { display: none !important; }
@@ -50,14 +49,13 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 .logo .v { color: var(--text); } .logo .s { color: var(--brand); }
 .logo .dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; margin-left: 4px; animation: pulse-dot 2s infinite; }
 @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.7); } }
-.sidebar-nav { padding: 12px 10px; flex: 1; overflow-y: auto; display: flex; flex-direction: column;}
+.sidebar-nav { padding: 12px 10px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
 .nav-label { font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text3); padding: 0 10px; margin-bottom: 8px; letter-spacing: 1px; margin-top:15px; }
 
-.sport-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; color: var(--text2); cursor: pointer; transition: var(--transition); margin-bottom: 2px;}
+.sport-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; color: var(--text2); cursor: pointer; transition: var(--transition); margin-bottom: 2px;}
 .sport-item:hover { background: var(--surface2); color: var(--text); } .sport-item.active { background: var(--brand-dim); color: var(--brand); }
 .sport-item .flag { font-size: 18px; width: 24px; text-align: center; } 
 
-/* YENİ: KULLANICI PROFİL ALANI */
 .user-profile-section { margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border); }
 .auth-btn { width: 100%; padding: 12px; background: var(--brand); color: #fff; font-weight: 800; font-size: 14px; border-radius: var(--radius-sm); transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;}
 .auth-btn:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px var(--brand-dim); }
@@ -68,7 +66,6 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 .user-logout { font-size: 11px; color: var(--red); cursor: pointer; margin-top: 2px; font-weight: 600; }
 .user-logout:hover { text-decoration: underline; }
 
-/* MAIN & TOPBAR */
 .main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg); }
 .topbar { display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--bg2); gap: 12px; }
 .date-nav { display: flex; align-items: center; gap: 4px; background: var(--surface); border-radius: var(--radius); padding: 3px; border: 1px solid var(--border); transition: 0.3s; }
@@ -91,7 +88,6 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 
 .match-scroll { flex: 1; overflow-y: auto; padding: 16px 20px; padding-bottom: 150px; } 
 
-/* MATCH CARDS */
 .league-group { margin-bottom: 20px; animation: fadeUp 0.3s ease; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 .league-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 15px; font-weight: 700; color: var(--text); background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; border: 1px solid var(--border); border-bottom: none; }
@@ -126,8 +122,7 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 .odds-group-title { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 800; color: var(--text3); background: var(--surface); padding: 0 6px; border-radius: 4px; white-space: nowrap;}
 .odd-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; text-align: center; min-width: 42px; cursor: pointer; transition: 0.2s; user-select: none; }
 .odd-btn:hover { border-color: var(--brand); }
-.odd-btn.selected { background: var(--brand); border-color: var(--brand); }
-.odd-btn.selected .odd-lbl, .odd-btn.selected .odd-val { color: #fff; }
+.odd-btn.selected { background: var(--brand); border-color: var(--brand); color: #fff;}
 .odd-lbl { font-size: 11px; color: var(--text3); font-weight: 700; margin-bottom: 2px; }
 .odd-val { font-size: 13px; color: var(--text); font-weight: 800; }
 
@@ -166,6 +161,42 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 .detail-tab:hover { color: var(--text2); } .detail-tab.active { color: var(--brand); border-bottom-color: var(--brand); }
 .detail-content { flex: 1; overflow-y: auto; padding: 16px; }
 
+/* İSTATİSTİK BARLARI */
+.stat-group-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); text-align: center;} .stat-group-title:first-child { margin-top: 0; }
+.stat-row { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;} 
+.stat-labels { display: flex; justify-content: space-between; align-items: center; width: 100%;}
+.stat-val { font-size: 16px; font-weight: 800; color: var(--text); min-width: 24px; } 
+.stat-val.home { text-align: left; } .stat-val.away { text-align: right; } .stat-val.high { color: var(--brand); }
+.stat-name { font-size: 13px; font-weight: 600; color: var(--text2); text-align: center; flex: 1; }
+.stat-bar-track { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: var(--surface2); gap: 2px; }
+.stat-bar-home { height:100%; border-radius:3px; background:var(--brand); transition:width 0.6s ease; } .stat-bar-away { height:100%; border-radius:3px; background:var(--orange); transition:width 0.6s ease; margin-left:auto; }
+
+/* SAHA GÖRÜNÜMÜ & YEDEKLER LİSTESİ */
+.team-lineup-wrapper { margin-bottom: 30px; }
+.team-lineup-header { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 12px; text-align: center; background: var(--bg2); padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border);}
+.formation-label { text-align:center; font-size:14px; font-weight:700; color:var(--brand); margin-bottom:12px; }
+.pitch-container { background: var(--pitch-bg, #2a3c24) url('data:image/svg+xml;utf8,<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/><line x1="0" y1="50%" x2="100%" y2="50%" stroke="rgba(255,255,255,0.15)" stroke-width="2"/><circle cx="50%" cy="50%" r="40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/></svg>') no-repeat center center; background-size: cover; border-radius: 8px; padding: 20px 0; display: flex; flex-direction: column; gap: 20px; margin-bottom: 16px; border: 2px solid var(--pitch-border, #3d5a35); }
+.pitch-row { display: flex; justify-content: center; gap: 12px; }
+.pitch-player { display: flex; flex-direction: column; align-items: center; width: 60px; cursor: pointer; transition: transform 0.2s; }
+.pitch-player:hover { transform: scale(1.1); }
+.p-img-wrap { position: relative; }
+.pitch-player img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; background: var(--surface); object-fit: cover; }
+.p-num { position: absolute; bottom: 0; left: -6px; background: rgba(0,0,0,0.8); color: #fff; font-size: 11px; font-weight: 800; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
+.pitch-player .p-rating { color: #000; font-size: 12px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: -6px; z-index: 2; border: 1px solid #fff; }
+.pitch-player .p-name { font-size: 12px; color: #fff; font-weight: 700; margin-top: 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px; text-shadow: 1px 1px 2px #000; }
+.rating-high { background:var(--green) !important; color:#000 !important; } .rating-mid { background:var(--yellow) !important; color:#000 !important; } .rating-low { background:var(--text3) !important; color:#fff !important; }
+.lineup-section-title { font-size:14px; font-weight:800; color:var(--text); margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+.lineup-list { display: flex; flex-direction: column; gap: 4px; }
+.ll-item { display: flex; align-items: center; background: var(--bg2); padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: var(--transition); border: 1px solid transparent;}
+.ll-item:hover { border-color: var(--border2); background: var(--surface2); }
+.ll-num { width: 32px; height: 32px; background: var(--surface); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: var(--text2); flex-shrink: 0; margin-right: 12px;}
+.ll-info { flex: 1; min-width: 0; }
+.ll-name { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ll-pos { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.ll-rating { font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 6px; flex-shrink: 0; }
+.ll-fav { color: var(--text3); font-size: 20px; margin-left: 12px; transition: 0.2s; }
+.ll-fav:hover, .ll-fav.faved { color: var(--yellow); }
+
 /* MODALLAR (OYUNCU & AUTH) */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(5px); }
 .custom-modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column;}
@@ -194,7 +225,20 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 .pm-stat-lbl { font-size: 13px; font-weight: 600; color: var(--text3); text-transform: uppercase; }
 .pm-stat-val { font-size: 16px; font-weight: 800; color: var(--brand); }
 
-/* UTILITIES */
+/* REVISED INCIDENTS */
+.incident-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
+.incident-row { display: flex; align-items: center; background: var(--surface2); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.incident-time { font-weight: 800; font-size: 15px; width: 44px; color: var(--text2); flex-shrink: 0; }
+.incident-icon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; margin-right: 14px; flex-shrink: 0; background: var(--surface); border-radius: 50%; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.incident-details { flex: 1; min-width: 0; }
+.incident-player { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height:1.4;}
+.incident-desc { font-size: 13px; color: var(--text3); margin-top: 2px; }
+.incident-score { font-size: 16px; font-weight: 800; background: var(--bg); padding: 4px 10px; border-radius: 6px; color: var(--brand); margin-left: 12px; flex-shrink: 0; border: 1px solid var(--border); }
+
+/* FAVORITE PLAYERS GRID */
+.fav-players-grid { display:flex; flex-wrap:wrap; gap:10px; padding:0 14px; }
+
+/* UTILITY */
 .loading { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 0; gap:12px; }
 .spinner { width:28px; height:28px; border:3px solid var(--border); border-top-color:var(--brand); border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
@@ -207,7 +251,7 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 <div class="app" id="app">
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="logo"><span class="v">Vivo</span><span class="s">Score</span><span class="dot"></span></div>
+      <div class="logo"><span class="v">Vivo</span><span class="s">Score</span><div class="dot"></div></div>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section">
@@ -323,19 +367,16 @@ body.hide-scores .score-num:hover, body.hide-scores .detail-score:hover { filter
 
 <script>
 // ═══════════════════════════════════════════════
-//  SUPABASE BAĞLANTISI (AŞAMA 1: BURAYI DOLDUR!)
+//  SUPABASE BAĞLANTISI (OTOMATİK ÇÖZÜMLENDİ)
 // ═══════════════════════════════════════════════
-const SUPABASE_URL = 'SUPABASE_URL_BURAYA'; 
-const SUPABASE_ANON_KEY = 'SUPABASE_ANON_KEY_BURAYA';
+const SUPABASE_URL = 'https://heflhadmyaubzkaldgwz.supabase.co'; 
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlZmxoYWRteWF1YnprYWxkZ3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODcwODMsImV4cCI6MjA5MDY2MzA4M30.mpnk_9B38xDDjYQaoOZsziThLFrZW_HzF-j6XoKwOzM';
 
 let supabase = null;
 if(SUPABASE_URL !== 'SUPABASE_URL_BURAYA') {
   supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
 
-// ═══════════════════════════════════════════════
-//  GÜVENLİK: XSS Escape fonksiyonu
-// ═══════════════════════════════════════════════
 function esc(str) {
   if (str === null || str === undefined) return '';
   var s = String(str);
@@ -390,7 +431,7 @@ var V = {
     theme: safeStorage.get('vivo_theme', 'dark'),
     showOdds: safeStorage.get('vivo_show_odds', false),
     betSlip: [],
-    user: null // Supabase User State
+    user: null // Supabase Kullanıcısı
   },
 
   init: function() { 
@@ -401,7 +442,7 @@ var V = {
     if(!this.state.showOdds) document.body.classList.add('hide-odds');
     this.updateOddsBtn();
     
-    // YENİ: SUPABASE AUTH DİNLEYİCİSİ
+    // SUPABASE AUTH DİNLEYİCİSİ
     if(supabase) {
       supabase.auth.getSession().then(function(res) {
         if(res.data && res.data.session) V.updateAuthUI(res.data.session.user);
@@ -412,11 +453,8 @@ var V = {
     }
   },
 
-  // ═══════════════════════════════════════════════
-  //  AUTH FONKSİYONLARI (GİRİŞ/ÇIKIŞ)
-  // ═══════════════════════════════════════════════
   openAuthModal: function() {
-    if(!supabase) { alert("Sistem yöneticisi henüz Supabase anahtarlarını girmedi."); return; }
+    if(!supabase) { alert("Supabase API anahtarları eksik. Lütfen index.html dosyasına ekleyin."); return; }
     document.getElementById('authModalOverlay').style.display = 'flex';
   },
 
@@ -441,31 +479,25 @@ var V = {
     var profileBox = document.getElementById('userProfileUI');
     
     if(user) {
-      // Giriş Yapıldı
       loginBtn.style.display = 'none';
       profileBox.style.display = 'flex';
-      
       var name = user.user_metadata.full_name || user.user_metadata.name || user.email.split('@')[0];
       var avatar = user.user_metadata.avatar_url || 'https://ui-avatars.com/api/?name='+name+'&background=2563eb&color=fff';
-      
       document.getElementById('uName').textContent = name;
       document.getElementById('uAvatar').src = avatar;
       this.closeModal(null, 'authModalOverlay');
     } else {
-      // Çıkış Yapıldı
       loginBtn.style.display = 'flex';
       profileBox.style.display = 'none';
     }
   },
 
-  // ═══════════════════════════════════════════════
-  //  MEVCUT FONKSİYONLAR (Aynı Bırakıldı)
-  // ═══════════════════════════════════════════════
   toggleOdd: function(matchId, matchNameRaw, market, selection, oddVal, btnElement, ev) {
     if (ev) ev.stopPropagation();
     var matchName = decodeURIComponent(matchNameRaw);
     var existingIdx = this.state.betSlip.findIndex(function(b){ return b.matchId == matchId; });
     var wrapper = btnElement.closest('.match-odds-wrapper');
+    
     if (existingIdx >= 0) {
       var existing = this.state.betSlip[existingIdx];
       if (existing.selection === selection && existing.market === market) {
@@ -578,6 +610,7 @@ var V = {
     if (!hasFavM && !hasFavP) return el.innerHTML = T.empty('Henüz favori maç veya oyuncu eklemediniz.');
     el.innerHTML = T.loading('Favorileriniz yükleniyor...');
     var playersHtml = '';
+
     if(hasFavP) {
       playersHtml = '<div class="league-group"><div class="league-header">⭐ Favori Oyuncular</div><div class="fav-players-grid">';
       for(var i=0; i<this.state.favPlayers.length; i++) {
@@ -617,12 +650,43 @@ var V = {
     if(this.state.page === 'favorites') this.loadFavorites();
   },
 
+  showPlayerModal: function(pDataStr) {
+    var p = JSON.parse(decodeURIComponent(pDataStr));
+    document.getElementById('pmImg').src = p.img; document.getElementById('pmName').textContent = p.name; document.getElementById('pmPos').textContent = p.pos;
+    var rBox = document.getElementById('pmRating');
+    if(p.rating) {
+      rBox.textContent = p.rating; rBox.style.display = 'inline-block'; var r = parseFloat(p.rating);
+      rBox.className = 'pm-rating ' + (r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'));
+    } else { rBox.style.display = 'none'; }
+
+    var grid = document.getElementById('pmStatsGrid'); var html = ''; var s = p.stats || {}; var keys = Object.keys(s); var addedCount = 0;
+    for(var i=0; i<keys.length; i++) {
+      var key = keys[i]; var val = s[key]; if (typeof val === 'number' && val % 1 !== 0) val = val.toFixed(2);
+      if(STAT_DICT[key] && val !== undefined && val !== null) { html += '<div class="pm-stat-box"><div class="pm-stat-lbl">'+STAT_DICT[key]+'</div><div class="pm-stat-val">'+val+'</div></div>'; addedCount++; }
+    }
+    if(addedCount === 0) html = '<div style="grid-column:1/-1; text-align:center; color:var(--text3); font-size:12px; padding:20px 0;">Detaylı istatistik bulunmuyor.</div>';
+    grid.innerHTML = html; document.getElementById('playerModalOverlay').style.display = 'flex';
+  },
+
+  closePlayerModal: function(ev) {
+    if(ev && ev.target.id !== 'playerModalOverlay') return;
+    document.getElementById('playerModalOverlay').style.display = 'none';
+  },
+
+  closeDetail: function() {
+    document.querySelectorAll('.match-card').forEach(function(el) { el.classList.remove('selected'); });
+    var panel = document.getElementById('detailPanel');
+    if(panel) panel.innerHTML = '<div class="detail-empty"><div class="de-icon">⚽</div><div class="de-text">Detayları görmek için bir maça tıklayın</div></div>';
+    this.state.selectedMatch = null;
+  },
+
   showDetail: function(matchId) {
     this.state.selectedMatch = matchId; this.state.detailTab = 'summary';
     document.querySelectorAll('.match-card').forEach(function(el) { el.classList.remove('selected'); });
     var card = document.querySelector('.match-card[data-match="' + matchId + '"]'); if (card) card.classList.add('selected');
     var panel = document.getElementById('detailPanel'); if (!panel) return;
     panel.innerHTML = '<div class="loading" style="height:100%"><div class="spinner"></div><div class="loading-text">Pro Detaylar Yükleniyor...</div></div>';
+
     var self = this;
     this.apiFetch('/api/event/' + matchId).then(function(data) { self.state.matchCache[matchId] = { match: data.event }; self.renderDetail(matchId); }).catch(function() { panel.innerHTML = T.empty('Maç detayları yüklenemedi'); });
   },
@@ -630,8 +694,8 @@ var V = {
   renderDetail: function(matchId) {
     var cache = this.state.matchCache[matchId]; if (!cache) return;
     var m = cache.match; var panel = document.getElementById('detailPanel'); if (!panel) return;
-    var isLive = m.status === 'live'; var isFinished = m.status === 'finished'; var hasScore = m.homeScore !== null && m.homeScore !== undefined;
 
+    var isLive = m.status === 'live'; var isFinished = m.status === 'finished'; var hasScore = m.homeScore !== null && m.homeScore !== undefined;
     var statusHtml = '';
     if (isLive) statusHtml = '<div class="detail-status st-live">' + esc(m.minute || 'CANLI') + '\'</div>';
     else if (isFinished) statusHtml = '<div class="detail-status st-finished">Maç Sonu</div>';
