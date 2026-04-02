@@ -356,7 +356,7 @@ app.get('/api/event/:id', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════
-//  ARAMA ENDPOİNTİ
+//  ARAMA ENDPOİNTİ (SAYFALANDIRMA İÇİN GÜNCELLENDİ)
 // ═══════════════════════════════════════════════
 function validateSearchQuery(q) {
   if (typeof q !== 'string') return false;
@@ -378,41 +378,44 @@ app.get('/api/search/:sport', async (req, res) => {
     if (cached) return res.json(cached);
 
     const data = await api(`/sport/${sport}/search/${encodeURIComponent(q)}`);
-    
     const results = { teams: [], players: [] };
 
-    // Takımları işle
-    if (data.results) {
-      data.results.forEach(r => {
-        if (r.type === 'team' && r.entity) {
-          results.teams.push(sanitizeObject({
-            id: Number(r.entity.id) || 0,
-            name: r.entity.name || '',
-            shortName: r.entity.shortName || r.entity.name || '',
-            img: `https://api.sofascore.app/api/v1/team/${Number(r.entity.id) || 0}/image`,
-            country: r.entity.country?.name || '',
-            tournament: r.entity.tournament?.uniqueTournament?.name || r.entity.tournament?.name || ''
-          }));
-        }
-        if (r.type === 'player' && r.entity) {
-          results.players.push(sanitizeObject({
-            id: Number(r.entity.id) || 0,
-            name: r.entity.name || '',
-            shortName: r.entity.shortName || r.entity.name || '',
-            img: `https://api.sofascore.app/api/v1/player/${Number(r.entity.id) || 0}/image`,
-            position: r.entity.position || '',
-            teamName: r.entity.team?.name || '',
-            teamId: Number(r.entity.team?.id) || 0
-          }));
-        }
-      });
+    // API limitlenmişse veya boş dönerse kodun kırılmasını engelle
+    if (!data || !data.results) {
+        return res.json(results); 
     }
+
+    // Takımları ve oyuncuları işle
+    data.results.forEach(r => {
+      if (r.type === 'team' && r.entity) {
+        results.teams.push(sanitizeObject({
+          id: Number(r.entity.id) || 0,
+          name: r.entity.name || '',
+          shortName: r.entity.shortName || r.entity.name || '',
+          img: `https://api.sofascore.app/api/v1/team/${Number(r.entity.id) || 0}/image`,
+          country: r.entity.country?.name || '',
+          tournament: r.entity.tournament?.uniqueTournament?.name || r.entity.tournament?.name || ''
+        }));
+      }
+      if (r.type === 'player' && r.entity) {
+        results.players.push(sanitizeObject({
+          id: Number(r.entity.id) || 0,
+          name: r.entity.name || '',
+          shortName: r.entity.shortName || r.entity.name || '',
+          img: `https://api.sofascore.app/api/v1/player/${Number(r.entity.id) || 0}/image`,
+          position: r.entity.position || '',
+          teamName: r.entity.team?.name || '',
+          teamId: Number(r.entity.team?.id) || 0
+        }));
+      }
+    });
 
     setCache(cacheKey, results);
     res.json(results);
   } catch (err) {
     console.error(`[SEARCH] ${sport}/${q}:`, err.message);
-    res.status(500).json({ error: 'Arama hatası' });
+    // 500 fırlatmak yerine frontend'e açıklamalı bir json dön
+    res.status(500).json({ error: 'API Hatası: Kotanızı veya RapidAPI anahtarınızı kontrol edin.' });
   }
 });
 
