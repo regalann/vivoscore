@@ -374,4 +374,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Beklenmeyen sunucu hatası' });
 });
 
-app.listen(PORT, () => console.log
+// Parantez hatasını kalıcı olarak çözecek güvenli kapanış formatı
+app.listen(PORT, () => {
+    console.log("🟢 VivoScore Güvenli Mod: " + PORT);
+});
