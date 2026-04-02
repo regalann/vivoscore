@@ -2,11 +2,11 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="referrer" content="no-referrer" />
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cline x1='4' y1='3' x2='4' y2='21' stroke='%238b949e' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M4 4L19 4C19 4 21 4 21 6C21 8 19 8 19 8L4 8' fill='%233b82f6' stroke='%233b82f6' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M4 8L16 8C16 8 18 8 18 10C18 12 16 12 16 12L4 12' fill='%23ffffff' stroke='%233b82f6' stroke-width='0.8' stroke-linejoin='round'/%3E%3Ccircle cx='4' cy='3' r='1.5' fill='%233b82f6'/%3E%3C/svg%3E">
 <title>VivoScore Pro - Ultimate Edition</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/supabase/2.38.4/supabase.min.js"></script>
 <script>
@@ -42,10 +42,10 @@
 body.hide-odds .match-odds-wrapper { display: none !important; }
 body.hide-odds .bet-slip { display: none !important; }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; -webkit-font-smoothing: antialiased; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
 ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
-img { display: block; } button { font-family: inherit; cursor: pointer; border: none; outline: none; }
-.app { display: flex; height: 100vh; width: 100vw; position: relative; overflow: hidden; }
+img { display: block; } button { font-family: inherit; cursor: pointer; border: none; outline: none; touch-action: manipulation; }
+.app { display: flex; height: 100vh; height: 100dvh; width: 100vw; position: relative; overflow: hidden; }
 
 body.hide-scores .score-num, 
 body.hide-scores .detail-score { filter: blur(6px); opacity: 0.5; transition: var(--transition); }
@@ -63,7 +63,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .sport-item:hover { background: var(--surface2); color: var(--text); } .sport-item.active { background: var(--brand-dim); color: var(--brand); }
 .sport-item .flag { font-size: 18px; width: 24px; text-align: center; } 
 
-.user-profile-section { padding: 16px 14px; border-top: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; }
+.user-profile-section { padding: 16px 14px; border-top: 1px solid var(--border); flex-shrink: 0; }
 .auth-btn { width: 100%; padding: 12px; background: var(--brand); color: #fff; font-weight: 800; font-size: 14px; border-radius: var(--radius-sm); transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;}
 .auth-btn:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px var(--brand-dim); }
 .user-info-box { display: none; align-items: center; gap: 10px; padding: 10px; background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border);}
@@ -93,7 +93,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .live-toggle.active .pulse-dot-btn { background:var(--red); animation: pulse-live 1.5s infinite; }
 .right-actions { margin-left: auto; display: flex; gap: 8px; }
 
-.match-scroll { flex: 1; overflow-y: auto; padding: 16px 20px; padding-bottom: 150px; } 
+.match-scroll { flex: 1; overflow-y: auto; padding: 16px 20px; padding-bottom: 150px; -webkit-overflow-scrolling: touch; } 
 
 .league-group { margin-bottom: 20px; animation: fadeUp 0.3s ease; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
@@ -107,8 +107,8 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .match-time.live-time { color: var(--green); }
 .minute-badge { display: inline-block; background: var(--green); color: #000; font-size: 12px; font-weight: 700; padding: 1px 6px; border-radius: 4px; animation: pulse-live 1.5s infinite; }
 
-.match-info-area { flex:1; min-width:0; display:flex; align-items:center; cursor: pointer; } 
-.match-teams { flex: 0 0 28%; min-width: 190px; max-width: 260px; padding: 0 12px; border-right: 1px solid var(--border); }
+.match-info-area { flex:1; min-width:0; display:flex; align-items:center; cursor: pointer; overflow: hidden; } 
+.match-teams { flex: 1; min-width: 0; max-width: 260px; padding: 0 12px; border-right: 1px solid var(--border); }
 .team-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; } .team-row:last-child { margin-bottom: 0; }
 .team-logo { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0; background: transparent; }
 .team-name { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .team-name.loser { color: var(--text2); }
@@ -121,6 +121,8 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .hide-single-btn:hover { color: var(--text); }
 .match-card.hide-this-score .score-num { filter: blur(5px); opacity: 0.6; transition: 0.3s; }
 .match-card.hide-this-score .score-num:hover { filter: blur(0); opacity: 1; }
+.detail-score-hidden { filter: blur(6px); opacity: 0.5; transition: var(--transition); }
+.detail-score-hidden:hover { filter: blur(0); opacity: 1; }
 .match-fav { width: 32px; flex-shrink: 0; text-align: center; font-size: 18px; color: var(--text3); cursor: pointer; transition: var(--transition); }
 .match-fav:hover, .match-fav.faved { color: var(--yellow); }
 
@@ -168,7 +170,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .detail-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg2); padding: 0 12px; }
 .detail-tab { padding: 14px 16px; font-size: 14px; font-weight: 600; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; transition: var(--transition); flex:1; text-align:center;}
 .detail-tab:hover { color: var(--text2); } .detail-tab.active { color: var(--brand); border-bottom-color: var(--brand); }
-.detail-content { flex: 1; overflow-y: auto; padding: 16px; }
+.detail-content { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
 
 /* İSTATİSTİK BARLARI */
 .stat-group-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); text-align: center;} .stat-group-title:first-child { margin-top: 0; }
@@ -194,6 +196,9 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .pitch-player .p-rating { color: #000; font-size: 12px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: -6px; z-index: 2; border: 1px solid #fff; }
 .pitch-player .p-name { font-size: 12px; color: #fff; font-weight: 700; margin-top: 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px; text-shadow: 1px 1px 2px #000; }
 .rating-high { background:var(--green) !important; color:#000 !important; } .rating-mid { background:var(--yellow) !important; color:#000 !important; } .rating-low { background:var(--text3) !important; color:#fff !important; }
+.pm-fav-btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:12px 16px; margin-top:16px; background:var(--surface2); color:var(--text2); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:14px; font-weight:700; cursor:pointer; transition:var(--transition); }
+.pm-fav-btn:hover { background:var(--yellow-dim); color:var(--yellow); border-color:var(--yellow); }
+.pm-fav-btn.faved { background:var(--yellow-dim); color:var(--yellow); border-color:var(--yellow); }
 .lineup-section-title { font-size:14px; font-weight:800; color:var(--text); margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
 .lineup-list { display: flex; flex-direction: column; gap: 4px; }
 .ll-item { display: flex; align-items: center; background: var(--bg2); padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: var(--transition); border: 1px solid transparent;}
@@ -237,52 +242,6 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .fav-players-grid { display:flex; flex-wrap:wrap; gap:10px; padding:0 14px; }
 
 /* UTILITY */
-/* SEARCH BAR */
-.search-container { position: relative; flex: 1; max-width: 380px; min-width: 180px; }
-.search-input-wrap { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0 12px; height: 38px; transition: var(--transition); gap: 8px; }
-.search-input-wrap:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-dim); }
-.search-input-wrap svg { flex-shrink: 0; color: var(--text3); transition: var(--transition); }
-.search-input-wrap:focus-within svg { color: var(--brand); }
-.search-input { flex: 1; background: none; border: none; outline: none; color: var(--text); font-family: inherit; font-size: 14px; font-weight: 500; min-width: 0; }
-.search-input::placeholder { color: var(--text3); }
-.search-clear { display: none; background: none; border: none; color: var(--text3); font-size: 16px; cursor: pointer; padding: 2px; line-height: 1; transition: 0.2s; }
-.search-clear:hover { color: var(--text); }
-.search-input-wrap.has-value .search-clear { display: block; }
-.search-shortcut { font-size: 11px; font-weight: 700; color: var(--text3); background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; flex-shrink: 0; pointer-events: none; }
-.search-input-wrap:focus-within .search-shortcut { display: none; }
-
-.search-dropdown { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 12px 36px rgba(0,0,0,0.4); z-index: 200; display: none; max-height: 420px; overflow-y: auto; animation: searchFadeIn 0.2s ease; }
-.search-dropdown.active { display: block; }
-@keyframes searchFadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-.search-section-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); padding: 12px 14px 6px; }
-.search-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer; transition: var(--transition); border-bottom: 1px solid var(--border); }
-.search-item:last-child { border-bottom: none; }
-.search-item:hover, .search-item.focused { background: var(--brand-dim); }
-.search-item img { width: 32px; height: 32px; border-radius: 50%; object-fit: contain; background: var(--bg2); flex-shrink: 0; border: 1px solid var(--border); }
-.search-item-info { flex: 1; min-width: 0; }
-.search-item-name { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.search-item-name mark { background: var(--brand-dim); color: var(--brand); border-radius: 2px; padding: 0 2px; }
-.search-item-sub { font-size: 12px; color: var(--text3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.search-item-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; flex-shrink: 0; }
-.search-item-badge.team { background: var(--brand-dim); color: var(--brand); }
-.search-item-badge.player { background: var(--green-dim); color: var(--green); }
-.search-no-result { padding: 30px 20px; text-align: center; color: var(--text3); font-size: 14px; }
-.search-no-result .snr-icon { font-size: 28px; margin-bottom: 8px; opacity: 0.4; }
-.search-loading { display: flex; align-items: center; justify-content: center; padding: 24px; gap: 10px; color: var(--text3); font-size: 13px; }
-.search-loading .spinner { width: 18px; height: 18px; }
-
-/* Arama Dropdown Pagination CSS */
-.search-pagination { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-top: 1px solid var(--border); background: var(--bg2); border-radius: 0 0 var(--radius) var(--radius); }
-.search-page-btn { background: var(--surface); border: 1px solid var(--border); padding: 4px 12px; border-radius: 4px; color: var(--text); font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-.search-page-btn:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); background: var(--surface2); }
-.search-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.search-page-info { font-size: 12px; font-weight: 700; color: var(--text3); }
-
-@media (max-width: 768px) {
-  .search-container { order: 7; min-width: 100%; margin-top: 4px; }
-  .search-dropdown { max-height: 320px; }
-  .search-shortcut { display: none; }
-}
 .loading { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 0; gap:12px; }
 .spinner { width:28px; height:28px; border:3px solid var(--border); border-top-color:var(--brand); border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
@@ -307,75 +266,172 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 @media (max-width: 768px) {
     .app { flex-direction: column; }
     
+    /* SIDEBAR → ALT NAV BAR */
     .sidebar { 
-        order: 3; width: 100%; height: 65px; flex-direction: row; border-right: none; 
+        order: 3; width: 100%; height: 56px; flex-direction: row; border-right: none; 
         border-top: 1px solid var(--border); padding: 0; background: var(--surface); z-index: 50;
+        flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom, 0);
     }
     .sidebar-header { display: none; }
     .sidebar-nav { 
         flex-direction: row; width: 100%; padding: 0; overflow-x: auto; overflow-y: hidden;
-        align-items: center; justify-content: space-between;
+        align-items: center; justify-content: flex-start; gap: 0;
+        -webkit-overflow-scrolling: touch; scrollbar-width: none;
     }
-    .nav-section { display: flex; flex-direction: row; align-items: center; margin: 0 !important; padding: 0 5px !important; border: none !important; }
+    .sidebar-nav::-webkit-scrollbar { display: none; }
+    .nav-section { display: contents; margin: 0 !important; padding: 0 !important; border: none !important; }
+    #sportList { display: flex; flex-direction: row; align-items: center; }
     .nav-label { display: none; }
-    .sport-item { margin: 0 2px; padding: 8px 12px; flex-direction: column; gap: 4px; border-radius: 8px; }
-    .sport-item .flag { font-size: 20px; width: auto; }
+    .sport-item { margin: 0; padding: 10px 14px; flex-direction: column; gap: 2px; border-radius: 0; flex-shrink: 0; }
+    .sport-item .flag { font-size: 22px; width: auto; }
     .sport-item span:not(.flag) { display: none; }
+    .sport-item.active { background: var(--brand-dim); border-radius: 0; }
     
-    .user-profile-section { padding: 0 10px; margin: 0; border: none !important; display: flex; align-items: center; }
-    .auth-btn { padding: 8px; font-size: 0; background: transparent; color: var(--text2); }
+    .user-profile-section { padding: 0 8px; margin: 0; border: none !important; display: flex; align-items: center; flex-shrink: 0; }
+    .auth-btn { padding: 8px; font-size: 0; background: transparent; color: var(--text2); width: auto; }
     .auth-btn svg { margin: 0; width: 24px; height: 24px; }
     .auth-btn:hover { background: var(--surface2); color: var(--text); box-shadow: none; transform: none; }
     .user-info-box { padding: 0; border: none; background: transparent; cursor: pointer; }
     .user-avatar { width: 28px; height: 28px; font-size: 13px; }
     .user-details { display: none; }
     
-    .main { order: 1; flex: 1; overflow: hidden; }
+    /* MAIN */
+    .main { order: 1; flex: 1; overflow: hidden; min-height: 0; }
     
-    .topbar { padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 6px; }
-    .live-toggle { order: 1; margin: 0; }
-    .fav-toggle { order: 2; margin: 0; }
-    .right-actions { order: 3; flex: 1; justify-content: flex-end; gap: 4px; }
-    .topbar > button.date-arrow:nth-of-type(1) { order: 4; margin-top: 4px; width: 32px; height: 32px; }
-    .date-nav { order: 5; flex: 1; justify-content: space-between; margin-top: 4px; min-width: 200px; padding: 2px; }
-    .topbar > button.date-arrow:nth-of-type(2) { order: 6; margin-top: 4px; width: 32px; height: 32px; }
+    /* TOPBAR — mobilde iki satır grid */
+    .topbar { 
+        padding: 8px 10px; display: grid; gap: 6px;
+        grid-template-columns: auto auto 1fr auto auto;
+        grid-template-rows: auto auto;
+        align-items: center;
+    }
+    .live-toggle { grid-row: 1; grid-column: 1; margin: 0; }
+    .fav-toggle { grid-row: 1; grid-column: 2; margin: 0; }
+    .right-actions { grid-row: 1; grid-column: 3 / 6; justify-content: flex-end; gap: 4px; }
     
-    .date-btn { padding: 6px 2px; font-size: 11px; flex: 1; text-align: center; }
+    .topbar > button.date-arrow:first-child { grid-row: 2; grid-column: 1; width: 32px; height: 32px; }
+    .date-nav { grid-row: 2; grid-column: 2 / 5; justify-content: space-between; padding: 2px; min-width: 0; }
+    .topbar > button.date-arrow:nth-child(3) { grid-row: 2; grid-column: 5; width: 32px; height: 32px; }
+    
+    .date-btn { padding: 6px 4px; font-size: 12px; flex: 1; text-align: center; min-width: 0; }
     .date-btn .day { font-size: 10px; margin-top: 2px; }
-    .btn-toggle { font-size: 13px; padding: 6px 10px; }
+    .btn-toggle { font-size: 13px; padding: 6px 10px; min-height: 36px; }
+    .live-toggle { min-width: 36px; justify-content: center; }
+    .fav-toggle { min-width: 36px; justify-content: center; }
     .hide-mobile { display: none !important; }
-    .match-scroll { padding: 10px 12px; padding-bottom: 20px; }
     
-    .match-card { padding: 10px 8px; }
-    .match-time { width: 40px; font-size: 11px; }
-    .match-teams { min-width: 0; flex: 1; padding: 0 8px; border-right: none; }
+    /* MATCH SCROLL */
+    .match-scroll { padding: 10px 8px; padding-bottom: 20px; }
+    
+    /* MATCH CARD — mobilde kompakt */
+    .match-card { padding: 10px 6px; }
+    .match-time { width: 38px; font-size: 11px; flex-shrink: 0; }
+    .match-info-area { min-width: 0; }
+    .match-teams { min-width: 0; flex: 1; max-width: none; padding: 0 6px; border-right: none; }
+    .team-row { gap: 6px; }
+    .team-logo { width: 18px; height: 18px; }
     .team-name { font-size: 13px; }
-    .match-score-wrap { gap: 8px; }
-    .match-score { width: 40px; }
-    .score-num { font-size: 14px; }
-    .hide-single-btn { font-size: 14px; }
+    .match-score-wrap { gap: 4px; }
+    .match-score { width: 30px; }
+    .score-num { font-size: 14px; line-height: 1.6; }
+    .hide-single-btn { font-size: 14px; padding: 0 2px; }
     .match-fav { width: 24px; font-size: 16px; }
     .match-odds-wrapper { display: none !important; }
+    .league-header { font-size: 13px; padding: 8px 10px; gap: 8px; }
+    .league-header img { width: 18px; height: 18px; }
     
+    /* DETAIL PANEL → TAM EKRAN */
     .detail-panel { 
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; 
         transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-left: none;
     }
     .detail-panel.open { transform: translateX(0); }
     .btn-close-panel { width: 40px; height: 40px; font-size: 20px; top: 10px; right: 10px; background: var(--surface2); z-index: 1001; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .detail-header { padding: 16px 12px 12px; }
+    .detail-teams { gap: 12px; }
+    .detail-team { width: 90px; }
+    .detail-team img { width: 44px; height: 44px; }
+    .detail-team .dt-name { font-size: 12px; }
+    .detail-score { font-size: 28px; }
+    .detail-content { padding: 12px; }
     
-    .bet-slip { width: 90%; left: 5%; bottom: 80px; }
-    .custom-modal { width: 95%; max-width: 350px; padding: 16px; }
+    /* SAHA GÖRÜNÜMÜ */
+    .pitch-container { padding: 12px 0; gap: 14px; overflow-x: auto; }
+    .pitch-row { gap: 4px; flex-wrap: nowrap; padding: 0 4px; }
+    .pitch-player { width: 48px; }
+    .pitch-player img { width: 34px; height: 34px; }
+    .pitch-player .p-name { font-size: 10px; max-width: 48px; }
+    .p-num { width: 16px; height: 16px; font-size: 9px; }
+    
+    /* KUPON */
+    .bet-slip { width: 92%; left: 4%; bottom: 80px; }
+    
+    /* MODALLER */
+    .modal-overlay { padding: 16px; }
+    .custom-modal { width: 100%; max-width: 380px; padding: 20px 16px; max-height: 85vh; }
+    .player-modal { width: 100%; max-width: 380px; }
+    .pm-header img { width: 56px; height: 56px; }
+    .pm-name { font-size: 17px; }
+    .pm-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .pm-stat-box { padding: 8px; }
+    .pm-stat-lbl { font-size: 11px; }
+    .pm-stat-val { font-size: 15px; }
+    .auth-box { width: 100%; max-width: 360px; padding: 24px 16px; }
+    
+    /* İSTATİSTİK */
+    .stat-val { font-size: 14px; }
+    .stat-name { font-size: 12px; }
+    
+    /* LINEUP LİST */
+    .ll-item { padding: 8px 10px; }
+    .ll-name { font-size: 13px; }
+    .ll-num { width: 28px; height: 28px; font-size: 12px; margin-right: 8px; }
+    
+    /* FAVORİLER GRİD */
+    .fav-players-grid { gap: 8px; padding: 0 8px; justify-content: center; }
+    .fav-players-grid > div { width: calc(50% - 4px) !important; min-width: 150px !important; }
+}
+
+/* KÜÇÜK TELEFONLAR (360px ve altı) */
+@media (max-width: 380px) {
+    .topbar { padding: 6px 6px; gap: 4px; }
+    .btn-toggle { padding: 5px 8px; font-size: 12px; }
+    .date-btn { padding: 5px 2px; font-size: 11px; }
+    .match-card { padding: 8px 4px; }
+    .match-time { width: 34px; font-size: 10px; }
+    .team-name { font-size: 12px; }
+    .score-num { font-size: 13px; }
+    .match-fav { width: 20px; font-size: 14px; }
+    .pitch-player { width: 42px; }
+    .pitch-player img { width: 30px; height: 30px; }
+    .pitch-player .p-name { font-size: 9px; max-width: 42px; }
     .pm-grid { grid-template-columns: 1fr; }
 }
-@media (max-width:1200px) and (min-width:769px) { .detail-panel { width:340px; } }
+
+/* TABLET */
+@media (max-width: 1200px) and (min-width: 769px) { 
+    .detail-panel { width: 340px; }
+    .match-teams { min-width: 140px; max-width: 200px; }
+    .match-odds-wrapper { display: none !important; }
+}
+
+/* LANDSCAPE MOBİL */
+@media (max-height: 500px) and (max-width: 900px) {
+    .sidebar { height: 48px; }
+    .sport-item { padding: 6px 10px; }
+    .topbar { padding: 4px 8px; gap: 4px; }
+    .match-scroll { padding: 6px 8px; padding-bottom: 10px; }
+    .detail-header { padding: 10px 12px 8px; }
+    .detail-team img { width: 36px; height: 36px; }
+    .detail-score { font-size: 24px; }
+}
 </style>
 </head>
 <body>
 <div class="app" id="app">
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="logo">
+      <div class="logo" onclick="V.goHome()" style="cursor:pointer">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
           <line x1="4" y1="3" x2="4" y2="21" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"/>
           <path d="M4 4L19 4C19 4 21 4 21 6C21 8 19 8 19 8L4 8" fill="var(--brand)" stroke="var(--brand)" stroke-width="1.5" stroke-linejoin="round"/>
@@ -419,16 +475,6 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
         ⭐ <span class="hide-mobile">Favoriler</span>
       </button>
 
-      <div class="search-container" id="searchContainer">
-        <div class="search-input-wrap" id="searchWrap">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" class="search-input" id="searchInput" placeholder="Takım veya oyuncu ara..." autocomplete="off" spellcheck="false">
-          <button class="search-clear" id="searchClear" onclick="Search.clear()">✕</button>
-          <span class="search-shortcut">/</span>
-        </div>
-        <div class="search-dropdown" id="searchDropdown"></div>
-      </div>
-
       <div class="right-actions">
         <button class="btn-toggle" id="oddsToggleBtn" onclick="V.toggleOddsVisibility()" style="border:1px solid var(--border)">📊 <span class="hide-mobile">Oranları Göster</span></button>
         <button class="btn-toggle" id="hideScoresBtn" onclick="V.toggleHideScores()" style="border:1px solid var(--border)">🙈 <span class="hide-mobile">Tüm Skorları Gizle</span></button>
@@ -471,6 +517,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     <div class="pm-body">
       <div class="pm-grid" id="pmStatsGrid"></div>
     </div>
+    <button class="pm-fav-btn" id="pmFavBtn" onclick="V.toggleFavFromModal()">⭐ Favorilere Ekle</button>
   </div>
 </div>
 
@@ -792,6 +839,18 @@ var V = {
     Auth.init();
   },
 
+  goHome: function() {
+    this.state.dateOffset = 0;
+    this.state.isLiveOnly = false;
+    this.state.page = 'matches';
+    var lb = document.getElementById('liveToggleBtn'); if(lb) lb.classList.remove('active');
+    var fb = document.getElementById('favToggleBtn'); if(fb) fb.classList.remove('active');
+    var dn = document.getElementById('dateNav'); if(dn) dn.classList.remove('disabled');
+    this.renderDateNav();
+    this.loadMatches();
+    this.closeDetail();
+  },
+
   toggleOdd: function(matchId, matchNameRaw, market, selection, oddVal, btnElement, ev) {
     if (ev) ev.stopPropagation();
     var matchName = decodeURIComponent(matchNameRaw);
@@ -910,6 +969,12 @@ var V = {
       mCard.classList.toggle('hide-this-score', !!this.state.hiddenMatchScores[matchId]);
       var iconBtn = mCard.querySelector('.hide-single-btn');
       if(iconBtn) iconBtn.innerHTML = this.state.hiddenMatchScores[matchId] ? '👁️' : '🙈';
+    }
+    if(this.state.selectedMatch == matchId) {
+      var isHidden = !!this.state.hiddenMatchScores[matchId];
+      document.querySelectorAll('.detail-score, .detail-ht').forEach(function(el) {
+        el.classList.toggle('detail-score-hidden', isHidden);
+      });
     }
   },
 
@@ -1133,6 +1198,31 @@ var V = {
     if(this.state.page === 'favorites') this.loadFavorites();
   },
 
+  _currentModalPlayerId: null,
+
+  toggleFavFromModal: function() {
+    var pId = this._currentModalPlayerId;
+    if (!pId) return;
+    var p = this.state.playerData[pId];
+    if (!p) return;
+
+    var idx = this.state.favPlayers.findIndex(function(fp) { return String(fp.id) === String(p.id); });
+    if (idx >= 0) this.state.favPlayers.splice(idx, 1);
+    else this.state.favPlayers.push(p);
+
+    safeStorage.set('vivo_fav_players', this.state.favPlayers);
+    Auth.saveCloudData();
+
+    var isFav = this.state.favPlayers.some(function(fp) { return String(fp.id) === String(p.id); });
+    var btn = document.getElementById('pmFavBtn');
+    if (btn) {
+      btn.classList.toggle('faved', isFav);
+      btn.innerHTML = isFav ? '★ Favorilerden Çıkar' : '⭐ Favorilere Ekle';
+    }
+    document.querySelectorAll('.ll-fav[data-pid="' + p.id + '"]').forEach(function(star) { star.classList.toggle('faved', isFav); });
+    if (this.state.page === 'favorites') this.loadFavorites();
+  },
+
   showDetail: function(matchId) {
     this.state.selectedMatch = matchId; this.state.detailTab = 'summary';
     document.querySelectorAll('.match-card').forEach(function(el) { el.classList.remove('selected'); });
@@ -1181,12 +1271,15 @@ var V = {
       metaHtml += '</div>';
     }
 
+    var isScoreHidden = !!this.state.hiddenMatchScores[matchId];
+    var blurClass = isScoreHidden ? ' detail-score-hidden' : '';
+
     var h = '<div class="detail-header">';
     h += '<div class="btn-close-panel" onclick="V.closeDetail()">✕</div>';
     h += '<div class="detail-teams">';
     h += '<div class="detail-team"><img src="' + safeImgUrl(m.homeTeam.img) + '" onerror="this.style.display=\'none\'"><div class="dt-name">' + esc(m.homeTeam.shortName) + '</div></div>';
-    h += '<div class="detail-score-box"><div class="detail-score' + (isLive ? ' live-ds' : '') + '">' + esc(scoreStr) + '</div>';
-    if (htStr) h += '<div class="detail-ht">' + esc(htStr) + '</div>';
+    h += '<div class="detail-score-box"><div class="detail-score' + (isLive ? ' live-ds' : '') + blurClass + '">' + esc(scoreStr) + '</div>';
+    if (htStr) h += '<div class="detail-ht' + blurClass + '">' + esc(htStr) + '</div>';
     h += statusHtml + '</div>';
     h += '<div class="detail-team"><img src="' + safeImgUrl(m.awayTeam.img) + '" onerror="this.style.display=\'none\'"><div class="dt-name">' + esc(m.awayTeam.shortName) + '</div></div></div>' + metaHtml + '</div>';
     h += '<div class="detail-tabs"><div class="detail-tab active" data-tab="summary" onclick="V.loadTab(\'summary\',' + matchId + ')">Özet</div>';
@@ -1281,7 +1374,17 @@ var V = {
     }
 
     if(addedCount === 0) html = '<div style="grid-column:1/-1; text-align:center; color:var(--text3); font-size:12px; padding:20px 0;">Detaylı istatistik bulunmuyor.</div>';
-    grid.innerHTML = html; document.getElementById('playerModalOverlay').style.display = 'flex';
+    grid.innerHTML = html;
+
+    V._currentModalPlayerId = playerId;
+    var isFav = V.state.favPlayers.some(function(fp) { return String(fp.id) === String(playerId); });
+    var favBtn = document.getElementById('pmFavBtn');
+    if (favBtn) {
+      favBtn.classList.toggle('faved', isFav);
+      favBtn.innerHTML = isFav ? '★ Favorilerden Çıkar' : '⭐ Favorilere Ekle';
+    }
+
+    document.getElementById('playerModalOverlay').style.display = 'flex';
   },
 
   closePlayerModal: function(ev) {
@@ -1424,6 +1527,8 @@ var T = {
             var finalPos = posMap[pPosRaw] || pPosRaw || '';
             
             V.state.playerData[pId] = { id: pId, name: pName, pos: finalPos, img: pImg, rating: pRating, stats: pStats };
+            
+            V.state.playerData[pId] = { id: pId, name: pName, pos: finalPos, img: pImg, rating: pRating, stats: pStats };
 
             var rc = ''; if (pRating) { var r = parseFloat(pRating); rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'); }
             var isFavP = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(pId); });
@@ -1535,216 +1640,7 @@ var T = {
   }
 };
 
-// ═══════════════════════════════════════════════
-//  SAYFALANDIRMALI ARAMA SİSTEMİ
-// ═══════════════════════════════════════════════
-var Search = {
-  _timer: null,
-  _focusIdx: -1,
-  _results: [],      // O an ekranda (sayfada) olan sonuçlar
-  _allItems: [],     // API'den gelen tüm sonuçlar
-  _currentPage: 1,
-  _itemsPerPage: 6,  // Sayfa başına gösterilecek sonuç sayısı
-  _open: false,
-
-  init: function() {
-    var input = document.getElementById('searchInput');
-    var wrap = document.getElementById('searchWrap');
-    if (!input) return;
-
-    input.addEventListener('input', function() {
-      wrap.classList.toggle('has-value', input.value.length > 0);
-      clearTimeout(Search._timer);
-      if (input.value.trim().length < 2) { Search.hideDropdown(); return; }
-      Search._timer = setTimeout(function() { Search.doSearch(input.value.trim()); }, 350);
-    });
-
-    input.addEventListener('focus', function() {
-      if (Search._allItems.length > 0 && input.value.trim().length >= 2) Search.showDropdown();
-    });
-
-    input.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') { Search.clear(); input.blur(); return; }
-      if (!Search._open) return;
-      var items = document.querySelectorAll('#searchDropdown .search-item');
-      if (e.key === 'ArrowDown') { e.preventDefault(); Search._focusIdx = Math.min(Search._focusIdx + 1, items.length - 1); Search.highlightItem(items); }
-      else if (e.key === 'ArrowUp') { e.preventDefault(); Search._focusIdx = Math.max(Search._focusIdx - 1, 0); Search.highlightItem(items); }
-      else if (e.key === 'Enter' && Search._focusIdx >= 0 && items[Search._focusIdx]) { e.preventDefault(); items[Search._focusIdx].click(); }
-      // Sayfa değiştirme kısayolları (Opsiyonel)
-      else if (e.key === 'ArrowRight') { e.preventDefault(); Search.changePage(1); }
-      else if (e.key === 'ArrowLeft') { e.preventDefault(); Search.changePage(-1); }
-    });
-
-    document.addEventListener('keydown', function(e) {
-      if (e.key === '/' && document.activeElement !== input && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
-        e.preventDefault(); input.focus();
-      }
-    });
-
-    document.addEventListener('click', function(e) {
-      if (!document.getElementById('searchContainer').contains(e.target)) Search.hideDropdown();
-    });
-  },
-
-  doSearch: function(query) {
-    var dropdown = document.getElementById('searchDropdown');
-    dropdown.innerHTML = '<div class="search-loading"><div class="spinner"></div>Aranıyor...</div>';
-    this.showDropdown();
-
-    var sport = V.state.selectedSport;
-    fetch('/api/search/' + sport + '?q=' + encodeURIComponent(query))
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        if (data.error) { Search.showNoResult(data.error); return; }
-        
-        var teams = data.teams || [];
-        var players = data.players || [];
-        
-        // Tüm sonuçları tek bir dizide birleştir
-        Search._allItems = [];
-        teams.forEach(function(t) { Search._allItems.push({ type: 'team', data: t }); });
-        players.forEach(function(p) { Search._allItems.push({ type: 'player', data: p }); });
-        
-        Search._currentPage = 1;
-
-        if (Search._allItems.length === 0) { Search.showNoResult('Sonuç bulunamadı'); return; }
-        Search.renderPage();
-      })
-      .catch(function(err) {
-        Search.showNoResult('Bağlantı hatası: API yanıt vermedi.');
-      });
-  },
-
-  renderPage: function() {
-    var dropdown = document.getElementById('searchDropdown');
-    var html = '';
-    this._results = [];
-    this._focusIdx = -1;
-
-    var totalPages = Math.ceil(this._allItems.length / this._itemsPerPage);
-    var startIdx = (this._currentPage - 1) * this._itemsPerPage;
-    var endIdx = startIdx + this._itemsPerPage;
-    var pageItems = this._allItems.slice(startIdx, endIdx);
-
-    var hasTeams = false, hasPlayers = false;
-
-    pageItems.forEach(function(item, idx) {
-      Search._results.push(item);
-      var nameHtml = Search.highlightText(item.data.name, document.getElementById('searchInput').value);
-      
-      if (item.type === 'team') {
-        if (!hasTeams) { html += '<div class="search-section-title">Takımlar</div>'; hasTeams = true; }
-        var t = item.data;
-        html += '<div class="search-item" data-idx="' + idx + '" onclick="Search.selectResult(' + idx + ')">' +
-          '<img src="' + safeImgUrl(t.img) + '" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'">' +
-          '<div class="search-item-info"><div class="search-item-name">' + nameHtml + '</div>' +
-          '<div class="search-item-sub">' + esc(t.tournament || t.country || '') + '</div></div>' +
-          '<span class="search-item-badge team">Takım</span></div>';
-      } else if (item.type === 'player') {
-        if (!hasPlayers) { html += '<div class="search-section-title">Oyuncular</div>'; hasPlayers = true; }
-        var p = item.data;
-        var posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' };
-        var posLabel = posMap[p.position] || p.position || '';
-        html += '<div class="search-item" data-idx="' + idx + '" onclick="Search.selectResult(' + idx + ')">' +
-          '<img src="' + safeImgUrl(p.img) + '" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'">' +
-          '<div class="search-item-info"><div class="search-item-name">' + nameHtml + '</div>' +
-          '<div class="search-item-sub">' + esc(p.teamName || '') + (posLabel ? ' · ' + posLabel : '') + '</div></div>' +
-          '<span class="search-item-badge player">Oyuncu</span></div>';
-      }
-    });
-
-    // Sayfalandırma Kontrolleri
-    if (totalPages > 1) {
-      html += '<div class="search-pagination">' +
-        '<button class="search-page-btn" onclick="Search.changePage(-1)" ' + (this._currentPage === 1 ? 'disabled' : '') + '>Önceki</button>' +
-        '<span class="search-page-info">Sayfa ' + this._currentPage + ' / ' + totalPages + '</span>' +
-        '<button class="search-page-btn" onclick="Search.changePage(1)" ' + (this._currentPage === totalPages ? 'disabled' : '') + '>Sonraki</button>' +
-        '</div>';
-    }
-
-    dropdown.innerHTML = html;
-  },
-
-  changePage: function(dir) {
-    var totalPages = Math.ceil(this._allItems.length / this._itemsPerPage);
-    var newPage = this._currentPage + dir;
-    if (newPage >= 1 && newPage <= totalPages) {
-      this._currentPage = newPage;
-      this.renderPage();
-      // Sayfa değiştiğinde inputa geri odaklan (klavye navigasyonu bozulmasın)
-      document.getElementById('searchInput').focus();
-    }
-  },
-
-  highlightText: function(text, query) {
-    if (!query) return esc(text);
-    var escaped = esc(text);
-    var qEsc = esc(query);
-    var regex = new RegExp('(' + qEsc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-    return escaped.replace(regex, '<mark>$1</mark>');
-  },
-
-  highlightItem: function(items) {
-    items.forEach(function(el, i) { el.classList.toggle('focused', i === Search._focusIdx); });
-    if (items[Search._focusIdx]) items[Search._focusIdx].scrollIntoView({ block: 'nearest' });
-  },
-
-  selectResult: function(idx) {
-    var result = this._results[idx];
-    if (!result) return;
-    this.hideDropdown();
-
-    if (result.type === 'team') {
-      Search.showTeamMatches(result.data);
-    } else if (result.type === 'player') {
-      var p = result.data;
-      V.state.playerData[p.id] = { id: p.id, name: p.name || p.shortName, pos: p.position || '', img: p.img, rating: null, stats: {} };
-      V.showPlayerModal(String(p.id));
-    }
-  },
-
-  showTeamMatches: function(team) { 
-    var el = document.getElementById('matchScroll');
-    if (!el) return;
-    if (V.state.page === 'favorites') { V.state.page = 'matches'; var fb = document.getElementById('favToggleBtn'); if(fb) fb.classList.remove('active'); }
-    if (V.state.isLiveOnly) { V.state.isLiveOnly = false; var lb = document.getElementById('liveToggleBtn'); if(lb) lb.classList.remove('active'); var dn = document.getElementById('dateNav'); if(dn) dn.classList.remove('disabled'); }
-
-    el.innerHTML = T.loading(esc(team.name) + ' maçları yükleniyor...');
-    fetch('/api/team/' + team.id + '/events')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        if (!data.matches || data.matches.length === 0) { el.innerHTML = T.empty(esc(team.name) + ' için maç bulunamadı.'); return; }
-        var headerHtml = '<div style="display:flex; align-items:center; gap:14px; padding:16px 18px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:16px;">' +
-          '<img src="' + safeImgUrl(team.img) + '" style="width:48px; height:48px; object-fit:contain;" onerror="this.style.display=\'none\'">' +
-          '<div><div style="font-size:18px; font-weight:800; color:var(--text)">' + esc(team.name) + '</div>' +
-          '<div style="font-size:13px; color:var(--text3); margin-top:2px;">' + esc(team.tournament || team.country || '') + ' · Son ve gelecek maçlar</div></div>' +
-          '<button onclick="V.loadMatches()" style="margin-left:auto; padding:8px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text2); font-weight:700; font-size:13px; cursor:pointer;">← Geri</button></div>';
-        var matchCards = '';
-        for (var i = 0; i < data.matches.length; i++) { matchCards += T.matchCard(data.matches[i]); }
-        el.innerHTML = headerHtml + '<div class="league-group"><div class="league-header"><img src="' + safeImgUrl(team.img) + '" onerror="this.style.display=\'none\'" width="22" height="22"><span style="margin-left:6px">' + esc(team.name) + ' Maçları</span></div>' + matchCards + '</div>';
-      })
-      .catch(function() { el.innerHTML = T.empty('Takım maçları yüklenirken hata oluştu.'); });
-  },
-
-  showDropdown: function() { var d = document.getElementById('searchDropdown'); if(d) { d.classList.add('active'); this._open = true; } },
-  hideDropdown: function() { var d = document.getElementById('searchDropdown'); if(d) { d.classList.remove('active'); this._open = false; this._focusIdx = -1; } },
-  showNoResult: function(msg) {
-    var d = document.getElementById('searchDropdown');
-    d.innerHTML = '<div class="search-no-result"><div class="snr-icon">🔍</div><div>' + msg + '</div></div>';
-    this.showDropdown();
-  },
-  clear: function() {
-    var input = document.getElementById('searchInput');
-    var wrap = document.getElementById('searchWrap');
-    if(input) { input.value = ''; input.focus(); }
-    if(wrap) wrap.classList.remove('has-value');
-    this._allItems = [];
-    this._results = [];
-    this.hideDropdown();
-  }
-};
-
-try { V.init(); Search.init(); } catch(err) { console.error("VivoScore Başlatılma Hatası:", err); }
+try { V.init(); } catch(err) { console.error("VivoScore Başlatılma Hatası:", err); }
 </script>
 </body>
 </html>
