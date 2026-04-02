@@ -9,6 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/supabase/2.38.4/supabase.min.js"></script>
+<script>
+  if (typeof supabase === 'undefined') { document.write('<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"><\/script>'); }
+</script>
 
 <style>
 :root {
@@ -217,7 +220,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .pm-body { overflow-y: auto; padding-right: 5px; }
 .pm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .pm-stat-box { background: var(--bg2); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;}
-.pm-stat-lbl { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; margin-bottom: 4px; }
+.pm-stat-lbl { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; margin-bottom: 4px; text-align: center;}
 .pm-stat-val { font-size: 18px; font-weight: 800; color: var(--brand); }
 
 /* INCIDENTS */
@@ -239,7 +242,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 @keyframes spin { to { transform:rotate(360deg); } }
 .empty-state { text-align:center; padding:60px 20px; color:var(--text3); } .empty-state .es-icon { font-size:38px; margin-bottom:12px; opacity:0.4; } .empty-state .es-text { font-size:15px; line-height:1.6; }
 
-/* 🚀 AUTH UI MODAL - E-POSTA VE GITHUB ALANI 🚀 */
+/* 🚀 YENİ AUTH UI MODAL - E-POSTA VE GITHUB ALANI 🚀 */
 .auth-box { width: 380px; padding: 32px 24px; text-align: center; }
 .auth-box h2 { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
 .auth-box p { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.5; }
@@ -479,7 +482,7 @@ function getSupabase() {
 }
 
 // ═══════════════════════════════════════════════
-//  AUTH SİSTEMİ 
+//  AUTH SİSTEMİ
 // ═══════════════════════════════════════════════
 var Auth = {
   user: null,
@@ -649,7 +652,7 @@ var Auth = {
 };
 
 // ═══════════════════════════════════════════════
-//  GÜVENLİK VE FORMATLAMA
+//  GÜVENLİK, FORMATLAMA VE RAM CACHE MİMARİSİ
 // ═══════════════════════════════════════════════
 function esc(str) {
   if (str === null || str === undefined) return '';
@@ -710,7 +713,7 @@ var V = {
   state: {
     page: 'matches', selectedSport: 'football', dateOffset: 0, isLiveOnly: false,
     selectedMatch: null, detailTab: 'summary', matchCache: {},
-    playerData: {}, // 🚀 OYUNCU BİLGİLERİ RAM'E KAYDEDİLECEK
+    playerData: {}, // 🚀 MÜHENDİSLİK DÜZELTMESİ: Oyuncular RAM'de tutulacak
     favorites: safeStorage.get('vivo_favs', []),
     favPlayers: safeStorage.get('vivo_fav_players', []),
     hideScores: safeStorage.get('vivo_hide_scores', false),
@@ -1016,7 +1019,7 @@ var V = {
       for(var i=0; i<this.state.favPlayers.length; i++) {
         var fp = this.state.favPlayers[i]; 
         
-        // 🚀 Favori oyuncuyu RAM'e yükle (Tıklayınca açılması için)
+        // 🚀 OYUNCUYU RAM'E EKLE
         V.state.playerData[fp.id] = fp;
 
         var sHtml = '';
@@ -1148,7 +1151,7 @@ var V = {
     if (tab === 'summary') {
       var evData = this.state.matchCache[matchId].match;
       var topInfo = '<div style="font-size:13px; color:var(--text2); text-align:center; padding-bottom:16px; margin-bottom:16px; border-bottom:1px solid var(--border)">' + 
-                    (evData.stadium ? '🏟️ Stadyum: <span style="color:var(--text)">' + esc(evData.stadium) + '</span> &nbsp;&nbsp;' : '') +
+                    (evData.stadium ? '🏟️ Stadyum: <span style="color:var(--text)">' + esc(evData.stadium) + '</span>   ' : '') +
                     (evData.referee ? '👤 Hakem: <span style="color:var(--text)">' + esc(evData.referee) + '</span>' : '') + '</div>';
 
       this.apiFetch('/api/event/' + matchId + '/incidents').then(function(data) {
@@ -1222,6 +1225,7 @@ var T = {
     return html || this.empty('Detaylı istatistik mevcut değil');
   },
 
+  // 🚀 DÜZELTİLDİ: Kadro motoru
   lineups: function(data) {
     if (!data) return this.empty('Kadro bilgisi henüz açıklanmadı');
     var hp = (data.home && data.home.players) ? data.home.players : []; 
@@ -1258,18 +1262,18 @@ var T = {
                 var posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' };
                 var finalPos = posMap[p.position] || p.position || '';
                 
-                // 🚀 DÜZELTİLDİ: Backend zaten verileri düzleştirdiği için p.id, p.name kullanıyoruz
+                // 🚀 RAM'E KAYDET (Tıklanınca açılması için)
                 var pObj = { id: p.id, name: p.name, pos: finalPos, img: p.img, rating: p.rating, stats: p.stats || {} };
-                V.state.playerData[pObj.id] = pObj;
+                V.state.playerData[p.id] = pObj;
 
-                var rc = ''; if (pObj.rating) { var r = parseFloat(pObj.rating); rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'); }
+                var rc = ''; if (p.rating) { var r = parseFloat(p.rating); rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'); }
                 var num = p.number ? '<div class="p-num">'+p.number+'</div>' : '';
-                var isFavP = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(pObj.id); });
+                var isFavP = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(p.id); });
                 var favStar = isFavP ? '<div style="position:absolute; top:-5px; right:-5px; font-size:14px; color:var(--yellow); z-index:3; text-shadow:0 0 2px #000">★</div>' : '';
 
-                pitchHtml += '<div class="pitch-player" onclick="V.showPlayerModal(' + pObj.id + ')">' +
-                             '<div class="p-img-wrap"><img src="'+safeImgUrl(pObj.img)+'" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'">' + num + favStar + '</div>' +
-                             (pObj.rating ? '<div class="p-rating '+rc+'">'+pObj.rating+'</div>' : '') + '<div class="p-name">'+esc(pObj.name)+'</div></div>';
+                pitchHtml += '<div class="pitch-player" onclick="V.showPlayerModal(' + p.id + ')">' +
+                             '<div class="p-img-wrap"><img src="'+safeImgUrl(p.img)+'" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'">' + num + favStar + '</div>' +
+                             (p.rating ? '<div class="p-rating '+rc+'">'+p.rating+'</div>' : '') + '<div class="p-name">'+esc(p.name)+'</div></div>';
             });
             pitchHtml += '</div>';
         });
@@ -1279,23 +1283,20 @@ var T = {
     var renderList = function(players, title) {
         var lHtml = '<div class="lineup-section-title">' + title + '</div><div class="lineup-list">';
         players.forEach(function(p) {
-            var posMap = {};
-            if (V.state.selectedSport === 'basketball') posMap = { G:'Guard', F:'Forvet', C:'Pivot', SG:'Şutör G.', PG:'Oyun K.', SF:'Kısa F.', PF:'Uzun F.' };
-            else if (V.state.selectedSport === 'volleyball') posMap = { L:'Libero', S:'Pasör', MB:'Orta O.', OH:'Smaçör', OP:'Pasör Ç.' };
-            else posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' };
+            var posMap = (V.state.selectedSport === 'basketball') ? { G:'Guard', F:'Forvet', C:'Pivot' } : { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' }; 
             var finalPos = posMap[p.position] || p.position || '';
             
-            // 🚀 DÜZELTİLDİ: Backend zaten verileri düzleştirdiği için p.id, p.name kullanıyoruz
+            // 🚀 RAM'E KAYDET (Tıklanınca açılması için)
             var pObj = { id: p.id, name: p.name, pos: finalPos, img: p.img, rating: p.rating, stats: p.stats || {} };
-            V.state.playerData[pObj.id] = pObj;
+            V.state.playerData[p.id] = pObj;
 
-            var rc = ''; if (pObj.rating) { var r = parseFloat(pObj.rating); rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'); }
-            var isFavP = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(pObj.id); });
-            var favIcon = '<div class="ll-fav ' + (isFavP ? 'faved' : '') + '" data-pid="' + pObj.id + '" onclick="V.toggleFavPlayer(' + pObj.id + ', event)">★</div>';
+            var rc = ''; if (p.rating) { var r = parseFloat(p.rating); rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'); }
+            var isFavP = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(p.id); });
+            var favIcon = '<div class="ll-fav ' + (isFavP ? 'faved' : '') + '" data-pid="' + p.id + '" onclick="V.toggleFavPlayer(' + p.id + ', event)">★</div>';
             
-            lHtml += '<div class="ll-item" onclick="V.showPlayerModal(' + pObj.id + ')"><div class="ll-num">' + (p.number || '-') + '</div>' +
-                    '<div class="ll-info"><div class="ll-name">' + esc(pObj.name) + '</div><div class="ll-pos">' + finalPos + '</div></div>' +
-                    (pObj.rating ? '<div class="ll-rating ' + rc + '">' + pObj.rating + '</div>' : '') + favIcon + '</div>';
+            lHtml += '<div class="ll-item" onclick="V.showPlayerModal(' + p.id + ')"><div class="ll-num">' + (p.number || '-') + '</div>' +
+                    '<div class="ll-info"><div class="ll-name">' + esc(p.name) + '</div><div class="ll-pos">' + finalPos + '</div></div>' +
+                    (p.rating ? '<div class="ll-rating ' + rc + '">' + p.rating + '</div>' : '') + favIcon + '</div>';
         });
         return lHtml + '</div>';
     };
@@ -1398,11 +1399,14 @@ var T = {
     return html + '</div>';
   },
 
+  // 🚀 YENİ İSTATİSTİK MOTORU (API'den Gelen Her Şeyi Okur)
   showPlayerModal: function(playerId) {
     var p = V.state.playerData[playerId];
     if (!p) return; 
 
-    document.getElementById('pmImg').src = p.img; document.getElementById('pmName').textContent = p.name; document.getElementById('pmPos').textContent = p.pos;
+    document.getElementById('pmImg').src = safeImgUrl(p.img); 
+    document.getElementById('pmName').textContent = p.name; 
+    document.getElementById('pmPos').textContent = p.pos;
     var rBox = document.getElementById('pmRating');
     if(p.rating) {
       rBox.textContent = p.rating; rBox.style.display = 'inline-block'; var r = parseFloat(p.rating);
@@ -1439,6 +1443,13 @@ var T = {
       
       if (val === undefined || val === null || key === 'rating' || key === 'minutesPlayed') continue; 
       
+      // Eğen veri JSON objesiyse (örneğin {total: 5, won: 2}) ekrana 2/5 olarak bas.
+      if (typeof val === 'object') {
+          if (val && val.total !== undefined && val.won !== undefined) val = val.won + '/' + val.total;
+          else continue; // Bilinmeyen formattaki kompleks objeleri gizle
+      }
+      
+      if (typeof val === 'boolean') val = val ? 'Evet' : 'Hayır';
       if (typeof val === 'number' && val % 1 !== 0) val = val.toFixed(2);
       
       var formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, function(str){ return str.toUpperCase(); });
