@@ -271,6 +271,13 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .search-loading { display: flex; align-items: center; justify-content: center; padding: 24px; gap: 10px; color: var(--text3); font-size: 13px; }
 .search-loading .spinner { width: 18px; height: 18px; }
 
+/* Arama Dropdown Pagination CSS */
+.search-pagination { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-top: 1px solid var(--border); background: var(--bg2); border-radius: 0 0 var(--radius) var(--radius); }
+.search-page-btn { background: var(--surface); border: 1px solid var(--border); padding: 4px 12px; border-radius: 4px; color: var(--text); font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.search-page-btn:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); background: var(--surface2); }
+.search-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.search-page-info { font-size: 12px; font-weight: 700; color: var(--text3); }
+
 @media (max-width: 768px) {
   .search-container { order: 7; min-width: 100%; margin-top: 4px; }
   .search-dropdown { max-height: 320px; }
@@ -1529,12 +1536,15 @@ var T = {
 };
 
 // ═══════════════════════════════════════════════
-//  ARAMA SİSTEMİ
+//  SAYFALANDIRMALI ARAMA SİSTEMİ
 // ═══════════════════════════════════════════════
 var Search = {
   _timer: null,
   _focusIdx: -1,
-  _results: [],
+  _results: [],      // O an ekranda (sayfada) olan sonuçlar
+  _allItems: [],     // API'den gelen tüm sonuçlar
+  _currentPage: 1,
+  _itemsPerPage: 6,  // Sayfa başına gösterilecek sonuç sayısı
   _open: false,
 
   init: function() {
@@ -1550,7 +1560,7 @@ var Search = {
     });
 
     input.addEventListener('focus', function() {
-      if (Search._results.length > 0 && input.value.trim().length >= 2) Search.showDropdown();
+      if (Search._allItems.length > 0 && input.value.trim().length >= 2) Search.showDropdown();
     });
 
     input.addEventListener('keydown', function(e) {
@@ -1560,16 +1570,17 @@ var Search = {
       if (e.key === 'ArrowDown') { e.preventDefault(); Search._focusIdx = Math.min(Search._focusIdx + 1, items.length - 1); Search.highlightItem(items); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); Search._focusIdx = Math.max(Search._focusIdx - 1, 0); Search.highlightItem(items); }
       else if (e.key === 'Enter' && Search._focusIdx >= 0 && items[Search._focusIdx]) { e.preventDefault(); items[Search._focusIdx].click(); }
+      // Sayfa değiştirme kısayolları (Opsiyonel)
+      else if (e.key === 'ArrowRight') { e.preventDefault(); Search.changePage(1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); Search.changePage(-1); }
     });
 
-    // Klavye kısayolu: "/" ile arama
     document.addEventListener('keydown', function(e) {
       if (e.key === '/' && document.activeElement !== input && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
         e.preventDefault(); input.focus();
       }
     });
 
-    // Dışarı tıklayınca kapat
     document.addEventListener('click', function(e) {
       if (!document.getElementById('searchContainer').contains(e.target)) Search.hideDropdown();
     });
@@ -1585,50 +1596,84 @@ var Search = {
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (data.error) { Search.showNoResult(data.error); return; }
-        Search._results = [];
-        Search._focusIdx = -1;
-
-        var html = '';
+        
         var teams = data.teams || [];
         var players = data.players || [];
+        
+        // Tüm sonuçları tek bir dizide birleştir
+        Search._allItems = [];
+        teams.forEach(function(t) { Search._allItems.push({ type: 'team', data: t }); });
+        players.forEach(function(p) { Search._allItems.push({ type: 'player', data: p }); });
+        
+        Search._currentPage = 1;
 
-        if (teams.length === 0 && players.length === 0) { Search.showNoResult('Sonuç bulunamadı'); return; }
-
-        if (teams.length > 0) {
-          html += '<div class="search-section-title">Takımlar</div>';
-          teams.slice(0, 6).forEach(function(t) {
-            Search._results.push({ type: 'team', data: t });
-            var idx = Search._results.length - 1;
-            var nameHtml = Search.highlightText(t.name, document.getElementById('searchInput').value);
-            html += '<div class="search-item" data-idx="' + idx + '" onclick="Search.selectResult(' + idx + ')">' +
-              '<img src="' + safeImgUrl(t.img) + '" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'">' +
-              '<div class="search-item-info"><div class="search-item-name">' + nameHtml + '</div>' +
-              '<div class="search-item-sub">' + esc(t.tournament || t.country || '') + '</div></div>' +
-              '<span class="search-item-badge team">Takım</span></div>';
-          });
-        }
-
-        if (players.length > 0) {
-          html += '<div class="search-section-title">Oyuncular</div>';
-          players.slice(0, 6).forEach(function(p) {
-            Search._results.push({ type: 'player', data: p });
-            var idx = Search._results.length - 1;
-            var nameHtml = Search.highlightText(p.name, document.getElementById('searchInput').value);
-            var posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' };
-            var posLabel = posMap[p.position] || p.position || '';
-            html += '<div class="search-item" data-idx="' + idx + '" onclick="Search.selectResult(' + idx + ')">' +
-              '<img src="' + safeImgUrl(p.img) + '" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'">' +
-              '<div class="search-item-info"><div class="search-item-name">' + nameHtml + '</div>' +
-              '<div class="search-item-sub">' + esc(p.teamName || '') + (posLabel ? ' · ' + posLabel : '') + '</div></div>' +
-              '<span class="search-item-badge player">Oyuncu</span></div>';
-          });
-        }
-
-        dropdown.innerHTML = html;
+        if (Search._allItems.length === 0) { Search.showNoResult('Sonuç bulunamadı'); return; }
+        Search.renderPage();
       })
       .catch(function(err) {
-        Search.showNoResult('Arama hatası oluştu');
+        Search.showNoResult('Bağlantı hatası: API yanıt vermedi.');
       });
+  },
+
+  renderPage: function() {
+    var dropdown = document.getElementById('searchDropdown');
+    var html = '';
+    this._results = [];
+    this._focusIdx = -1;
+
+    var totalPages = Math.ceil(this._allItems.length / this._itemsPerPage);
+    var startIdx = (this._currentPage - 1) * this._itemsPerPage;
+    var endIdx = startIdx + this._itemsPerPage;
+    var pageItems = this._allItems.slice(startIdx, endIdx);
+
+    var hasTeams = false, hasPlayers = false;
+
+    pageItems.forEach(function(item, idx) {
+      Search._results.push(item);
+      var nameHtml = Search.highlightText(item.data.name, document.getElementById('searchInput').value);
+      
+      if (item.type === 'team') {
+        if (!hasTeams) { html += '<div class="search-section-title">Takımlar</div>'; hasTeams = true; }
+        var t = item.data;
+        html += '<div class="search-item" data-idx="' + idx + '" onclick="Search.selectResult(' + idx + ')">' +
+          '<img src="' + safeImgUrl(t.img) + '" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'">' +
+          '<div class="search-item-info"><div class="search-item-name">' + nameHtml + '</div>' +
+          '<div class="search-item-sub">' + esc(t.tournament || t.country || '') + '</div></div>' +
+          '<span class="search-item-badge team">Takım</span></div>';
+      } else if (item.type === 'player') {
+        if (!hasPlayers) { html += '<div class="search-section-title">Oyuncular</div>'; hasPlayers = true; }
+        var p = item.data;
+        var posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' };
+        var posLabel = posMap[p.position] || p.position || '';
+        html += '<div class="search-item" data-idx="' + idx + '" onclick="Search.selectResult(' + idx + ')">' +
+          '<img src="' + safeImgUrl(p.img) + '" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'">' +
+          '<div class="search-item-info"><div class="search-item-name">' + nameHtml + '</div>' +
+          '<div class="search-item-sub">' + esc(p.teamName || '') + (posLabel ? ' · ' + posLabel : '') + '</div></div>' +
+          '<span class="search-item-badge player">Oyuncu</span></div>';
+      }
+    });
+
+    // Sayfalandırma Kontrolleri
+    if (totalPages > 1) {
+      html += '<div class="search-pagination">' +
+        '<button class="search-page-btn" onclick="Search.changePage(-1)" ' + (this._currentPage === 1 ? 'disabled' : '') + '>Önceki</button>' +
+        '<span class="search-page-info">Sayfa ' + this._currentPage + ' / ' + totalPages + '</span>' +
+        '<button class="search-page-btn" onclick="Search.changePage(1)" ' + (this._currentPage === totalPages ? 'disabled' : '') + '>Sonraki</button>' +
+        '</div>';
+    }
+
+    dropdown.innerHTML = html;
+  },
+
+  changePage: function(dir) {
+    var totalPages = Math.ceil(this._allItems.length / this._itemsPerPage);
+    var newPage = this._currentPage + dir;
+    if (newPage >= 1 && newPage <= totalPages) {
+      this._currentPage = newPage;
+      this.renderPage();
+      // Sayfa değiştiğinde inputa geri odaklan (klavye navigasyonu bozulmasın)
+      document.getElementById('searchInput').focus();
+    }
   },
 
   highlightText: function(text, query) {
@@ -1652,48 +1697,33 @@ var Search = {
     if (result.type === 'team') {
       Search.showTeamMatches(result.data);
     } else if (result.type === 'player') {
-      // Oyuncu bilgisini playerData'ya ekle ve modal aç
       var p = result.data;
       V.state.playerData[p.id] = { id: p.id, name: p.name || p.shortName, pos: p.position || '', img: p.img, rating: null, stats: {} };
       V.showPlayerModal(String(p.id));
     }
   },
 
-  showTeamMatches: function(team) {
+  showTeamMatches: function(team) { 
     var el = document.getElementById('matchScroll');
     if (!el) return;
-    
-    // Favori ve live modunu kapat
     if (V.state.page === 'favorites') { V.state.page = 'matches'; var fb = document.getElementById('favToggleBtn'); if(fb) fb.classList.remove('active'); }
     if (V.state.isLiveOnly) { V.state.isLiveOnly = false; var lb = document.getElementById('liveToggleBtn'); if(lb) lb.classList.remove('active'); var dn = document.getElementById('dateNav'); if(dn) dn.classList.remove('disabled'); }
 
     el.innerHTML = T.loading(esc(team.name) + ' maçları yükleniyor...');
-
     fetch('/api/team/' + team.id + '/events')
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        if (!data.matches || data.matches.length === 0) {
-          el.innerHTML = T.empty(esc(team.name) + ' için maç bulunamadı.');
-          return;
-        }
-        
-        // Takım header'ı
+        if (!data.matches || data.matches.length === 0) { el.innerHTML = T.empty(esc(team.name) + ' için maç bulunamadı.'); return; }
         var headerHtml = '<div style="display:flex; align-items:center; gap:14px; padding:16px 18px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:16px;">' +
           '<img src="' + safeImgUrl(team.img) + '" style="width:48px; height:48px; object-fit:contain;" onerror="this.style.display=\'none\'">' +
           '<div><div style="font-size:18px; font-weight:800; color:var(--text)">' + esc(team.name) + '</div>' +
           '<div style="font-size:13px; color:var(--text3); margin-top:2px;">' + esc(team.tournament || team.country || '') + ' · Son ve gelecek maçlar</div></div>' +
           '<button onclick="V.loadMatches()" style="margin-left:auto; padding:8px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text2); font-weight:700; font-size:13px; cursor:pointer;">← Geri</button></div>';
-
         var matchCards = '';
-        for (var i = 0; i < data.matches.length; i++) {
-          matchCards += T.matchCard(data.matches[i]);
-        }
-
+        for (var i = 0; i < data.matches.length; i++) { matchCards += T.matchCard(data.matches[i]); }
         el.innerHTML = headerHtml + '<div class="league-group"><div class="league-header"><img src="' + safeImgUrl(team.img) + '" onerror="this.style.display=\'none\'" width="22" height="22"><span style="margin-left:6px">' + esc(team.name) + ' Maçları</span></div>' + matchCards + '</div>';
       })
-      .catch(function() {
-        el.innerHTML = T.empty('Takım maçları yüklenirken hata oluştu.');
-      });
+      .catch(function() { el.innerHTML = T.empty('Takım maçları yüklenirken hata oluştu.'); });
   },
 
   showDropdown: function() { var d = document.getElementById('searchDropdown'); if(d) { d.classList.add('active'); this._open = true; } },
@@ -1708,6 +1738,7 @@ var Search = {
     var wrap = document.getElementById('searchWrap');
     if(input) { input.value = ''; input.focus(); }
     if(wrap) wrap.classList.remove('has-value');
+    this._allItems = [];
     this._results = [];
     this.hideDropdown();
   }
