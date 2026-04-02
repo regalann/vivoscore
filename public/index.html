@@ -46,6 +46,7 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans
 ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
 img { display: block; } button { font-family: inherit; cursor: pointer; border: none; outline: none; touch-action: manipulation; }
 .app { display: flex; height: 100vh; height: 100dvh; width: 100vw; position: relative; overflow: hidden; }
+.hide-desktop { display: none !important; }
 
 body.hide-scores .score-num, 
 body.hide-scores .detail-score { filter: blur(6px); opacity: 0.5; transition: var(--transition); }
@@ -295,9 +296,10 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     .user-avatar { width: 28px; height: 28px; font-size: 13px; }
     .user-details { display: none; }
     
-    /* MAIN */
     .main { order: 1; flex: 1; overflow: hidden; min-height: 0; }
     
+    .hide-desktop { display: flex !important; }
+
     /* TOPBAR — mobilde iki satır grid */
     .topbar { 
         padding: 8px 10px; display: grid; gap: 6px;
@@ -307,11 +309,17 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     }
     .live-toggle { grid-row: 1; grid-column: 1; margin: 0; }
     .fav-toggle { grid-row: 1; grid-column: 2; margin: 0; }
-    .right-actions { grid-row: 1; grid-column: 3 / 6; justify-content: flex-end; gap: 4px; }
     
-    .topbar > button.date-arrow:first-child { grid-row: 2; grid-column: 1; width: 32px; height: 32px; }
-    .date-nav { grid-row: 2; grid-column: 2 / 5; justify-content: space-between; padding: 2px; min-width: 0; }
-    .topbar > button.date-arrow:nth-child(3) { grid-row: 2; grid-column: 5; width: 32px; height: 32px; }
+    .mobile-logo { 
+        grid-row: 1; grid-column: 3; justify-self: center; 
+        align-items: center; gap: 2px; font-size: 16px; font-weight: 800; cursor: pointer; 
+    }
+    
+    .right-actions { grid-row: 1; grid-column: 4 / 6; justify-content: flex-end; gap: 4px; margin-left: 0 !important; }
+    
+    .date-arrow-prev { grid-row: 2; grid-column: 1; width: 32px; height: 32px; margin-top: 4px;}
+    .date-nav { grid-row: 2; grid-column: 2 / 5; justify-content: space-between; padding: 2px; min-width: 0; margin-top: 4px;}
+    .date-arrow-next { grid-row: 2; grid-column: 5; width: 32px; height: 32px; margin-top: 4px;}
     
     .date-btn { padding: 6px 4px; font-size: 12px; flex: 1; text-align: center; min-width: 0; }
     .date-btn .day { font-size: 10px; margin-top: 2px; }
@@ -326,17 +334,34 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     /* MATCH CARD — mobilde kompakt */
     .match-card { padding: 10px 6px; }
     .match-time { width: 38px; font-size: 11px; flex-shrink: 0; }
-    .match-info-area { min-width: 0; }
-    .match-teams { min-width: 0; flex: 1; max-width: none; padding: 0 6px; border-right: none; }
+    .match-info-area { min-width: 0; flex-wrap: wrap; }
+    .match-teams { flex: 1; min-width: 140px; max-width: none; padding: 0 6px; border-right: none; }
     .team-row { gap: 6px; }
     .team-logo { width: 18px; height: 18px; }
     .team-name { font-size: 13px; }
-    .match-score-wrap { gap: 4px; }
+    .match-score-wrap { flex-shrink: 0; gap: 8px; width: auto; margin-left: auto;}
     .match-score { width: 30px; }
     .score-num { font-size: 14px; line-height: 1.6; }
     .hide-single-btn { font-size: 14px; padding: 0 2px; }
     .match-fav { width: 24px; font-size: 16px; }
-    .match-odds-wrapper { display: none !important; }
+
+    /* MS ORANLARI ESNEMESİ (MOBİL) */
+    body:not(.hide-odds) .match-odds-wrapper { 
+        display: flex !important; width: 100%; 
+        padding: 8px 6px 0 6px !important; 
+        margin-top: 6px; border-top: 1px dashed var(--border);
+        min-height: auto; box-sizing: border-box;
+    }
+    body.hide-odds .match-odds-wrapper { display: none !important; }
+    
+    .odds-group { width: 100%; display: flex; gap: 8px; margin: 0; padding: 0; background: transparent; border: none; justify-content: space-between;}
+    .odds-group-title { display: none; }
+    .odds-group:not(:first-child) { display: none !important; }
+    
+    .odd-btn { flex: 1; padding: 6px 0; background: var(--bg2); border-radius: 6px; border: 1px solid var(--border); max-width: 100px; text-align: center;}
+    .odd-lbl { font-size: 10px; margin-bottom: 2px; }
+    .odd-val { font-size: 13px; }
+    
     .league-header { font-size: 13px; padding: 8px 10px; gap: 8px; }
     .league-header img { width: 18px; height: 18px; }
     
@@ -463,9 +488,9 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 
   <main class="main">
     <div class="topbar" id="topbar">
-      <button class="date-arrow" onclick="V.shiftDate(-1)">◀</button>
+      <button class="date-arrow date-arrow-prev" onclick="V.shiftDate(-1)">◀</button>
       <div class="date-nav" id="dateNav"></div>
-      <button class="date-arrow" onclick="V.shiftDate(1)">▶</button>
+      <button class="date-arrow date-arrow-next" onclick="V.shiftDate(1)">▶</button>
       
       <button class="btn-toggle live-toggle" id="liveToggleBtn" onclick="V.toggleLive()">
         <span class="pulse-dot-btn"></span> <span class="hide-mobile">Canlı</span>
@@ -474,6 +499,16 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
       <button class="btn-toggle fav-toggle" id="favToggleBtn" onclick="V.toggleFavView()">
         ⭐ <span class="hide-mobile">Favoriler</span>
       </button>
+
+      <div class="mobile-logo hide-desktop" onclick="V.goHome()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <line x1="4" y1="3" x2="4" y2="21" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M4 4L19 4C19 4 21 4 21 6C21 8 19 8 19 8L4 8" fill="var(--brand)" stroke="var(--brand)" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M4 8L16 8C16 8 18 8 18 10C18 12 16 12 16 12L4 12" fill="#fff" fill-opacity="0.9" stroke="var(--brand)" stroke-width="0.8" stroke-linejoin="round"/>
+          <circle cx="4" cy="3" r="1.5" fill="var(--brand)"/>
+        </svg>
+        <span class="v" style="color:var(--text)">Vivo</span><span class="s" style="color:var(--brand)">Score</span>
+      </div>
 
       <div class="right-actions">
         <button class="btn-toggle" id="oddsToggleBtn" onclick="V.toggleOddsVisibility()" style="border:1px solid var(--border)">📊 <span class="hide-mobile">Oranları Göster</span></button>
