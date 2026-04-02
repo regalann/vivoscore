@@ -15,18 +15,18 @@ if (!RAPID_API_KEY) console.warn('⚠️ RAPID_API_KEY env değişkeni tanımlı
 const BASE_URL = 'https://sportapi7.p.rapidapi.com/api/v1';
 
 // ═══════════════════════════════════════════════
-//  GÜVENLİK: Helmet — CSP Kapatıldı (onclick butonlarının çalışması için)
+//  GÜVENLİK: Helmet — CSP Kapatıldı
 // ═══════════════════════════════════════════════
 app.use(helmet({
-  contentSecurityPolicy: false, // KRİTİK DÜZELTME: Tarayıcının onclick komutlarını engellemesini durdurur.
+  contentSecurityPolicy: false, 
   crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: { policy: "cross-origin" },  // sofascore görselleri için izin
+  crossOriginResourcePolicy: { policy: "cross-origin" },
   referrerPolicy: { policy: "no-referrer" },
   hsts: { maxAge: 31536000, includeSubDomains: true },
 }));
 
 // ═══════════════════════════════════════════════
-//  GÜVENLİK: CORS — sadece kendi origin'imiz
+//  GÜVENLİK: CORS
 // ═══════════════════════════════════════════════
 app.use(cors({
   origin: process.env.ALLOWED_ORIGIN || true,
@@ -35,22 +35,35 @@ app.use(cors({
 }));
 
 // ═══════════════════════════════════════════════
-//  GÜVENLİK: Rate Limiting — DDoS & brute force koruması
+//  GÜVENLİK: Rate Limiting
 // ═══════════════════════════════════════════════
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,   // 1 dakika
-  max: 60,                     // dakikada max 60 istek
+  max: 60,                   // dakikada max 60 istek
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Çok fazla istek gönderdiniz. Lütfen bekleyin.' }
 });
 app.use('/api/', apiLimiter);
 
-app.use(express.json({ limit: '10kb' }));  // Body size limiti
+app.use(express.json({ limit: '10kb' }));
+
+// ═══════════════════════════════════════════════
+//  🚀 KRİTİK DÜZELTME: AKILLI ÖNBELLEK (SMART CACHE)
+// ═══════════════════════════════════════════════
 app.use(express.static(path.join(__dirname, 'public'), {
-  maxAge: '1h',
-  setHeaders: (res) => {
+  setHeaders: (res, filePath) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
+    
+    // Eğer dosya HTML ise ASLA önbelleğe alma (Anında güncellensin)
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else {
+      // JS, CSS vb. diğer dosyaları 1 saat önbellekte tut
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+    }
   }
 }));
 
@@ -76,7 +89,7 @@ function validateId(id) {
 }
 
 // ═══════════════════════════════════════════════
-//  GÜVENLİK: XSS Sanitization — HTML etiketlerini temizle
+//  GÜVENLİK: XSS Sanitization
 // ═══════════════════════════════════════════════
 function sanitizeString(str) {
   if (typeof str !== 'string') return str;
@@ -361,4 +374,4 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Beklenmeyen sunucu hatası' });
 });
 
-app.listen(PORT, () => console.log(`🟢 VivoScore Güvenli Mod: ${PORT}`));
+app.listen(PORT, () => console.log
