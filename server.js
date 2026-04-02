@@ -15,26 +15,12 @@ if (!RAPID_API_KEY) console.warn('⚠️ RAPID_API_KEY env değişkeni tanımlı
 const BASE_URL = 'https://sportapi7.p.rapidapi.com/api/v1';
 
 // ═══════════════════════════════════════════════
-//  GÜVENLİK: Helmet — HTTP güvenlik başlıkları
+//  GÜVENLİK: Helmet — CSP Kapatıldı (onclick butonlarının çalışması için)
 // ═══════════════════════════════════════════════
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],  // inline script kullandığımız için
-      scriptSrcAttr: ["'unsafe-inline'"],        // KRİTİK DÜZELTME: onclick butonlarının çalışması için izin verir!
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "https://api.sofascore.app", "data:"],
-      connectSrc: ["'self'"],
-      frameAncestors: ["'none'"],      // clickjacking koruması
-      objectSrc: ["'none'"],
-      baseUri: ["'self'"],
-      formAction: ["'self'"],
-    }
-  },
+  contentSecurityPolicy: false, // KRİTİK DÜZELTME: Tarayıcının onclick komutlarını engellemesini durdurur.
   crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: { policy: "cross-origin" },  // sofascore görselleri için
+  crossOriginResourcePolicy: { policy: "cross-origin" },  // sofascore görselleri için izin
   referrerPolicy: { policy: "no-referrer" },
   hsts: { maxAge: 31536000, includeSubDomains: true },
 }));
@@ -43,7 +29,7 @@ app.use(helmet({
 //  GÜVENLİK: CORS — sadece kendi origin'imiz
 // ═══════════════════════════════════════════════
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN || true,  // Render'da kendi domain'ini set et
+  origin: process.env.ALLOWED_ORIGIN || true,
   methods: ['GET'],
   optionsSuccessStatus: 200
 }));
@@ -53,7 +39,7 @@ app.use(cors({
 // ═══════════════════════════════════════════════
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,   // 1 dakika
-  max: 60,                   // dakikada max 60 istek
+  max: 60,                     // dakikada max 60 istek
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Çok fazla istek gönderdiniz. Lütfen bekleyin.' }
@@ -130,7 +116,6 @@ function getCached(key) {
 }
 function setCache(key, data) {
   cache.set(key, { data, ts: Date.now() });
-  // Cache boyutunu kontrol et (memory leak önleme)
   if (cache.size > 500) {
     const oldest = [...cache.entries()].sort((a, b) => a[1].ts - b[1].ts);
     for (let i = 0; i < 100; i++) cache.delete(oldest[i][0]);
@@ -147,7 +132,7 @@ async function api(endpoint) {
       'x-rapidapi-key': RAPID_API_KEY,
       'x-rapidapi-host': 'sportapi7.p.rapidapi.com'
     },
-    signal: AbortSignal.timeout(10000)  // 10 saniye timeout
+    signal: AbortSignal.timeout(10000)
   });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
@@ -198,7 +183,6 @@ function formatEvent(e) {
   } else if (status.type === 'finished') statusText = 'finished';
   else if (status.type === 'notstarted' || status.type === 'canceled') statusText = 'scheduled';
 
-  // TÜM string alanlar sanitize edilir
   return sanitizeObject({
     id: Number(e.id) || 0,
     status: statusText,
@@ -257,9 +241,8 @@ const poolFetchLog = new Map();
 app.get('/api/schedule/:sport/:date', async (req, res) => {
   const { sport, date } = req.params;
 
-  // GÜVENLİK: Input validation
   if (!validateSport(sport)) return res.status(400).json({ error: 'Geçersiz spor dalı' });
-  if (!validateDate(date)) return res.status(400).json({ error: 'Geçersiz tarih formatı (YYYY-MM-DD)' });
+  if (!validateDate(date)) return res.status(400).json({ error: 'Geçersiz tarih formatı' });
 
   try {
     const prevDay = new Date(date + 'T00:00:00Z');
@@ -288,7 +271,7 @@ app.get('/api/schedule/:sport/:date', async (req, res) => {
 
     const grouped = {};
     events.forEach(e => {
-      const m = formatEvent(e);  // sanitize edilmiş
+      const m = formatEvent(e);
       const tId = e.tournament?.uniqueTournament?.id || 'other';
       if (!grouped[tId]) grouped[tId] = { name: m.tournament.name, matches: [] };
       grouped[tId].matches.push(m);
@@ -297,11 +280,10 @@ app.get('/api/schedule/:sport/:date', async (req, res) => {
     res.json({ groups: grouped, date, total: events.length });
   } catch (err) {
     console.error(`[SCHEDULE] ${date}:`, err.message);
-    res.status(500).json({ error: 'Sunucu hatası' });  // detay sızdırma
+    res.status(500).json({ error: 'Sunucu hatası' });
   }
 });
 
-// Havuz temizliği
 setInterval(() => {
   const cutoff = Math.floor(Date.now() / 1000) - 172800;
   for (const [id, e] of eventPool) {
@@ -310,7 +292,7 @@ setInterval(() => {
 }, 30 * 60 * 1000);
 
 // ═══════════════════════════════════════════════
-//  CANLI MAÇLAR
+//  CANLI MAÇLAR VE DETAYLAR
 // ═══════════════════════════════════════════════
 app.get('/api/live/:sport', async (req, res) => {
   if (!validateSport(req.params.sport)) return res.status(400).json({ error: 'Geçersiz spor' });
@@ -327,9 +309,6 @@ app.get('/api/live/:sport', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
-// ═══════════════════════════════════════════════
-//  MAÇ DETAYLARI (tümü ID validation'lı ve sanitized)
-// ═══════════════════════════════════════════════
 app.get('/api/event/:id/stats', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
@@ -375,20 +354,8 @@ app.get('/api/event/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
-// Debug — sadece development'ta
-if (process.env.NODE_ENV !== 'production') {
-  app.get('/api/debug', (req, res) => {
-    const now = Math.floor(Date.now() / 1000);
-    res.json({ trDate: getTRDateString(now), trTime: getTRTimeString(now), node: process.version });
-  });
-}
-
-// Catch-all: 404 yerine index.html
 app.get('*', (_, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
-// ═══════════════════════════════════════════════
-//  GLOBAL ERROR HANDLER
-// ═══════════════════════════════════════════════
 app.use((err, req, res, next) => {
   console.error('[UNHANDLED]', err.message);
   res.status(500).json({ error: 'Beklenmeyen sunucu hatası' });
