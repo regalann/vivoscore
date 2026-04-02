@@ -37,12 +37,15 @@
 [data-theme="light"] .date-btn.active { background: var(--brand); color: #fff; }
 [data-theme="light"] .date-btn.active .day { color: rgba(255,255,255,0.8); }
 [data-theme="light"] .minute-badge { color: #fff; }
-[data-theme="light"] .pitch-container { background-color: var(--pitch-bg); border-color: var(--pitch-border); }
 
 body.hide-odds .match-odds-wrapper { display: none !important; }
 body.hide-odds .bet-slip { display: none !important; }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; -webkit-font-smoothing: antialiased; }
+
+/* Mac Safari Apple UI Düzeltmesi */
+button, input { -webkit-appearance: none; appearance: none; }
+
 ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
 img { display: block; } button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 .app { display: flex; height: 100vh; width: 100vw; position: relative; overflow: hidden; }
@@ -107,7 +110,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .match-time.live-time { color: var(--green); }
 .minute-badge { display: inline-block; background: var(--green); color: #000; font-size: 12px; font-weight: 700; padding: 1px 6px; border-radius: 4px; animation: pulse-live 1.5s infinite; }
 
-.match-info-area { flex:1; min-width:0; display:flex; align-items:center; cursor: pointer; } 
+.match-info-area { flex:1; min-width:0; display:flex; align-items:center; cursor: pointer; overflow: hidden; } 
 .match-teams { flex: 0 0 28%; min-width: 190px; max-width: 260px; padding: 0 12px; border-right: 1px solid var(--border); }
 .team-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; } .team-row:last-child { margin-bottom: 0; }
 .team-logo { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0; background: transparent; }
@@ -124,7 +127,8 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .match-fav { width: 32px; flex-shrink: 0; text-align: center; font-size: 18px; color: var(--text3); cursor: pointer; transition: var(--transition); }
 .match-fav:hover, .match-fav.faved { color: var(--yellow); }
 
-.match-odds-wrapper { flex: 1; display: flex; gap: 12px; align-items: center; padding-left: 16px; min-height: 40px; overflow-x: auto; justify-content: flex-start; }
+.match-odds-wrapper { flex: 1; display: flex; gap: 12px; align-items: center; padding-left: 16px; min-height: 40px; overflow-x: auto; justify-content: flex-start; min-width: 0; }
+.match-odds-wrapper::-webkit-scrollbar { display: none; }
 .odds-group { display: flex; gap: 2px; background: var(--bg2); padding: 8px 4px 4px; border-radius: 6px; border: 1px solid var(--border); position: relative; margin-top: 6px;}
 .odds-group-title { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 800; color: var(--text3); background: var(--surface); padding: 0 6px; border-radius: 4px; white-space: nowrap;}
 .odd-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; text-align: center; min-width: 42px; cursor: pointer; transition: 0.2s; user-select: none; }
@@ -184,7 +188,20 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .team-lineup-wrapper { margin-bottom: 30px; }
 .team-lineup-header { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 12px; text-align: center; background: var(--bg2); padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border);}
 .formation-label { text-align:center; font-size:14px; font-weight:700; color:var(--brand); margin-bottom:12px; }
-.pitch-container { background: var(--pitch-bg, #2a3c24) url('data:image/svg+xml;utf8,<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/><line x1="0" y1="50%" x2="100%" y2="50%" stroke="rgba(255,255,255,0.15)" stroke-width="2"/><circle cx="50%" cy="50%" r="40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/></svg>') no-repeat center center; background-size: cover; border-radius: 8px; padding: 20px 0; display: flex; flex-direction: column; gap: 20px; margin-bottom: 16px; border: 2px solid var(--pitch-border, #3d5a35); }
+.pitch-container { 
+  background-color: var(--pitch-bg, #2a3c24);
+  background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='none' stroke='rgba(255,255,255,0.15)' stroke-width='2'/%3E%3Cline x1='0' y1='50%25' x2='100%25' y2='50%25' stroke='rgba(255,255,255,0.15)' stroke-width='2'/%3E%3Ccircle cx='50%25' cy='50%25' r='40' fill='none' stroke='rgba(255,255,255,0.15)' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover; 
+  border-radius: 8px; 
+  padding: 20px 0; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 20px; 
+  margin-bottom: 16px; 
+  border: 2px solid var(--pitch-border, #3d5a35); 
+}
 .pitch-row { display: flex; justify-content: center; gap: 12px; }
 .pitch-player { display: flex; flex-direction: column; align-items: center; width: 60px; cursor: pointer; transition: transform 0.2s; }
 .pitch-player:hover { transform: scale(1.1); }
@@ -406,11 +423,12 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     <div class="pm-close" onclick="V.closePlayerModal()">✕</div>
     <div class="pm-header">
       <img id="pmImg" src="" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='">
-      <div>
+      <div style="flex:1;">
         <div class="pm-name" id="pmName">Oyuncu Adı</div>
         <div class="pm-pos" id="pmPos">Mevki</div>
         <div class="pm-rating" id="pmRating">7.0</div>
       </div>
+      <div id="pmFavBtn" class="ll-fav" style="font-size: 28px; cursor: pointer; user-select: none; margin-right: 15px; margin-top: -15px;">★</div>
     </div>
     <div class="pm-body">
       <div class="pm-grid" id="pmStatsGrid"></div>
@@ -691,22 +709,47 @@ var SPORTS = [
 ];
 
 var STAT_DICT = {
-  goals: 'Gol', assists: 'Asist', totalShots: 'Toplam Şut', shotsOnTarget: 'İsabetli Şut',
-  shotsOffTarget: 'İsabetsiz Şut', blockedShots: 'Engellenen Şut', hitWoodwork: 'Direkten Dönen',
-  minutesPlayed: 'Oynanan Dakika', touches: 'Topla Buluşma', accuratePasses: 'İsabetli Pas',
-  keyPasses: 'Kilit Pas', crosses: 'Orta', longBalls: 'Uzun Top', dribbles: 'Çalım',
-  possessionLostCtrl: 'Top Kaybı', totalTackle: 'Müdahale', interceptions: 'Pas Arası',
+  // ⚽ HÜCUM & GENEL
+  minutesPlayed: 'Oynanan Dakika', rating: 'SofaScore Reyting',
+  goals: 'Gol', assists: 'Asist',
+  expectedGoals: 'Gol Beklentisi (xG)', expectedAssists: 'Asist Beklentisi (xA)',
+  totalShots: 'Toplam Şut', shotsOnTarget: 'İsabetli Şut', shotsOffTarget: 'İsabetsiz Şut',
+  blockedShots: 'Engellenen Şut', hitWoodwork: 'Direkten Dönen',
+  bigChancesMissed: 'Kaçan Net Fırsat', bigChancesCreated: 'Yaratılan Net Fırsat',
+  successfulDribbles: 'Başarılı Çalım', dribbleAttempts: 'Çalım Girişimi', dribbles: 'Çalım',
+  penaltyWon: 'Kazandırdığı Penaltı', ownGoals: 'Kendi Kalesine Gol',
+
+  // 👟 PAS & OYUN KURMA
+  touches: 'Topla Buluşma', passes: 'Pas', totalPasses: 'Toplam Pas',
+  accuratePasses: 'İsabetli Pas', accuratePassesPercentage: 'Pas İsabeti (%)',
+  keyPasses: 'Kilit Pas', crosses: 'Orta', accurateCrosses: 'İsabetli Orta', totalCrosses: 'Toplam Orta',
+  longBalls: 'Uzun Top', accurateLongBalls: 'İsabetli Uzun Top', totalLongBalls: 'Toplam Uzun Top',
+
+  // 🛡️ SAVUNMA
+  totalTackle: 'Top Kapma', tackles: 'Müdahale', interceptions: 'Pas Arası',
   clearances: 'Uzaklaştırma', blockedScoringAttempt: 'Şut Engelleme',
-  aerialDuelsWon: 'Kazanılan Hava Topu', groundDuelsWon: 'Kazanılan İkili Mc.',
-  fouls: 'Faul Yaptı', wasFouled: 'Faul Aldı', saves: 'Kurtarış',
-  yellowCards: 'Sarı Kart', redCards: 'Kırmızı Kart', rating: 'SofaScore Reyting',
+  errorLeadToShot: 'Şuta Neden Olan Hata', errorLeadToGoal: 'Gole Neden Olan Hata',
+  clearanceOffLine: 'Çizgiden Çıkarma', lastManTackle: 'Son Adam Müdahalesi', penaltyConceded: 'Yaptırılan Penaltı',
+
+  // ⚔️ İKİLİ MÜCADELE & DİSİPLİN
+  duelsWon: 'Kazanılan İkili Mc.', totalDuels: 'Toplam İkili Mc.', duels: 'İkili Mücadele',
+  groundDuelsWon: 'Kazanılan Yerden Mc.', totalGroundDuels: 'Toplam Yerden Mc.',
+  aerialDuelsWon: 'Kazanılan Hava Topu', totalAerialDuels: 'Toplam Hava Topu', aerialLost: 'Kaybedilen Hava Topu',
+  possessionLostCtrl: 'Top Kaybı', possessionLost: 'Top Kaybı', dispossessed: 'Top Kaptırma', challengeLost: 'Kaybedilen Mücadele',
+  fouls: 'Faul Yaptı', wasFouled: 'Faul Aldı', yellowCards: 'Sarı Kart', redCards: 'Kırmızı Kart',
+
+  // 🧤 KALECİ
+  saves: 'Kurtarış', savesFromInsideBox: 'Ceza Sahası İçi Kurt.', savesFromOutsideBox: 'Ceza Sahası Dışı Kurt.',
+  goalsPrevented: 'Önlenen Gol', punches: 'Yumruklama', runsOut: 'Kalesini Terk Etme',
+  successfulRunsOut: 'Başarılı Çıkış', highClaims: 'Hava Topu Alma', penaltySaves: 'Penaltı Kurtarışı', goalsConceded: 'Yenilen Gol',
+
+  // 🏀 BASKETBOL & DİĞER
   points: 'Sayı', rebounds: 'Ribaund', defensiveRebounds: 'Savunma Rib.', offensiveRebounds: 'Hücum Rib.',
-  steals: 'Top Çalma', blocks: 'Blok', turnovers: 'Top Kaybı',
-  personalFouls: 'Bireysel Faul', plusMinus: '+/-',
-  twoPointersMade: '2 Sayı İsabet', twoPointersAttempted: '2 Sayı Deneme',
-  threePointersMade: '3 Sayı İsabet', threePointersAttempted: '3 Sayı Deneme',
-  freeThrowsMade: 'Serbest Atış İsabet', freeThrowsAttempted: 'SA Deneme',
-  fieldGoalsMade: 'Saha İçi İsabet', fieldGoalsAttempted: 'Saha İçi Deneme'
+  steals: 'Top Çalma', blocks: 'Blok', turnovers: 'Top Kaybı', personalFouls: 'Bireysel Faul', plusMinus: '+/-',
+  twoPointersMade: '2 Sayı İsabet', twoPointersAttempted: '2 Sayı Deneme', threePointersMade: '3 Sayı İsabet',
+  threePointersAttempted: '3 Sayı Deneme', freeThrowsMade: 'Serbest Atış İsabet', freeThrowsAttempted: 'SA Deneme',
+  fieldGoalsMade: 'Saha İçi İsabet', fieldGoalsAttempted: 'Saha İçi Deneme',
+  freeThrowsCombo: 'Serbest Atış', threePointersCombo: '3 Sayı', twoPointersCombo: '2 Sayı', fieldGoalsCombo: 'Saha İçi İsabet'
 };
 
 var V = {
@@ -1074,6 +1117,14 @@ var V = {
     safeStorage.set('vivo_fav_players', this.state.favPlayers);
     Auth.saveCloudData();
     document.querySelectorAll('.ll-fav[data-pid="' + p.id + '"]').forEach(function(star) { star.classList.toggle('faved'); });
+    
+    // Açık olan modal içerisindeki yıldızı da anlık güncelle
+    var favBtn = document.getElementById('pmFavBtn');
+    if(favBtn && favBtn.getAttribute('data-pid') === String(p.id)) {
+        if(idx >= 0) favBtn.classList.remove('faved');
+        else favBtn.classList.add('faved');
+    }
+
     if(this.state.page === 'favorites') this.loadFavorites();
   },
 
@@ -1165,7 +1216,6 @@ var V = {
     }
   },
 
-  // 🚀 OYUNCU İSTATİSTİK MOTORU (DOĞRU YERE TAŞINDI)
   showPlayerModal: function(playerId) {
     var p = V.state.playerData[playerId];
     if (!p) return; 
@@ -1178,6 +1228,15 @@ var V = {
       rBox.textContent = p.rating; rBox.style.display = 'inline-block'; var r = parseFloat(p.rating);
       rBox.className = 'pm-rating ' + (r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'));
     } else { rBox.style.display = 'none'; }
+
+    // 🚀 YENİ: Yıldızın durumunu ve tıklama olayını ayarla
+    var isFav = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(playerId); });
+    var favBtn = document.getElementById('pmFavBtn');
+    if(favBtn) {
+        favBtn.setAttribute('data-pid', playerId);
+        favBtn.setAttribute('onclick', "V.toggleFavPlayer('" + playerId + "', event)");
+        if(isFav) favBtn.classList.add('faved'); else favBtn.classList.remove('faved');
+    }
 
     var grid = document.getElementById('pmStatsGrid'); var html = ''; 
     var s = Object.assign({}, p.stats || {}); 
@@ -1258,7 +1317,7 @@ var T = {
 
     return '<div class="match-card' + (isLive ? ' live-card' : '') + (isHidden ? ' hide-this-score' : '') + '" data-match="' + safeId + '">' + timeH +
       '<div class="match-info-area" onclick="V.showDetail(' + safeId + ')">' +
-        '<div class="match-teams"><div class="team-row"><img class="team-logo" src="' + safeImgUrl(m.homeTeam.img) + '" onerror="this.style.visibility=\'hidden\'"><span class="team-name' + (aW ? ' loser' : '') + '">' + esc(m.homeTeam.shortName) + '</span></div>' +
+        '<div class="match-teams"><div class="team-row"><img class="team-logo" src="' + safeImgUrl(m.homeTeam.img) + onerror="this.style.visibility=\'hidden\'"><span class="team-name' + (aW ? ' loser' : '') + '">' + esc(m.homeTeam.shortName) + '</span></div>' +
         '<div class="team-row"><img class="team-logo" src="' + safeImgUrl(m.awayTeam.img) + '" onerror="this.style.visibility=\'hidden\'"><span class="team-name' + (hW ? ' loser' : '') + '">' + esc(m.awayTeam.shortName) + '</span></div></div>' +
         oddsContainer + '<div class="match-score-wrap">' + scoreH + hideBtnHtml + '</div>' +
       '</div><div class="match-fav' + (isFav ? ' faved' : '') + '" data-fav="' + safeId + '" onclick="V.toggleFav(' + safeId + ',event)">\u2605</div></div>';
