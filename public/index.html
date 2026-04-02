@@ -194,6 +194,9 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .pitch-player .p-rating { color: #000; font-size: 12px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-top: -6px; z-index: 2; border: 1px solid #fff; }
 .pitch-player .p-name { font-size: 12px; color: #fff; font-weight: 700; margin-top: 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px; text-shadow: 1px 1px 2px #000; }
 .rating-high { background:var(--green) !important; color:#000 !important; } .rating-mid { background:var(--yellow) !important; color:#000 !important; } .rating-low { background:var(--text3) !important; color:#fff !important; }
+.add-all-fav-btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:10px 16px; margin:10px 0 14px; background:var(--yellow-dim); color:var(--yellow); border:1px dashed var(--yellow); border-radius:var(--radius-sm); font-size:13px; font-weight:700; cursor:pointer; transition:var(--transition); }
+.add-all-fav-btn:hover { background:var(--yellow); color:#000; border-style:solid; }
+.add-all-fav-btn.done { background:var(--green-dim); color:var(--green); border-color:var(--green); pointer-events:none; border-style:solid; }
 .lineup-section-title { font-size:14px; font-weight:800; color:var(--text); margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
 .lineup-list { display: flex; flex-direction: column; gap: 4px; }
 .ll-item { display: flex; align-items: center; background: var(--bg2); padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: var(--transition); border: 1px solid transparent;}
@@ -1077,6 +1080,30 @@ var V = {
     if(this.state.page === 'favorites') this.loadFavorites();
   },
 
+  _lineupStarters: { home: [], away: [] },
+
+  addAllStartersToFav: function(teamKey, btnEl) {
+    var ids = this._lineupStarters[teamKey] || [];
+    var addedCount = 0;
+    for (var i = 0; i < ids.length; i++) {
+      var pId = ids[i];
+      var p = this.state.playerData[pId];
+      if (!p) continue;
+      var alreadyFav = this.state.favPlayers.some(function(fp) { return String(fp.id) === String(p.id); });
+      if (!alreadyFav) {
+        this.state.favPlayers.push(p);
+        addedCount++;
+      }
+      document.querySelectorAll('.ll-fav[data-pid="' + p.id + '"]').forEach(function(star) { star.classList.add('faved'); });
+    }
+    safeStorage.set('vivo_fav_players', this.state.favPlayers);
+    Auth.saveCloudData();
+    if (btnEl) {
+      btnEl.classList.add('done');
+      btnEl.innerHTML = '✅ ' + (addedCount > 0 ? addedCount + ' oyuncu favorilere eklendi' : 'Tümü zaten favorilerde');
+    }
+  },
+
   showDetail: function(matchId) {
     this.state.selectedMatch = matchId; this.state.detailTab = 'summary';
     document.querySelectorAll('.match-card').forEach(function(el) { el.classList.remove('selected'); });
@@ -1299,6 +1326,7 @@ var T = {
     if (hp.length === 0 && ap.length === 0) return this.empty('Kadro bilgisi henüz açıklanmadı');
 
     var html = '<div style="font-size:12px; color:var(--text3); text-align:center; margin-bottom:10px;">Detaylı istatistik için oyuncuya tıklayın</div>';
+    V._lineupStarters = { home: [], away: [] };
     
     if (V.state.selectedSport === 'football') {
       var hf = data.home.formation; var af = data.away.formation;
@@ -1310,7 +1338,7 @@ var T = {
     else if (V.state.selectedSport === 'volleyball' || V.state.selectedSport === 'ice-hockey') starterLabel = 'İlk 6';
     else if (V.state.selectedSport !== 'football' && V.state.selectedSport !== 'american-football') starterLabel = 'Sporcular';
 
-    var renderPitch = function(players, isAway) {
+    var renderPitch = function(players, isAway, teamKey) {
         var starters = players.filter(function(p){ return !p.substitute; });
         var groups = { G: [], D: [], M: [], F: [] }; var unknown = [];
         starters.forEach(function(p) {
@@ -1338,6 +1366,7 @@ var T = {
                 var finalPos = posMap[pPosRaw] || pPosRaw || '';
                 
                 V.state.playerData[pId] = { id: pId, name: pName, pos: finalPos, img: pImg, rating: pRating, stats: pStats };
+                if (teamKey) V._lineupStarters[teamKey].push(pId);
 
                 var rc = ''; if (pRating) { var r = parseFloat(pRating); rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'); }
                 var numHtml = pNum ? '<div class="p-num">'+pNum+'</div>' : '';
@@ -1353,7 +1382,7 @@ var T = {
         return pitchHtml + '</div>';
     };
 
-    var renderList = function(players, title) {
+    var renderList = function(players, title, teamKey) {
         var lHtml = '<div class="lineup-section-title">' + title + '</div><div class="lineup-list">';
         players.forEach(function(p) {
             var pId = p.id || (p.player && p.player.id) || '';
@@ -1366,6 +1395,9 @@ var T = {
 
             var posMap = (V.state.selectedSport === 'basketball') ? { G:'Guard', F:'Forvet', C:'Pivot' } : { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet' };
             var finalPos = posMap[pPosRaw] || pPosRaw || '';
+            
+            V.state.playerData[pId] = { id: pId, name: pName, pos: finalPos, img: pImg, rating: pRating, stats: pStats };
+            if (teamKey) V._lineupStarters[teamKey].push(pId);
             
             V.state.playerData[pId] = { id: pId, name: pName, pos: finalPos, img: pImg, rating: pRating, stats: pStats };
 
@@ -1382,22 +1414,24 @@ var T = {
 
     html += '<div class="team-lineup-wrapper"><div class="team-lineup-header">' + starterLabel + ' - Ev Sahibi</div>';
     if(V.state.selectedSport === 'football') {
-        html += renderPitch(hp, false); 
+        html += renderPitch(hp, false, 'home'); 
     } else { 
         var hStarters = hp.filter(function(p){ return !p.substitute; }); 
-        html += renderList(hStarters, starterLabel); 
+        html += renderList(hStarters, starterLabel, 'home'); 
     }
+    html += '<button class="add-all-fav-btn" onclick="V.addAllStartersToFav(\'home\', this)">⭐ Tüm ' + starterLabel + '\'i Favorilere Ekle</button>';
     var hSubs = hp.filter(function(p){ return p.substitute; }); 
     if(hSubs.length > 0) html += renderList(hSubs, 'Yedekler'); 
     html += '</div>';
     
     html += '<div class="team-lineup-wrapper" style="margin-top:30px;"><div class="team-lineup-header">' + starterLabel + ' - Deplasman</div>';
     if(V.state.selectedSport === 'football') {
-        html += renderPitch(ap, true); 
+        html += renderPitch(ap, true, 'away'); 
     } else { 
         var aStarters = ap.filter(function(p){ return !p.substitute; }); 
-        html += renderList(aStarters, starterLabel); 
+        html += renderList(aStarters, starterLabel, 'away'); 
     }
+    html += '<button class="add-all-fav-btn" onclick="V.addAllStartersToFav(\'away\', this)">⭐ Tüm ' + starterLabel + '\'i Favorilere Ekle</button>';
     var aSubs = ap.filter(function(p){ return p.substitute; }); 
     if(aSubs.length > 0) html += renderList(aSubs, 'Yedekler'); 
     html += '</div>';
