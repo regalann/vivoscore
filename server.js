@@ -45,13 +45,45 @@ async function api(endpoint) {
   return data;
 }
 
-// ─── KRİTİK: TÜRKİYE SAATİNE GÖRE TARİH HESAPLAYICI ───
+// ─── GÜVENİLİR TÜRKİYE TARİH FONKSİYONU ───
+// Intl 'en-CA' locale bazı Node.js sürümlerinde YYYY-MM-DD yerine farklı format verebilir
+// Bu yüzden formatToParts kullanarak elle birleştiriyoruz
 function getTRDateString(timestamp) {
-  return new Intl.DateTimeFormat('en-CA', { 
-    timeZone: 'Europe/Istanbul', 
-    year: 'numeric', month: '2-digit', day: '2-digit' 
-  }).format(new Date(timestamp * 1000));
+  const d = new Date(timestamp * 1000);
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Istanbul',
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(d);
+  const y = parts.find(p => p.type === 'year').value;
+  const m = parts.find(p => p.type === 'month').value;
+  const dd = parts.find(p => p.type === 'day').value;
+  return y + '-' + m + '-' + dd;
 }
+
+function getTRTimeString(timestamp) {
+  const d = new Date(timestamp * 1000);
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Istanbul',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  }).formatToParts(d);
+  const h = parts.find(p => p.type === 'hour').value;
+  const min = parts.find(p => p.type === 'minute').value;
+  return h + ':' + min;
+}
+
+// Debug endpoint — tarayıcıdan /api/debug çağırarak tarih fonksiyonlarını test et
+app.get('/api/debug', (req, res) => {
+  const now = Math.floor(Date.now() / 1000);
+  const testDate = getTRDateString(now);
+  const testTime = getTRTimeString(now);
+  res.json({
+    serverTime: new Date().toISOString(),
+    trDate: testDate,
+    trTime: testTime,
+    nodeVersion: process.version,
+    test: 'Bu değerler YYYY-MM-DD ve HH:MM formatında olmalı'
+  });
+});
 
 function formatEvent(e) {
   const ts = e.startTimestamp * 1000;
@@ -70,7 +102,7 @@ function formatEvent(e) {
   return {
     id: e.id, status: statusText, minute, timestamp: ts,
     date: getTRDateString(e.startTimestamp),
-    time: new Date(ts).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' }),
+    time: getTRTimeString(e.startTimestamp),
     tournament: { id: e.tournament?.uniqueTournament?.id, name: e.tournament?.uniqueTournament?.name || e.tournament?.name },
     homeTeam: { id: e.homeTeam?.id, name: e.homeTeam?.name, shortName: e.homeTeam?.shortName || e.homeTeam?.name, img: `https://api.sofascore.app/api/v1/team/${e.homeTeam?.id}/image` },
     awayTeam: { id: e.awayTeam?.id, name: e.awayTeam?.name, shortName: e.awayTeam?.shortName || e.awayTeam?.name, img: `https://api.sofascore.app/api/v1/team/${e.awayTeam?.id}/image` },
@@ -96,37 +128,65 @@ app.get('/api/odds/:matchId', async (req, res) => {
   } catch (err) { res.status(500).json({ error: "error" }); }
 });
 
+// ─── HAVUZ SİSTEMİ: Tüm maçları depola, client filtrelesin ───
+const eventPool = new Map();  // eventId -> raw event
+const poolFetchLog = new Map(); // "sport:utcDate" -> fetch zamanı
+
 app.get('/api/schedule/:sport/:date', async (req, res) => {
   try {
     const { sport, date } = req.params;
-    console.log(`[SCHEDULE] İstenen tarih (TR): ${date} | Spor: ${sport}`);
+    console.log(`[SCHEDULE] İstenen TR tarih: ${date} | Spor: ${sport}`);
     
-    // İstanbul UTC+3 olduğu için, TR gününün maçları 2 UTC gününe yayılır:
-    // TR 3 Nisan 00:00 = UTC 2 Nisan 21:00
-    // TR 3 Nisan 23:59 = UTC 3 Nisan 20:59
-    // Bu yüzden hem istenen günü hem bir önceki UTC günü çekip TR'ye göre filtreleriz
+    // İstanbul UTC+3 → TR gününü kapsamak için hem istenilen hem önceki UTC günü çekmeliyiz
+    // Ama akıllı cache ile gereksiz API çağrısı yapmayız
     const prevDay = new Date(date + 'T00:00:00Z');
     prevDay.setUTCDate(prevDay.getUTCDate() - 1);
     const prevDateStr = prevDay.toISOString().slice(0, 10);
     
-    const [todayData, prevData] = await Promise.all([
-      api(`/sport/${sport}/scheduled-events/${date}`).catch(() => ({ events: [] })),
-      api(`/sport/${sport}/scheduled-events/${prevDateStr}`).catch(() => ({ events: [] }))
-    ]);
+    const datesToFetch = [date, prevDateStr];
     
-    // İki günün maçlarını birleştir, ID bazında tekilleştir
-    const seen = new Set();
-    const combined = [];
-    for (const e of [...(todayData.events || []), ...(prevData.events || [])]) {
-      if (!seen.has(e.id)) { seen.add(e.id); combined.push(e); }
+    for (const d of datesToFetch) {
+      const poolKey = sport + ':' + d;
+      const lastFetch = poolFetchLog.get(poolKey);
+      if (!lastFetch || Date.now() - lastFetch > CACHE_TTL) {
+        try {
+          const data = await api(`/sport/${sport}/scheduled-events/${d}`);
+          const evts = data.events || [];
+          console.log(`[POOL] ${d} → ${evts.length} maç havuza eklendi`);
+          evts.forEach(e => eventPool.set(e.id, e));
+          poolFetchLog.set(poolKey, Date.now());
+        } catch(apiErr) {
+          console.error(`[POOL HATA] ${d}: ${apiErr.message}`);
+        }
+      } else {
+        console.log(`[POOL CACHE] ${d} zaten havuzda`);
+      }
     }
     
-    // Türkiye saatine göre filtrele
-    const events = combined.filter(e => getTRDateString(e.startTimestamp) === date);
-    console.log(`[SCHEDULE] ${date} → API toplamı: ${combined.length}, TR filtre sonrası: ${events.length}`);
+    // Havuzdan Türkiye tarihine göre filtrele
+    const events = [];
+    for (const [id, e] of eventPool) {
+      const trDate = getTRDateString(e.startTimestamp);
+      if (trDate === date) events.push(e);
+    }
     
-    // Saate göre sırala
     events.sort((a, b) => a.startTimestamp - b.startTimestamp);
+    console.log(`[SCHEDULE] ${date} → Havuz: ${eventPool.size} toplam, Bu gün: ${events.length} maç`);
+    
+    // Debug: ilk 3 maçın bilgilerini logla
+    if (events.length > 0) {
+      events.slice(0, 3).forEach(e => {
+        console.log(`  → ${getTRDateString(e.startTimestamp)} ${getTRTimeString(e.startTimestamp)} | ${e.homeTeam?.shortName} vs ${e.awayTeam?.shortName}`);
+      });
+    } else if (eventPool.size > 0) {
+      // Filtre 0 döndüyse havuzdaki tarihleri göster (debug)
+      const sampleDates = new Set();
+      for (const [id, e] of eventPool) {
+        sampleDates.add(getTRDateString(e.startTimestamp));
+        if (sampleDates.size >= 5) break;
+      }
+      console.log(`[DEBUG] Havuzdaki TR tarihleri: ${[...sampleDates].join(', ')} | Aranan: ${date}`);
+    }
     
     const grouped = {};
     events.forEach(e => {
@@ -135,12 +195,23 @@ app.get('/api/schedule/:sport/:date', async (req, res) => {
       if (!grouped[tId]) grouped[tId] = { name: m.tournament.name, matches: [] };
       grouped[tId].matches.push(m);
     });
-    res.json({ groups: grouped, date: date, total: events.length });
+    
+    res.json({ groups: grouped, date: date, total: events.length, poolSize: eventPool.size });
   } catch (err) {
     console.error(`[SCHEDULE HATA] ${req.params.date}:`, err.message);
     res.status(500).json({ error: err.message, date: req.params.date });
   }
 });
+
+// Havuzu periyodik temizle (24 saatten eski maçları sil)
+setInterval(() => {
+  const cutoff = Math.floor(Date.now() / 1000) - 172800; // 48 saat
+  let cleaned = 0;
+  for (const [id, e] of eventPool) {
+    if (e.startTimestamp < cutoff) { eventPool.delete(id); cleaned++; }
+  }
+  if (cleaned > 0) console.log(`[POOL CLEANUP] ${cleaned} eski maç silindi, kalan: ${eventPool.size}`);
+}, 30 * 60 * 1000);
 
 app.get('/api/live/:sport', async (req, res) => {
   try {
