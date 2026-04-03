@@ -292,11 +292,6 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .search-loading { display: flex; align-items: center; justify-content: center; padding: 24px; gap: 10px; color: var(--text3); font-size: 13px; }
 .search-loading .spinner { width: 18px; height: 18px; }
 
-@media (max-width: 768px) {
-  .search-container { order: 7; min-width: 100%; margin-top: 4px; }
-  .search-dropdown { max-height: 320px; }
-  .search-shortcut { display: none; }
-}
 .loading { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 0; gap:12px; }
 .spinner { width:28px; height:28px; border:3px solid var(--border); border-top-color:var(--brand); border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
@@ -346,31 +341,36 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     
     .main { order: 1; flex: 1; overflow: hidden; }
     
-    /* YENİ TOPBAR DÜZENİ: Satır Satır Kusursuz Hizalama */
-    .topbar { padding: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+    /* YENİ TOPBAR DÜZENİ: Kusursuz 12 Sütunlu CSS Grid SİSTEMİ */
+    .topbar {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 10px;
+        padding: 10px 12px;
+        height: auto;
+    }
 
-    /* SATIR 1: Butonlar */
-    .live-toggle { order: 1; flex: 1; justify-content: center; margin: 0; padding: 8px 4px; }
-    .fav-toggle { order: 2; flex: 1; justify-content: center; margin: 0; padding: 8px 4px; }
-    .right-actions { order: 3; flex: 2; display: flex; justify-content: space-between; gap: 4px; margin: 0; }
-    .right-actions .btn-toggle { flex: 1; justify-content: center; padding: 8px 4px; }
+    /* 1. SATIR: Tarih Navigasyonu */
+    .topbar > button.date-arrow:nth-of-type(1) { grid-column: span 2; margin: 0; height: 42px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .date-nav { grid-column: span 8; margin: 0; display: flex; justify-content: space-between; overflow-x: auto; padding: 2px; }
+    .topbar > button.date-arrow:nth-of-type(2) { grid-column: span 2; margin: 0; height: 42px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
 
-    /* SATIR 2: Tarih Barı */
-    .topbar > button.date-arrow:nth-of-type(1) { order: 4; margin: 0; width: 36px; height: 36px; }
-    .date-nav { order: 5; flex: 1; justify-content: space-between; margin: 0; min-width: 0; padding: 2px; }
-    .topbar > button.date-arrow:nth-of-type(2) { order: 6; margin: 0; width: 36px; height: 36px; }
+    /* 2. SATIR: İkon Butonları (Hepsi tamamen eşit yayılır) */
+    .live-toggle { grid-column: span 3; margin: 0; display: flex; align-items: center; justify-content: center; height: 42px; padding: 0; }
+    .fav-toggle { grid-column: span 3; margin: 0; display: flex; align-items: center; justify-content: center; height: 42px; padding: 0; }
+    .right-actions { grid-column: span 6; margin: 0; display: flex; gap: 10px; }
+    .right-actions .btn-toggle { flex: 1; display: flex; align-items: center; justify-content: center; margin: 0; height: 42px; padding: 0; }
 
-    /* SATIR 3: Arama Çubuğu */
-    .search-container { order: 7; width: 100%; min-width: 100%; margin: 0; display: block; }
+    /* 3. SATIR: Arama Çubuğu */
+    .search-container { grid-column: span 12; margin: 0; width: 100%; display: block; }
     .search-dropdown { max-height: 320px; }
     .search-shortcut { display: none; }
     
-    .date-btn { padding: 6px 2px; font-size: 11px; flex: 1; text-align: center; }
+    .date-btn { padding: 6px 2px; font-size: 11px; flex: 1; min-width: 40px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .date-btn .day { font-size: 10px; margin-top: 2px; }
-    .btn-toggle { font-size: 13px; }
     .hide-mobile { display: none !important; }
-    .match-scroll { padding: 10px 12px; padding-bottom: 20px; }
     
+    .match-scroll { padding: 10px 12px; padding-bottom: 20px; }
     .match-card { padding: 10px 8px; }
     .match-time { width: 40px; font-size: 11px; }
     .match-teams { min-width: 0; flex: 1; padding: 0 8px; border-right: none; }
