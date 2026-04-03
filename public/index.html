@@ -1194,11 +1194,33 @@ var V = {
       var mNameRaw = container.getAttribute('data-mname'); 
       
       fetch('/api/odds/' + matchId).then(function(res) { return res.json(); }).then(function(odds) {
-          if(odds && odds.match) {
-            var h = '<div class="odds-group"><div class="odds-group-title">MS</div>' +
-              '<div class="odd-btn" data-mid="'+matchId+'" data-sel="1" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'1\', '+odds.match.home+', this, event)"><div class="odd-lbl">1</div><div class="odd-val">' + odds.match.home + '</div></div>' +
-              '<div class="odd-btn" data-mid="'+matchId+'" data-sel="X" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'X\', '+odds.match.draw+', this, event)"><div class="odd-lbl">X</div><div class="odd-val">' + odds.match.draw + '</div></div>' +
-              '<div class="odd-btn" data-mid="'+matchId+'" data-sel="2" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'2\', '+odds.match.away+', this, event)"><div class="odd-lbl">2</div><div class="odd-val">' + odds.match.away + '</div></div></div>';
+          if(!odds) return;
+          var sport = odds.sport || V.state.selectedSport;
+          var h = '';
+          
+          if (sport === 'basketball') {
+            if(odds.match) {
+              h += '<div class="odds-group"><div class="odds-group-title">MS</div>' +
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="1" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'1\', '+odds.match.home+', this, event)"><div class="odd-lbl">1</div><div class="odd-val">' + odds.match.home + '</div></div>' +
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="2" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'2\', '+odds.match.away+', this, event)"><div class="odd-lbl">2</div><div class="odd-val">' + odds.match.away + '</div></div></div>';
+            }
+            if(odds.totals) {
+              h += '<div class="odds-group"><div class="odds-group-title">' + odds.totals.line + ' A/Ü</div>' +
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Üst" data-mark="A/Ü" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'A/Ü\', \'Üst\', '+odds.totals.over+', this, event)"><div class="odd-lbl">ÜST</div><div class="odd-val">' + odds.totals.over + '</div></div>' +
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Alt" data-mark="A/Ü" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'A/Ü\', \'Alt\', '+odds.totals.under+', this, event)"><div class="odd-lbl">ALT</div><div class="odd-val">' + odds.totals.under + '</div></div></div>';
+            }
+            if(odds.handicap) {
+              h += '<div class="odds-group"><div class="odds-group-title">Handikap ('+odds.handicap.line+')</div>' +
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="1" data-mark="HND" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'HND\', \'1\', '+odds.handicap.home+', this, event)"><div class="odd-lbl">1</div><div class="odd-val">' + odds.handicap.home + '</div></div>' +
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="2" data-mark="HND" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'HND\', \'2\', '+odds.handicap.away+', this, event)"><div class="odd-lbl">2</div><div class="odd-val">' + odds.handicap.away + '</div></div></div>';
+            }
+          } else {
+            if(odds.match) {
+              h += '<div class="odds-group"><div class="odds-group-title">MS</div>' +
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="1" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'1\', '+odds.match.home+', this, event)"><div class="odd-lbl">1</div><div class="odd-val">' + odds.match.home + '</div></div>' +
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="X" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'X\', '+odds.match.draw+', this, event)"><div class="odd-lbl">X</div><div class="odd-val">' + odds.match.draw + '</div></div>' +
+                '<div class="odd-btn" data-mid="'+matchId+'" data-sel="2" data-mark="MS" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'MS\', \'2\', '+odds.match.away+', this, event)"><div class="odd-lbl">2</div><div class="odd-val">' + odds.match.away + '</div></div></div>';
+            }
             if(odds.goals) {
               h += '<div class="odds-group"><div class="odds-group-title">2.5 A/Ü</div>' +
                 '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Üst" data-mark="A/Ü" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'A/Ü\', \'Üst\', '+odds.goals.over+', this, event)"><div class="odd-lbl">ÜST</div><div class="odd-val">' + odds.goals.over + '</div></div>' +
@@ -1209,8 +1231,8 @@ var V = {
                 '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Var" data-mark="KG" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'KG\', \'Var\', '+odds.btts.yes+', this, event)"><div class="odd-lbl">VAR</div><div class="odd-val">' + odds.btts.yes + '</div></div>' +
                 '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Yok" data-mark="KG" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'KG\', \'Yok\', '+odds.btts.no+', this, event)"><div class="odd-lbl">YOK</div><div class="odd-val">' + odds.btts.no + '</div></div></div>';
             }
-            container.innerHTML = h;
           }
+          container.innerHTML = h;
         }).catch(function(e) {});
     });
   },
@@ -1403,7 +1425,7 @@ var V = {
     }
   },
 
-  // 🚀 OYUNCU İSTATİSTİK MOTORU (DOĞRU YERE TAŞINDI)
+  // 🚀 OYUNCU İSTATİSTİK MOTORU
   showPlayerModal: function(playerId) {
     var p = V.state.playerData[playerId];
     if (!p) return; 
