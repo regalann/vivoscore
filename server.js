@@ -15,8 +15,9 @@ app.set('trust proxy', 1);
 const RAPID_API_KEY = process.env.RAPID_API_KEY;
 if (!RAPID_API_KEY) console.warn('⚠️ RAPID_API_KEY env değişkeni tanımlı değil!');
 
-// OddsPapi için anahtar
-const ODDS_API_KEY = process.env.ODDS_API_KEY || '03947fd0b1mshc18ef7cc86815b9p1068cdjsnca79c2737b74';
+// 1. GÜVENLİK DÜZELTMESİ: OddsPapi anahtarı koddan silindi, sadece .env'den okunacak
+const ODDS_API_KEY = process.env.ODDS_API_KEY;
+if (!ODDS_API_KEY) console.warn('⚠️ ODDS_API_KEY env değişkeni tanımlı değil! Oranlar çalışmayabilir.');
 const ODDS_API_HOST = 'odds-api1.p.rapidapi.com';
 
 const BASE_URL = 'https://sportapi7.p.rapidapi.com/api/v1';
@@ -384,7 +385,6 @@ app.get('/api/event/:id/h2h', async (req, res) => {
     const matches = (data.events || []).map(e => formatEvent(e));
     res.json({ events: matches });
   } catch (err) { 
-    // Hata anında sessizce boş döner ki ön yüz (frontend) çökmesin.
     res.json({ events: [] }); 
   }
 });
