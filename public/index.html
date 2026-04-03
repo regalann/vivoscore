@@ -56,11 +56,8 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 
 .sidebar { width: 240px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; }
 .sidebar-header { padding: 20px 18px; border-bottom: 1px solid var(--border); }
-
-/* Logo Sınıfı Güncellendi: Tıklanabilir Yapıldı */
 .logo { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 3px; cursor: pointer; transition: opacity 0.2s; }
 .logo:hover { opacity: 0.8; }
-
 .logo .v { color: var(--text); } .logo .s { color: var(--brand); }
 .sidebar-nav { padding: 12px 10px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
 .nav-label { font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text3); padding: 0 10px; margin-bottom: 8px; letter-spacing: 1px; margin-top:15px; }
@@ -115,7 +112,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .match-card.selected { background: var(--brand-dim); border-left-color: var(--brand); } .match-card.live-card { border-left: 2px solid var(--green); }
 .match-time { width: 56px; flex-shrink: 0; text-align: center; font-size: 13px; font-weight: 600; color: var(--text2); line-height: 1.4; overflow: hidden; }
 .match-time.live-time { color: var(--green); }
-.minute-badge { display: inline-block; background: var(--green); color: #000; font-size: 12px; font-weight: 700; padding: 1px 6px; border-radius: 4px; animation: pulse-live 1.5s infinite; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.minute-badge { display: inline-block; background: var(--green); color: #000; font-size: 12px; font-weight: 700; padding: 2px 6px; border-radius: 4px; animation: pulse-live 1.5s infinite; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .match-info-area { flex:1; min-width:0; display:flex; align-items:center; cursor: pointer; overflow: hidden; } 
 .match-teams { flex: 1; min-width: 0; max-width: 260px; padding: 0 12px; border-right: 1px solid var(--border); }
@@ -440,6 +437,11 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
         <div class="sport-item" id="themeToggleBtn" onclick="V.toggleTheme()">
           <span class="flag" id="themeIcon">🌙</span><span id="themeLabel" class="hide-mobile">Karanlık Tema</span>
         </div>
+        
+        <a href="/privacy.html" target="_blank" class="sport-item" style="text-decoration: none;">
+          <span class="flag">🛡️</span><span class="hide-mobile" style="color: var(--text2);">Gizlilik Politikası</span>
+        </a>
+
       </div>
       <div class="user-profile-section" id="authSection">
         <button class="auth-btn" id="loginBtnUI" onclick="Auth.showModal()">
@@ -576,7 +578,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     </button>
 
     <div style="font-size:10px; color:var(--text3); margin-top:20px;">
-      Giriş yaparak Kullanım Şartları ve Gizlilik Politikamızı kabul etmiş sayılırsınız.
+      Giriş yaparak Kullanım Şartları ve <a href="/privacy.html" target="_blank" style="color: var(--brand); text-decoration: none;">Gizlilik Politikamızı</a> kabul etmiş sayılırsınız.
     </div>
   </div>
 </div>
@@ -633,7 +635,6 @@ var Auth = {
     if (modal) modal.style.display = 'flex';
   },
 
-  // ZORLA KAPATMA HATASI DÜZELTİLDİ
   hideModal: function(ev) {
     if (ev === 'force') {
       var modal = document.getElementById('authModalOverlay');
@@ -698,7 +699,7 @@ var Auth = {
         else Auth.showError(res.error.message);
       } else { 
         Auth.showSuccess('Kayıt başarılı! Giriş yapılıyor...'); 
-        setTimeout(function() { Auth.hideModal('force'); }, 1000); // OTOMATİK KAPANMA EKLENDİ
+        setTimeout(function() { Auth.hideModal('force'); }, 1000); 
       }
     });
   },
