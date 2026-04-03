@@ -872,7 +872,6 @@ var V = {
     Auth.init();
   },
 
-  // 🚀 LOGO TIKLANDIĞINDA BUGÜNÜN MAÇLARINA DÖNME İŞLEVİ
   goToToday: function() {
     this.state.dateOffset = 0;
     this.state.isLiveOnly = false;
@@ -1572,7 +1571,6 @@ var T = {
     var isEligibleForHide = (V.state.selectedSport === 'football' || V.state.selectedSport === 'basketball' || V.state.selectedSport === 'mma');
     var safeId = safeNum(m.id);
 
-    // TEXT KISALTMA (Taşmaları önlemek için)
     var displayMinute = m.minute || '\u25CF';
     if (typeof displayMinute === 'string') {
         displayMinute = displayMinute.replace('Awaiting announcement', 'Bekleniyor')
@@ -1637,7 +1635,10 @@ var T = {
     if (!data) return this.empty('Kadro bilgisi henüz açıklanmadı');
     var hp = (data.home && data.home.players) ? data.home.players : []; 
     var ap = (data.away && data.away.players) ? data.away.players : [];
-    if (hp.length === 0 && ap.length === 0) return this.empty('Kadro bilgisi henüz açıklanmadı');
+    var hm = (data.home && data.home.missing) ? data.home.missing : [];
+    var am = (data.away && data.away.missing) ? data.away.missing : [];
+    
+    if (hp.length === 0 && ap.length === 0 && hm.length === 0 && am.length === 0) return this.empty('Kadro bilgisi henüz açıklanmadı');
 
     var html = '<div style="font-size:12px; color:var(--text3); text-align:center; margin-bottom:10px;">Detaylı istatistik için oyuncuya tıklayın</div>';
     
@@ -1695,6 +1696,7 @@ var T = {
     };
 
     var renderList = function(players, title) {
+        if(!players || players.length === 0) return '';
         var lHtml = '<div class="lineup-section-title">' + title + '</div><div class="lineup-list">';
         players.forEach(function(p) {
             var pId = p.id || (p.player && p.player.id) || '';
@@ -1709,8 +1711,6 @@ var T = {
             var finalPos = posMap[pPosRaw] || pPosRaw || '';
             
             V.state.playerData[pId] = { id: pId, name: pName, pos: finalPos, img: pImg, rating: pRating, stats: pStats };
-            
-            V.state.playerData[pId] = { id: pId, name: pName, pos: finalPos, img: pImg, rating: pRating, stats: pStats };
 
             var rc = ''; if (pRating) { var r = parseFloat(pRating); rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low'); }
             var isFavP = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(pId); });
@@ -1723,6 +1723,28 @@ var T = {
         return lHtml + '</div>';
     };
 
+    // EKSİK OYUNCULAR (YENİ FONKSİYON)
+    var renderMissing = function(missingPlayers) {
+        if (!missingPlayers || missingPlayers.length === 0) return '';
+        var mHtml = '<div class="lineup-section-title" style="color:var(--red); border-color:var(--red-dim); margin-top:16px;">Eksik & Şüpheli Oyuncular</div><div class="lineup-list">';
+        missingPlayers.forEach(function(p) {
+            var icon = '🏥';
+            var typeLabel = 'Sakat/Eksik';
+            var t = p.type ? p.type.toLowerCase() : '';
+            
+            if (t.includes('suspend')) { icon = '🟥'; typeLabel = 'Cezalı'; }
+            else if (t.includes('doubt')) { icon = '❓'; typeLabel = 'Şüpheli'; }
+            else if (t.includes('injur')) { icon = '🏥'; typeLabel = 'Sakat'; }
+            
+            var reasonHtml = p.reason ? '<div style="font-size:11px; opacity:0.8; margin-top:2px;">' + esc(p.reason) + '</div>' : '';
+            
+            mHtml += '<div class="ll-item" style="cursor:default; border-left:2px solid var(--red); padding-left:10px;"><div class="ll-num" style="background:transparent; font-size:20px; width:auto; margin-right:10px;">' + icon + '</div>' +
+                     '<div class="ll-info"><div class="ll-name">' + esc(p.name) + '</div>' + reasonHtml + '</div>' +
+                     '<div class="ll-rating" style="background:var(--red-dim); color:var(--red); font-size:11px;">' + typeLabel + '</div></div>';
+        });
+        return mHtml + '</div>';
+    };
+
     html += '<div class="team-lineup-wrapper"><div class="team-lineup-header">' + starterLabel + ' - Ev Sahibi</div>';
     if(V.state.selectedSport === 'football') {
         html += renderPitch(hp, false); 
@@ -1732,6 +1754,10 @@ var T = {
     }
     var hSubs = hp.filter(function(p){ return p.substitute; }); 
     if(hSubs.length > 0) html += renderList(hSubs, 'Yedekler'); 
+    
+    // Ev sahibi takım eksikleri
+    html += renderMissing(hm);
+
     html += '</div>';
     
     html += '<div class="team-lineup-wrapper" style="margin-top:30px;"><div class="team-lineup-header">' + starterLabel + ' - Deplasman</div>';
@@ -1743,6 +1769,10 @@ var T = {
     }
     var aSubs = ap.filter(function(p){ return p.substitute; }); 
     if(aSubs.length > 0) html += renderList(aSubs, 'Yedekler'); 
+    
+    // Deplasman takımı eksikleri
+    html += renderMissing(am);
+
     html += '</div>';
 
     return html;
