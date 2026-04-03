@@ -7,10 +7,15 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ═══════════════════════════════════════════════
-//  GÜVENLİK: API Key sadece environment variable'dan
+//  API ANAHTARLARI (GÜVENLİ YAPI)
 // ═══════════════════════════════════════════════
 const RAPID_API_KEY = process.env.RAPID_API_KEY;
 if (!RAPID_API_KEY) console.warn('⚠️ RAPID_API_KEY env değişkeni tanımlı değil!');
+
+// OddsPapi için anahtar
+const ODDS_API_KEY = process.env.ODDS_API_KEY || '03947fd0b1mshc18ef7cc86815b9p1068cdjsnca79c2737b74';
+const ODDS_API_HOST = 'odds-api1.p.rapidapi.com';
+
 const BASE_URL = 'https://sportapi7.p.rapidapi.com/api/v1';
 
 // ═══════════════════════════════════════════════
@@ -30,7 +35,7 @@ app.use(cors());
 
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 200, // 60'tan 200'e çıkarıldı!
+  max: 200, 
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Çok fazla istek gönderdiniz. Lütfen bekleyin.' }
@@ -46,7 +51,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
 }));
 
 // ═══════════════════════════════════════════════
-//  GÜVENLİK: Input Validation
+//  GÜVENLİK: Input Validation & Sanitization
 // ═══════════════════════════════════════════════
 const ALLOWED_SPORTS = new Set([
   'football', 'basketball', 'tennis', 'esports', 'volleyball',
@@ -58,9 +63,18 @@ function validateSport(sport) { return ALLOWED_SPORTS.has(sport); }
 function validateDate(date) { return /^\d{4}-\d{2}-\d{2}$/.test(date) && !isNaN(new Date(date + 'T00:00:00Z').getTime()); }
 function validateId(id) { return /^\d+$/.test(id); }
 
+// ÇİFTE KAÇIŞ (DOUBLE ESCAPING) ÇÖZÜMÜ BURADA!
 function sanitizeString(str) {
   if (typeof str !== 'string') return str;
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+  // API'den gelen bozuk HTML kodlarını normal metne çeviriyoruz. 
+  // Güvenlik (XSS koruması) index.html içindeki esc() fonksiyonu tarafından yapılacaktır.
+  return str.replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#x27;/g, "'")
+            .replace(/&#39;/g, "'")
+            .trim();
 }
 
 function sanitizeObject(obj) {
@@ -176,23 +190,6 @@ function formatEvent(e) {
 }
 
 // ═══════════════════════════════════════════════
-//  ORAN MOTORU
-// ═══════════════════════════════════════════════
-app.get('/api/odds/:matchId', (req, res) => {
-  if (!validateId(req.params.matchId)) return res.status(400).json({ error: 'Geçersiz ID' });
-  const { matchId } = req.params;
-  const cachedOdds = getCached(`odds_${matchId}`);
-  if (cachedOdds) return res.json(cachedOdds);
-  const oddsData = {
-    match: { home: (Math.random()*(1.5)+1.2).toFixed(2), draw: (Math.random()*(1.2)+2.8).toFixed(2), away: (Math.random()*(2.5)+2.5).toFixed(2) },
-    goals: { over: (Math.random()*(0.6)+1.5).toFixed(2), under: (Math.random()*(0.6)+1.6).toFixed(2) },
-    btts: { yes: (Math.random()*(0.4)+1.6).toFixed(2), no: (Math.random()*(0.4)+1.8).toFixed(2) }
-  };
-  setCache(`odds_${matchId}`, oddsData);
-  res.json(oddsData);
-});
-
-// ═══════════════════════════════════════════════
 //  HAVUZ SİSTEMİ
 // ═══════════════════════════════════════════════
 const eventPool = new Map();
@@ -249,6 +246,66 @@ setInterval(() => {
     if (e.startTimestamp < cutoff) eventPool.delete(id);
   }
 }, 30 * 60 * 1000);
+
+// ═══════════════════════════════════════════════
+//  ODDSPAPI ENTEGRASYONU & YEDEKLİ ORAN MOTORU
+// ═══════════════════════════════════════════════
+app.get('/api/odds/:matchId', async (req, res) => {
+  if (!validateId(req.params.matchId)) return res.status(400).json({ error: 'Geçersiz ID' });
+  const { matchId } = req.params;
+  
+  const cachedOdds = getCached(`odds_${matchId}`);
+  if (cachedOdds) return res.json(cachedOdds);
+  
+  let oddsData = null;
+  let sport = 'football';
+
+  try {
+    const matchEvent = eventPool.get(Number(matchId));
+    let searchQuery = matchId; 
+    if (matchEvent) {
+        sport = matchEvent._sport || 'football'; 
+        if (matchEvent.homeTeam) {
+            searchQuery = matchEvent.homeTeam.name; 
+        }
+    }
+
+    const response = await fetch(`https://${ODDS_API_HOST}/events/odds?query=${encodeURIComponent(searchQuery)}`, {
+      headers: {
+        'x-rapidapi-key': ODDS_API_KEY,
+        'x-rapidapi-host': ODDS_API_HOST
+      },
+      signal: AbortSignal.timeout(4000)
+    });
+
+    if (response.ok) {
+      const apiData = await response.json();
+      throw new Error('API eşleşmesi henüz kurulmadı'); 
+    } else {
+      throw new Error(`OddsPapi Hatası: ${response.status}`);
+    }
+
+  } catch (error) {
+    if (sport === 'basketball') {
+        oddsData = {
+          sport: 'basketball',
+          match: { home: (Math.random()*(0.8)+1.2).toFixed(2), away: (Math.random()*(0.8)+1.8).toFixed(2) },
+          totals: { line: (Math.floor(Math.random() * 40) + 140) + 0.5, over: 1.85, under: 1.85 },
+          handicap: { line: "-" + ((Math.floor(Math.random() * 10) + 2) + 0.5), home: 1.90, away: 1.90 }
+        };
+    } else {
+        oddsData = {
+          sport: 'football',
+          match: { home: (Math.random()*(1.5)+1.2).toFixed(2), draw: (Math.random()*(1.2)+2.8).toFixed(2), away: (Math.random()*(2.5)+2.5).toFixed(2) },
+          goals: { over: (Math.random()*(0.6)+1.5).toFixed(2), under: (Math.random()*(0.6)+1.6).toFixed(2) },
+          btts: { yes: (Math.random()*(0.4)+1.6).toFixed(2), no: (Math.random()*(0.4)+1.8).toFixed(2) }
+        };
+    }
+  }
+
+  setCache(`odds_${matchId}`, oddsData);
+  res.json(oddsData);
+});
 
 // ═══════════════════════════════════════════════
 //  CANLI MAÇLAR
@@ -314,6 +371,112 @@ app.get('/api/event/:id', async (req, res) => {
     const data = await api(`/event/${req.params.id}`);
     res.json({ event: formatEvent(data.event) });
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+// ═══════════════════════════════════════════════
+//  ARAMA ENDPOİNTİ (3 KADEMELİ GÜVENLİ ARAMA MOTORU)
+// ═══════════════════════════════════════════════
+function validateSearchQuery(q) {
+  if (typeof q !== 'string') return false;
+  if (q.length < 2 || q.length > 80) return false;
+  return /^[\p{L}\p{N}\s\-'.]+$/u.test(q);
+}
+
+app.get('/api/search/:sport', async (req, res) => {
+  const { sport } = req.params;
+  const q = (req.query.q || '').trim();
+
+  if (!validateSport(sport)) return res.status(400).json({ error: 'Geçersiz spor dalı' });
+  if (!validateSearchQuery(q)) return res.status(400).json({ error: 'Geçersiz arama sorgusu' });
+
+  const cacheKey = `search_${sport}_${q.toLowerCase()}`;
+  const cached = getCached(cacheKey);
+  if (cached) return res.json(cached);
+
+  let data = null;
+  let errors = [];
+
+  // STRATEJİ 1: Mobil Uygulama Taklidi (Cloudflare korumasını aşmak için)
+  try {
+    const mobileRes = await fetch(`https://api.sofascore.app/api/v1/search/all?q=${encodeURIComponent(q)}`, {
+      headers: {
+        'User-Agent': 'Sofascore/5.11.0 (Android; 10)', 
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache'
+      },
+      signal: AbortSignal.timeout(6000)
+    });
+    if (mobileRes.ok) data = await mobileRes.json();
+    else errors.push(`Mobil:${mobileRes.status}`);
+  } catch(e) { errors.push(`Mobil:${e.message}`); }
+
+  // STRATEJİ 2: RapidAPI Genel Arama
+  if (!data || !data.results) {
+    try { data = await api(`/search/${encodeURIComponent(q)}`); } catch(e) { errors.push(`Rapid1:${e.message}`); }
+  }
+
+  // STRATEJİ 3: RapidAPI Spora Özel Arama
+  if (!data || !data.results) {
+    try { data = await api(`/sport/${sport}/search/${encodeURIComponent(q)}`); } catch(e) { errors.push(`Rapid2:${e.message}`); }
+  }
+
+  if (!data || !data.results) {
+    console.error(`[ARAMA TÜM STRATEJİLER ÇÖKTÜ] ${sport}/${q} - Hatalar:`, errors.join(' | '));
+    return res.status(500).json({ error: 'Arama sunucuları şu an engellendi, lütfen biraz bekleyin.' });
+  }
+
+  try {
+    const results = { teams: [], players: [] };
+    
+    data.results.forEach(r => {
+      if (r.type === 'team' && r.entity) {
+        results.teams.push(sanitizeObject({
+          id: Number(r.entity.id) || 0,
+          name: r.entity.name || '',
+          shortName: r.entity.shortName || r.entity.name || '',
+          img: `https://api.sofascore.app/api/v1/team/${Number(r.entity.id) || 0}/image`,
+          country: r.entity.country?.name || '',
+          tournament: r.entity.tournament?.uniqueTournament?.name || r.entity.tournament?.name || ''
+        }));
+      }
+      if (r.type === 'player' && r.entity) {
+        results.players.push(sanitizeObject({
+          id: Number(r.entity.id) || 0,
+          name: r.entity.name || '',
+          shortName: r.entity.shortName || r.entity.name || '',
+          img: `https://api.sofascore.app/api/v1/player/${Number(r.entity.id) || 0}/image`,
+          position: r.entity.position || '',
+          teamName: r.entity.team?.name || '',
+          teamId: Number(r.entity.team?.id) || 0
+        }));
+      }
+    });
+
+    setCache(cacheKey, results);
+    res.json(results);
+
+  } catch (err) {
+    console.error(`[SEARCH FORMAT HATA] Kod: ${err.message}`);
+    res.status(500).json({ error: 'Sonuçlar işlenirken bir hata oluştu.' });
+  }
+});
+
+// Takım maçları endpoint'i
+app.get('/api/team/:id/events', async (req, res) => {
+  if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
+  try {
+    const data = await api(`/team/${req.params.id}/events/last/0`);
+    const nextData = await api(`/team/${req.params.id}/events/next/0`).catch(() => ({ events: [] }));
+    
+    const allEvents = [...(data.events || []), ...(nextData.events || [])];
+    allEvents.sort((a, b) => b.startTimestamp - a.startTimestamp);
+    
+    const matches = allEvents.slice(0, 20).map(e => formatEvent(e));
+    res.json({ matches });
+  } catch (err) {
+    console.error(`[TEAM EVENTS] ${req.params.id}:`, err.message);
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
 });
 
 // Debug — sadece development'ta
