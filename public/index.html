@@ -317,7 +317,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .social-btn svg { width: 22px; height: 22px; }
 .auth-error { padding: 10px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 14px; display: none; font-weight: 600; }
 
-/* MOBİL TASARIM */
+/* 🚀 YENİ MOBİL TASARIM (TOPBAR ARRANGE & SEARCH ALIGN) 🚀 */
 @media (max-width: 768px) {
     .app { flex-direction: column; }
     
@@ -346,17 +346,28 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     
     .main { order: 1; flex: 1; overflow: hidden; }
     
-    .topbar { padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 6px; }
-    .live-toggle { order: 1; margin: 0; }
-    .fav-toggle { order: 2; margin: 0; }
-    .right-actions { order: 3; flex: 1; justify-content: flex-end; gap: 4px; }
-    .topbar > button.date-arrow:nth-of-type(1) { order: 4; margin-top: 4px; width: 32px; height: 32px; }
-    .date-nav { order: 5; flex: 1; justify-content: space-between; margin-top: 4px; min-width: 200px; padding: 2px; }
-    .topbar > button.date-arrow:nth-of-type(2) { order: 6; margin-top: 4px; width: 32px; height: 32px; }
+    /* YENİ TOPBAR DÜZENİ: Satır Satır Kusursuz Hizalama */
+    .topbar { padding: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+
+    /* SATIR 1: Butonlar */
+    .live-toggle { order: 1; flex: 1; justify-content: center; margin: 0; padding: 8px 4px; }
+    .fav-toggle { order: 2; flex: 1; justify-content: center; margin: 0; padding: 8px 4px; }
+    .right-actions { order: 3; flex: 2; display: flex; justify-content: space-between; gap: 4px; margin: 0; }
+    .right-actions .btn-toggle { flex: 1; justify-content: center; padding: 8px 4px; }
+
+    /* SATIR 2: Tarih Barı */
+    .topbar > button.date-arrow:nth-of-type(1) { order: 4; margin: 0; width: 36px; height: 36px; }
+    .date-nav { order: 5; flex: 1; justify-content: space-between; margin: 0; min-width: 0; padding: 2px; }
+    .topbar > button.date-arrow:nth-of-type(2) { order: 6; margin: 0; width: 36px; height: 36px; }
+
+    /* SATIR 3: Arama Çubuğu */
+    .search-container { order: 7; width: 100%; min-width: 100%; margin: 0; display: block; }
+    .search-dropdown { max-height: 320px; }
+    .search-shortcut { display: none; }
     
     .date-btn { padding: 6px 2px; font-size: 11px; flex: 1; text-align: center; }
     .date-btn .day { font-size: 10px; margin-top: 2px; }
-    .btn-toggle { font-size: 13px; padding: 6px 10px; }
+    .btn-toggle { font-size: 13px; }
     .hide-mobile { display: none !important; }
     .match-scroll { padding: 10px 12px; padding-bottom: 20px; }
     
