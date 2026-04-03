@@ -7,7 +7,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // 🚀 KRİTİK ÇÖZÜM: Render gibi bulut sistemlerinde gerçek kullanıcı IP'sini okumak için.
-// Bu olmazsa sistem herkesi tek bir kişi sanıp güvenlik duvarını kilitler (Rate Limit hatası).
 app.set('trust proxy', 1);
 
 // ═══════════════════════════════════════════════
@@ -39,7 +38,7 @@ app.use(cors());
 
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 Dakika
-  max: 3000, // Güvenli sınır 3000'e çıkarıldı
+  max: 3000, // Güvenli sınır
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Çok fazla istek gönderdiniz. Lütfen bekleyin.' }
@@ -376,6 +375,21 @@ app.get('/api/event/:id', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════
+//  H2H (ARALARINDAKİ MAÇLAR) ENDPOINT'İ EKLENDİ
+// ═══════════════════════════════════════════════
+app.get('/api/event/:id/h2h', async (req, res) => {
+  if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
+  try {
+    const data = await api(`/event/${req.params.id}/h2h/events`);
+    const matches = (data.events || []).map(e => formatEvent(e));
+    res.json({ events: matches });
+  } catch (err) { 
+    // Hata anında sessizce boş döner ki ön yüz (frontend) çökmesin.
+    res.json({ events: [] }); 
+  }
+});
+
+// ═══════════════════════════════════════════════
 //  ARAMA ENDPOİNTİ (3 KADEMELİ GÜVENLİ ARAMA MOTORU)
 // ═══════════════════════════════════════════════
 function validateSearchQuery(q) {
@@ -398,6 +412,7 @@ app.get('/api/search/:sport', async (req, res) => {
   let data = null;
   let errors = [];
 
+  // STRATEJİ 1: Mobil Uygulama Taklidi (Cloudflare korumasını aşmak için)
   try {
     const mobileRes = await fetch(`https://api.sofascore.app/api/v1/search/all?q=${encodeURIComponent(q)}`, {
       headers: {
@@ -411,10 +426,12 @@ app.get('/api/search/:sport', async (req, res) => {
     else errors.push(`Mobil:${mobileRes.status}`);
   } catch(e) { errors.push(`Mobil:${e.message}`); }
 
+  // STRATEJİ 2: RapidAPI Genel Arama
   if (!data || !data.results) {
     try { data = await api(`/search/${encodeURIComponent(q)}`); } catch(e) { errors.push(`Rapid1:${e.message}`); }
   }
 
+  // STRATEJİ 3: RapidAPI Spora Özel Arama
   if (!data || !data.results) {
     try { data = await api(`/sport/${sport}/search/${encodeURIComponent(q)}`); } catch(e) { errors.push(`Rapid2:${e.message}`); }
   }
