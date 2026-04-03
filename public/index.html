@@ -502,10 +502,10 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     </div>
     <div class="pm-body">
       <div class="pm-grid" id="pmStatsGrid"></div>
+      <button id="pmFavBtn" class="pm-fav-btn" onclick="V.toggleFavFromModal()">⭐ Favorilere Ekle</button>
     </div>
   </div>
 </div>
-
 <div class="modal-overlay" id="authModalOverlay" onclick="Auth.hideModal(event)">
   <div class="custom-modal auth-box" id="authModalBody">
     <div class="pm-close" onclick="Auth.hideModal()">✕</div>
