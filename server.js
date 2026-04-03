@@ -15,7 +15,7 @@ app.set('trust proxy', 1);
 const RAPID_API_KEY = process.env.RAPID_API_KEY;
 if (!RAPID_API_KEY) console.warn('⚠️ RAPID_API_KEY env değişkeni tanımlı değil!');
 
-// 1. GÜVENLİK DÜZELTMESİ: OddsPapi anahtarı koddan silindi, sadece .env'den okunacak
+// OddsPapi anahtarı koddan silindi, sadece .env'den okunacak
 const ODDS_API_KEY = process.env.ODDS_API_KEY;
 if (!ODDS_API_KEY) console.warn('⚠️ ODDS_API_KEY env değişkeni tanımlı değil! Oranlar çalışmayabilir.');
 const ODDS_API_HOST = 'odds-api1.p.rapidapi.com';
@@ -35,11 +35,27 @@ app.use(function(req, res, next) {
 // ═══════════════════════════════════════════════
 //  GÜVENLİK: CORS & Rate Limiting
 // ═══════════════════════════════════════════════
-app.use(cors());
+const allowedOrigins = [
+  'https://vivoscore.net', 
+  'https://www.vivoscore.net',
+  'http://localhost:3000'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS politikası gereği bu adresten erişim izni yok.'));
+    }
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 Dakika
-  max: 3000, // Güvenli sınır
+  max: 3000, 
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Çok fazla istek gönderdiniz. Lütfen bekleyin.' }
@@ -67,7 +83,6 @@ function validateSport(sport) { return ALLOWED_SPORTS.has(sport); }
 function validateDate(date) { return /^\d{4}-\d{2}-\d{2}$/.test(date) && !isNaN(new Date(date + 'T00:00:00Z').getTime()); }
 function validateId(id) { return /^\d+$/.test(id); }
 
-// ÇİFTE KAÇIŞ (DOUBLE ESCAPING) ÇÖZÜMÜ
 function sanitizeString(str) {
   if (typeof str !== 'string') return str;
   return str.replace(/&amp;/g, '&')
@@ -250,7 +265,7 @@ setInterval(() => {
 }, 30 * 60 * 1000);
 
 // ═══════════════════════════════════════════════
-//  ODDSPAPI ENTEGRASYONU & YEDEKLİ ORAN MOTORU
+//  ODDSPAPI ENTEGRASYONU
 // ═══════════════════════════════════════════════
 app.get('/api/odds/:matchId', async (req, res) => {
   if (!validateId(req.params.matchId)) return res.status(400).json({ error: 'Geçersiz ID' });
@@ -338,6 +353,7 @@ app.get('/api/event/:id/stats', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// EKSİK OYUNCULAR GÜNCELLEMESİ
 app.get('/api/event/:id/lineups', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
@@ -352,9 +368,25 @@ app.get('/api/event/:id/lineups', async (req, res) => {
       img: `https://api.sofascore.app/api/v1/player/${Number(p.player?.id) || 0}/image`,
       stats: p.statistics || {}
     }));
+
+    const formatMissing = (td) => (td?.missingPlayers || []).map(p => sanitizeObject({
+      id: Number(p.player?.id) || 0,
+      name: p.player?.shortName || p.player?.name || '',
+      type: p.type || 'missing', 
+      reason: p.reason || ''
+    }));
+
     res.json({
-      home: { formation: sanitizeString(data.home?.formation || ''), players: formatPlayers(data.home) },
-      away: { formation: sanitizeString(data.away?.formation || ''), players: formatPlayers(data.away) }
+      home: { 
+        formation: sanitizeString(data.home?.formation || ''), 
+        players: formatPlayers(data.home),
+        missing: formatMissing(data.home)
+      },
+      away: { 
+        formation: sanitizeString(data.away?.formation || ''), 
+        players: formatPlayers(data.away),
+        missing: formatMissing(data.away)
+      }
     });
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
@@ -375,9 +407,7 @@ app.get('/api/event/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
-// ═══════════════════════════════════════════════
-//  H2H (ARALARINDAKİ MAÇLAR) ENDPOINT'İ EKLENDİ
-// ═══════════════════════════════════════════════
+// H2H (ARALARINDAKİ MAÇLAR)
 app.get('/api/event/:id/h2h', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
@@ -412,7 +442,6 @@ app.get('/api/search/:sport', async (req, res) => {
   let data = null;
   let errors = [];
 
-  // STRATEJİ 1: Mobil Uygulama Taklidi (Cloudflare korumasını aşmak için)
   try {
     const mobileRes = await fetch(`https://api.sofascore.app/api/v1/search/all?q=${encodeURIComponent(q)}`, {
       headers: {
@@ -426,12 +455,10 @@ app.get('/api/search/:sport', async (req, res) => {
     else errors.push(`Mobil:${mobileRes.status}`);
   } catch(e) { errors.push(`Mobil:${e.message}`); }
 
-  // STRATEJİ 2: RapidAPI Genel Arama
   if (!data || !data.results) {
     try { data = await api(`/search/${encodeURIComponent(q)}`); } catch(e) { errors.push(`Rapid1:${e.message}`); }
   }
 
-  // STRATEJİ 3: RapidAPI Spora Özel Arama
   if (!data || !data.results) {
     try { data = await api(`/sport/${sport}/search/${encodeURIComponent(q)}`); } catch(e) { errors.push(`Rapid2:${e.message}`); }
   }
@@ -477,7 +504,6 @@ app.get('/api/search/:sport', async (req, res) => {
   }
 });
 
-// Takım maçları endpoint'i
 app.get('/api/team/:id/events', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
@@ -495,7 +521,6 @@ app.get('/api/team/:id/events', async (req, res) => {
   }
 });
 
-// Debug — sadece development'ta
 if (process.env.NODE_ENV !== 'production') {
   app.get('/api/debug', (req, res) => {
     const now = Math.floor(Date.now() / 1000);
@@ -503,12 +528,8 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-// Catch-all: 404 yerine index.html
 app.get('*', (_, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
-// ═══════════════════════════════════════════════
-//  GLOBAL ERROR HANDLER
-// ═══════════════════════════════════════════════
 app.use((err, req, res, next) => {
   console.error('[UNHANDLED]', err.message);
   res.status(500).json({ error: 'Beklenmeyen sunucu hatası' });
