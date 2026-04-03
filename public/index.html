@@ -109,9 +109,9 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .match-card { display: flex; align-items: center; padding: 12px 14px; background: var(--surface); border-left: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transition: var(--transition); position: relative; }
 .match-card:last-child { border-radius: 0 0 var(--radius) var(--radius); } .match-card:hover { background: var(--surface2); }
 .match-card.selected { background: var(--brand-dim); border-left-color: var(--brand); } .match-card.live-card { border-left: 2px solid var(--green); }
-.match-time { width: 56px; flex-shrink: 0; text-align: center; font-size: 13px; font-weight: 600; color: var(--text2); line-height: 1.4; }
+.match-time { width: 56px; flex-shrink: 0; text-align: center; font-size: 13px; font-weight: 600; color: var(--text2); line-height: 1.4; overflow: hidden; }
 .match-time.live-time { color: var(--green); }
-.minute-badge { display: inline-block; background: var(--green); color: #000; font-size: 12px; font-weight: 700; padding: 1px 6px; border-radius: 4px; animation: pulse-live 1.5s infinite; }
+.minute-badge { display: inline-block; background: var(--green); color: #000; font-size: 12px; font-weight: 700; padding: 2px 6px; border-radius: 4px; animation: pulse-live 1.5s infinite; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .match-info-area { flex:1; min-width:0; display:flex; align-items:center; cursor: pointer; overflow: hidden; } 
 .match-teams { flex: 1; min-width: 0; max-width: 260px; padding: 0 12px; border-right: 1px solid var(--border); }
@@ -133,6 +133,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .match-fav:hover, .match-fav.faved { color: var(--yellow); }
 
 .match-odds-wrapper { flex: 1; display: flex; gap: 12px; align-items: center; padding-left: 16px; min-height: 40px; overflow-x: auto; justify-content: flex-start; min-width: 0; }
+.match-odds-wrapper.empty { display: none !important; }
 .odds-group { display: flex; gap: 2px; background: var(--bg2); padding: 8px 4px 4px; border-radius: 6px; border: 1px solid var(--border); position: relative; margin-top: 6px;}
 .odds-group-title { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 800; color: var(--text3); background: var(--surface); padding: 0 6px; border-radius: 4px; white-space: nowrap;}
 .odd-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; text-align: center; min-width: 42px; cursor: pointer; transition: 0.2s; user-select: none; }
@@ -317,7 +318,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .social-btn svg { width: 22px; height: 22px; }
 .auth-error { padding: 10px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 14px; display: none; font-weight: 600; }
 
-/* 🚀 YENİ KESİN MOBİL TASARIM (3 SATIRLI YAPI & LOGO EKLENTİSİ) 🚀 */
+/* 🚀 YENİ KESİN MOBİL TASARIM 🚀 */
 @media (max-width: 768px) {
     .app { flex-direction: column; }
     
@@ -349,7 +350,6 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     
     .main { order: 1; flex: 1; overflow: hidden; }
     
-    /* Mobil Logo Görünürlüğü */
     .mobile-logo-wrap { display: flex; align-items: center; justify-content: center; width: 100%; padding-bottom: 4px; }
 
     .topbar { flex-direction: column; padding: 10px; gap: 10px; align-items: stretch; height: auto; }
@@ -371,16 +371,30 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     .date-btn .day { font-size: 10px; margin-top: 2px; }
     
     .match-scroll { padding: 10px 12px; padding-bottom: 20px; }
-    .match-card { padding: 10px 8px; }
-    .match-time { width: 40px; font-size: 11px; }
-    .match-teams { min-width: 0; flex: 1; padding: 0 8px; border-right: none; }
-    .team-name { font-size: 13px; }
-    .match-score-wrap { gap: 8px; }
-    .match-score { width: 40px; }
-    .score-num { font-size: 14px; }
+    .match-card { padding: 10px 8px; align-items: flex-start; } /* Oranlar aşağı kayınca üstte kalsın diye */
+    
+    /* CANLI YAZISI DÜZELTMESİ */
+    .match-time { width: 48px; font-size: 11px; margin-top: 4px; overflow: hidden; }
+    .minute-badge { font-size: 9px; padding: 2px; display: block; width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; text-align: center; }
+    
+    /* ORANLARIN TAKIM İSİMLERİNİN ALTINA İNMESİ (FLEX-WRAP) */
+    .match-info-area { flex-wrap: wrap; align-items: center; }
+    .match-teams { min-width: 0; flex: 1 1 0%; padding: 0 8px; border-right: none; order: 1; }
+    .match-score-wrap { gap: 8px; order: 2; margin-left: auto; }
     .hide-single-btn { font-size: 14px; }
-    .match-fav { width: 24px; font-size: 16px; }
-    .match-odds-wrapper { display: none !important; }
+    .match-fav { width: 24px; font-size: 16px; margin-top: 4px; }
+    
+    /* ORANLARI MOBİLDE AKTİF EDİP YENİ SATIRA ALIYORUZ */
+    .match-odds-wrapper { 
+        order: 3; 
+        flex: 0 0 100%; 
+        margin-top: 8px; 
+        padding-left: 4px; 
+        padding-bottom: 4px; 
+        overflow-x: auto; 
+        justify-content: flex-start; 
+    }
+    /* "hide-odds" sınıfı global çalıştığı için ekstra mobil gizleme komutunu sildik. */
     
     .detail-panel { 
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; 
@@ -1127,7 +1141,10 @@ var V = {
                 '<div class="odd-btn" data-mid="'+matchId+'" data-sel="Yok" data-mark="KG" onclick="V.toggleOdd(\''+matchId+'\', \''+mNameRaw+'\', \'KG\', \'Yok\', '+odds.btts.no+', this, event)"><div class="odd-lbl">YOK</div><div class="odd-val">' + odds.btts.no + '</div></div></div>';
             }
           }
-          container.innerHTML = h;
+          if (h) {
+              container.innerHTML = h;
+              container.classList.remove('empty');
+          }
         }).catch(function(e) {});
     });
   },
@@ -1229,13 +1246,10 @@ var V = {
     if (this.state.page === 'favorites') this.loadFavorites();
   },
 
-  // 🚀 YENİ NAVİGASYON: Geçmişi (History) tutarak detay gösterme
   showDetail: function(matchId, isNested) {
-    // Eğer isNested true ise ve halihazırda bir maç açıksa, onu geçmişe ekle
     if (isNested === true && this.state.selectedMatch) {
       this.state.detailHistory.push(this.state.selectedMatch);
     } else if (isNested !== 'back') {
-      // 'back' komutu harici normal (ana listeden) bir tıklama yapıldıysa geçmişi temizle
       this.state.detailHistory = [];
     }
 
@@ -1255,11 +1269,10 @@ var V = {
     }).catch(function() { panel.innerHTML = T.empty('Maç detayları yüklenemedi'); });
   },
 
-  // 🚀 YENİ: Geri dönüş fonksiyonu
   goBackDetail: function() {
     if (this.state.detailHistory && this.state.detailHistory.length > 0) {
-      var prevId = this.state.detailHistory.pop(); // Son maçı listeden çıkar
-      this.showDetail(prevId, 'back'); // O maçı tekrar yükle ('back' flag'i ile)
+      var prevId = this.state.detailHistory.pop(); 
+      this.showDetail(prevId, 'back'); 
     }
   },
 
@@ -1273,7 +1286,7 @@ var V = {
         }, 300);
     }
     this.state.selectedMatch = null;
-    this.state.detailHistory = []; // Paneli tamamen kapatınca geçmişi de sil
+    this.state.detailHistory = []; 
   },
 
   renderDetail: function(matchId) {
@@ -1282,7 +1295,20 @@ var V = {
 
     var isLive = m.status === 'live'; var isFinished = m.status === 'finished'; var hasScore = m.homeScore !== null && m.homeScore !== undefined;
     var statusHtml = '';
-    if (isLive) statusHtml = '<div class="detail-status st-live">' + esc(m.minute || 'CANLI') + '\'</div>';
+    
+    var displayMinute = m.minute || 'CANLI';
+    if (typeof displayMinute === 'string') {
+        displayMinute = displayMinute.replace('Awaiting announcement', 'Bekleniyor')
+                       .replace('1st quarter', '1. Çyr')
+                       .replace('2nd quarter', '2. Çyr')
+                       .replace('3rd quarter', '3. Çyr')
+                       .replace('4th quarter', '4. Çyr')
+                       .replace('Halftime', 'İY')
+                       .replace('Extra time', 'Uzt')
+                       .replace('Penalties', 'Pen');
+    }
+
+    if (isLive) statusHtml = '<div class="detail-status st-live">' + esc(displayMinute) + '</div>';
     else if (isFinished) statusHtml = '<div class="detail-status st-finished">Maç Sonu</div>';
     else statusHtml = '<div class="detail-status st-scheduled">' + esc(m.time || '') + '</div>';
 
@@ -1300,7 +1326,6 @@ var V = {
     var isScoreHidden = !!this.state.hiddenMatchScores[matchId];
     var blurClass = isScoreHidden ? ' detail-score-hidden' : '';
 
-    // Geçmişte maç varsa geri butonunu göster
     var backBtn = (this.state.detailHistory && this.state.detailHistory.length > 0) ? '<div class="btn-back-panel" onclick="V.goBackDetail()">←</div>' : '';
 
     var h = '<div class="detail-header">';
@@ -1354,7 +1379,6 @@ var V = {
         var awayData = results[3];
         var html = '';
 
-        /* 🚀 CANLI/BİTEN MAÇ İÇİN ANA İSTATİSTİK BAŞLIĞI 🚀 */
         var isMatchActive = matchData.status === 'live' || matchData.status === 'finished';
 
         if (statsData && statsData.raw && statsData.raw.length > 0) {
@@ -1503,7 +1527,6 @@ var T = {
       resClass = 'border-left: 3px solid var(--orange);';
     }
 
-    // 🚀 Tıklandığında geçmişe eklemesi (isNested: true) ayarlandı.
     return '<div onclick="V.showDetail(' + m.id + ', true)" style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; background:var(--surface); border:1px solid var(--border); border-radius:6px; margin-bottom:6px; font-size:13px; cursor:pointer; transition:var(--transition); ' + resClass + '" onmouseover="this.style.background=\'var(--surface2)\'" onmouseout="this.style.background=\'var(--surface)\'">' +
              '<div style="color:var(--text3); width:40px; font-size:11px; font-weight:600;">' + shortDate + '</div>' +
              '<div style="flex:1; text-align:right; font-weight:600; color:' + (hW ? 'var(--text)' : 'var(--text2)') + '; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + esc(m.homeTeam.shortName) + '</div>' +
@@ -1518,8 +1541,21 @@ var T = {
     var isEligibleForHide = (V.state.selectedSport === 'football' || V.state.selectedSport === 'basketball' || V.state.selectedSport === 'mma');
     var safeId = safeNum(m.id);
 
+    // TEXT KISALTMA (Taşmaları önlemek için)
+    var displayMinute = m.minute || '\u25CF';
+    if (typeof displayMinute === 'string') {
+        displayMinute = displayMinute.replace('Awaiting announcement', 'Bekleniyor')
+                       .replace('1st quarter', '1. Çyr')
+                       .replace('2nd quarter', '2. Çyr')
+                       .replace('3rd quarter', '3. Çyr')
+                       .replace('4th quarter', '4. Çyr')
+                       .replace('Halftime', 'İY')
+                       .replace('Extra time', 'Uzt')
+                       .replace('Penalties', 'Pen');
+    }
+
     var timeH = '';
-    if (isLive) timeH = '<div class="match-time live-time"><span class="minute-badge">' + esc(m.minute || '\u25CF') + '</span></div>';
+    if (isLive) timeH = '<div class="match-time live-time"><span class="minute-badge">' + esc(displayMinute) + '</span></div>';
     else if (isFin) timeH = '<div class="match-time"><span class="status-ft">MS</span></div>';
     else timeH = '<div class="match-time">' + esc(m.time || '') + '</div>';
 
@@ -1528,7 +1564,7 @@ var T = {
 
     var hideBtnHtml = isEligibleForHide ? '<button class="hide-single-btn" title="Skoru Gizle" onclick="V.toggleSingleScore(' + safeId + ', event)">' + (isHidden ? '👁️' : '🙈') + '</button>' : '';
     var mNameEncoded = encodeURIComponent(esc(m.homeTeam.shortName) + ' - ' + esc(m.awayTeam.shortName));
-    var oddsContainer = (!isLive && !isFin && isEligibleForHide) ? '<div class="match-odds-wrapper" data-matchid="' + safeId + '" data-mname="' + mNameEncoded + '"></div>' : '<div class="match-odds-wrapper empty"></div>';
+    var oddsContainer = (!isLive && !isFin && isEligibleForHide) ? '<div class="match-odds-wrapper empty" data-matchid="' + safeId + '" data-mname="' + mNameEncoded + '"></div>' : '<div class="match-odds-wrapper empty"></div>';
 
     return '<div class="match-card' + (isLive ? ' live-card' : '') + (isHidden ? ' hide-this-score' : '') + '" data-match="' + safeId + '">' + timeH +
       '<div class="match-info-area" onclick="V.showDetail(' + safeId + ')">' +
