@@ -478,6 +478,13 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     .pm-grid { grid-template-columns: 1fr; }
 }
 
+/* TABLET */
+@media (max-width: 1200px) and (min-width: 769px) { 
+    .detail-panel { width: 340px; }
+    .match-teams { min-width: 140px; max-width: 200px; }
+    .match-odds-wrapper { display: none !important; }
+}
+
 /* LANDSCAPE MOBİL */
 @media (max-height: 500px) and (max-width: 900px) {
     .sidebar { height: 48px; }
@@ -687,7 +694,12 @@ var Auth = {
   },
 
   hideModal: function(ev) {
-    if(ev && ev.target.id !== 'authModalOverlay' && ev !== 'force') return;
+    if (ev === 'force') {
+      var m = document.getElementById('authModalOverlay');
+      if (m) m.style.display = 'none';
+      return;
+    }
+    if(ev && ev.target && ev.target.id !== 'authModalOverlay') return;
     var modal = document.getElementById('authModalOverlay');
     if (modal) modal.style.display = 'none';
   },
@@ -995,7 +1007,9 @@ var V = {
     var btn = document.getElementById('hideScoresBtn');
     if(btn) {
       btn.classList.toggle('active', this.state.hideScores);
-      btn.innerHTML = this.state.hideScores ? '👁️ Tüm Skorları Göster' : '🙈 <span class="hide-mobile">Tüm Skorları Gizle</span>';
+      btn.innerHTML = this.state.hideScores 
+          ? '👁️ <span class="hide-mobile">Tüm Skorları Göster</span>' 
+          : '🙈 <span class="hide-mobile">Tüm Skorları Gizle</span>';
     }
   },
 
@@ -1025,7 +1039,9 @@ var V = {
     var btn = document.getElementById('oddsToggleBtn');
     if(btn) {
       btn.classList.toggle('active', this.state.showOdds);
-      btn.innerHTML = this.state.showOdds ? '📊 <span class="hide-mobile">Oranları Gizle</span>' : '📊 <span class="hide-mobile">Oranları Göster</span>';
+      btn.innerHTML = this.state.showOdds 
+          ? '📊 <span class="hide-mobile">Oranları Gizle</span>' 
+          : '📊 <span class="hide-mobile">Oranları Göster</span>';
       if(this.state.showOdds) { btn.style.background = 'var(--brand-dim)'; btn.style.color = 'var(--brand)'; btn.style.borderColor = 'var(--brand)'; }
       else { btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = ''; }
     }
