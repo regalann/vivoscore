@@ -6,6 +6,10 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// 🚀 KRİTİK ÇÖZÜM: Render gibi bulut sistemlerinde gerçek kullanıcı IP'sini okumak için.
+// Bu olmazsa sistem herkesi tek bir kişi sanıp güvenlik duvarını kilitler (Rate Limit hatası).
+app.set('trust proxy', 1);
+
 // ═══════════════════════════════════════════════
 //  API ANAHTARLARI (GÜVENLİ YAPI)
 // ═══════════════════════════════════════════════
@@ -34,8 +38,8 @@ app.use(function(req, res, next) {
 app.use(cors());
 
 const apiLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000,
-  max: 200, 
+  windowMs: 1 * 60 * 1000, // 1 Dakika
+  max: 3000, // Güvenli sınır 3000'e çıkarıldı
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Çok fazla istek gönderdiniz. Lütfen bekleyin.' }
@@ -63,11 +67,9 @@ function validateSport(sport) { return ALLOWED_SPORTS.has(sport); }
 function validateDate(date) { return /^\d{4}-\d{2}-\d{2}$/.test(date) && !isNaN(new Date(date + 'T00:00:00Z').getTime()); }
 function validateId(id) { return /^\d+$/.test(id); }
 
-// ÇİFTE KAÇIŞ (DOUBLE ESCAPING) ÇÖZÜMÜ BURADA!
+// ÇİFTE KAÇIŞ (DOUBLE ESCAPING) ÇÖZÜMÜ
 function sanitizeString(str) {
   if (typeof str !== 'string') return str;
-  // API'den gelen bozuk HTML kodlarını normal metne çeviriyoruz. 
-  // Güvenlik (XSS koruması) index.html içindeki esc() fonksiyonu tarafından yapılacaktır.
   return str.replace(/&amp;/g, '&')
             .replace(/&lt;/g, '<')
             .replace(/&gt;/g, '>')
@@ -396,7 +398,6 @@ app.get('/api/search/:sport', async (req, res) => {
   let data = null;
   let errors = [];
 
-  // STRATEJİ 1: Mobil Uygulama Taklidi (Cloudflare korumasını aşmak için)
   try {
     const mobileRes = await fetch(`https://api.sofascore.app/api/v1/search/all?q=${encodeURIComponent(q)}`, {
       headers: {
@@ -410,12 +411,10 @@ app.get('/api/search/:sport', async (req, res) => {
     else errors.push(`Mobil:${mobileRes.status}`);
   } catch(e) { errors.push(`Mobil:${e.message}`); }
 
-  // STRATEJİ 2: RapidAPI Genel Arama
   if (!data || !data.results) {
     try { data = await api(`/search/${encodeURIComponent(q)}`); } catch(e) { errors.push(`Rapid1:${e.message}`); }
   }
 
-  // STRATEJİ 3: RapidAPI Spora Özel Arama
   if (!data || !data.results) {
     try { data = await api(`/sport/${sport}/search/${encodeURIComponent(q)}`); } catch(e) { errors.push(`Rapid2:${e.message}`); }
   }
