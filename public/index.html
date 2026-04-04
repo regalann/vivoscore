@@ -113,6 +113,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .match-time { width: 56px; flex-shrink: 0; text-align: center; font-size: 13px; font-weight: 600; color: var(--text2); line-height: 1.4; overflow: hidden; }
 .match-time.live-time { color: var(--green); }
 .minute-badge { display: inline-block; background: var(--green); color: #000; font-size: 12px; font-weight: 700; padding: 2px 6px; border-radius: 4px; animation: pulse-live 1.5s infinite; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@keyframes pulse-live { 0% { opacity:1; } 50% { opacity:0.6; } 100% { opacity:1; } }
 
 .match-info-area { flex:1; min-width:0; display:flex; align-items:center; cursor: pointer; overflow: hidden; } 
 .match-teams { flex: 1; min-width: 0; max-width: 260px; padding: 0 12px; border-right: 1px solid var(--border); }
@@ -122,7 +123,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 
 .match-score-wrap { display: flex; align-items: center; flex-shrink: 0; margin-left: auto; gap: 12px; }
 .match-score { width: 55px; flex-shrink: 0; text-align: center; position: relative; }
-.score-num { font-size: 16px; font-weight: 800; line-height: 1.8; color: var(--text); } .score-num.loser { color: var(--text3); } .score-num.live-score { color: var(--green); }
+.score-num { font-size: 16px; font-weight: 800; line-height: 1.8; color: var(--text); transition: color 0.3s; } .score-num.loser { color: var(--text3); } .score-num.live-score { color: var(--green); }
 
 .hide-single-btn { background: transparent; border: none; color: var(--text3); font-size: 16px; cursor: pointer; transition: 0.2s; flex-shrink: 0;}
 .hide-single-btn:hover { color: var(--text); }
@@ -871,6 +872,56 @@ var V = {
     this.updateOddsBtn();
     
     Auth.init();
+    
+    // 🚀 CANLI SKOR DÖNGÜSÜNÜ BAŞLAT
+    this.startAutoUpdate();
+  },
+
+  // 🚀 SAYFA YENİLENMEDEN ANLIK GÜNCELLEME YAPAN FONKSİYON
+  startAutoUpdate: function() {
+    setInterval(function() {
+      // Sadece ana maç sayfasındaysak ve "Bugün" veya "Canlı" filtrelerindeysek çalışır (Sunucuyu yormamak için)
+      if (V.state.page !== 'matches') return;
+      if (!V.state.isLiveOnly && V.state.dateOffset !== 0) return;
+
+      fetch('/api/live/' + V.state.selectedSport).then(function(r) { return r.json(); }).then(function(data) {
+        if (!data.groups) return;
+        
+        var liveMatches = [];
+        Object.keys(data.groups).forEach(function(k) {
+          liveMatches = liveMatches.concat(data.groups[k].matches);
+        });
+        
+        liveMatches.forEach(function(m) {
+          // 1. ANA LİSTEDEKİ SKORLARI GÜNCELLE
+          var card = document.querySelector('.match-card[data-match="' + m.id + '"]');
+          if (card) {
+            var scoreEls = card.querySelectorAll('.score-num');
+            if (scoreEls.length === 2) {
+              if (scoreEls[0].textContent != m.homeScore && m.homeScore !== null) {
+                  scoreEls[0].textContent = m.homeScore;
+                  scoreEls[0].classList.add('live-score');
+              }
+              if (scoreEls[1].textContent != m.awayScore && m.awayScore !== null) {
+                  scoreEls[1].textContent = m.awayScore;
+                  scoreEls[1].classList.add('live-score');
+              }
+            }
+            var timeBadge = card.querySelector('.minute-badge');
+            if (timeBadge && m.minute) timeBadge.textContent = m.minute;
+          }
+
+          // 2. SAĞ TARAFTAKİ DETAY PANELİ AÇIKSA ONU DA GÜNCELLE
+          if (V.state.selectedMatch == m.id) {
+            var dScore = document.querySelector('.detail-score');
+            if (dScore && m.homeScore !== null) dScore.textContent = m.homeScore + ' - ' + m.awayScore;
+            
+            var dTime = document.querySelector('.detail-status.st-live');
+            if (dTime && m.minute) dTime.textContent = m.minute;
+          }
+        });
+      }).catch(function(){}); 
+    }, 15000); 
   },
 
   goToToday: function() {
