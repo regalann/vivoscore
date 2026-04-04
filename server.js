@@ -310,7 +310,7 @@ app.get('/api/event/:id/h2h', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════
-//  YENİ ARAMA (SEARCH) ENTEGRASYONU (api_v1_search_search tabanlı)
+//  YENİ ARAMA (SEARCH) ENTEGRASYONU (404 ÇÖZÜMLÜ)
 // ═══════════════════════════════════════════════
 function validateSearchQuery(q) {
   if (typeof q !== 'string') return false;
@@ -330,9 +330,21 @@ app.get('/api/search/:sport', async (req, res) => {
   if (cached) return res.json(cached);
 
   try {
-    // Görseldeki api_v1_search_search endpoint'inin RapidAPI karşılığı
-    // Eski karmaşık bypass ve scraping kodları kaldırılarak tek resmi kaynağa yönlendirildi.
-    const data = await api(`/search/${encodeURIComponent(q)}`);
+    let data;
+    
+    // ÇÖZÜM 1: Endpoint'i api_v1_search_search mimarisine uygun hale getirdik.
+    // Önce URL path'i olarak eklemeyi deneriz (Örn: /api/v1/search/search/Fenerbahce)
+    try {
+      data = await api(`/search/search/${encodeURIComponent(q)}`);
+    } catch (apiErr) {
+      // Eğer bu da 404 atarsa (yakalayıp konsolu kirletmemesi için) Çözüm 2'ye geçer.
+      data = null;
+    }
+
+    // ÇÖZÜM 2: Eğer API query (soru işareti) ile parametre bekliyorsa (Örn: /api/v1/search/search?q=Fenerbahce)
+    if (!data) {
+      data = await api(`/search/search?q=${encodeURIComponent(q)}`);
+    }
     
     const results = { teams: [], players: [] };
     
