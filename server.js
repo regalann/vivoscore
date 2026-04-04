@@ -314,10 +314,14 @@ app.get('/api/event/:id/stats', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// ═══════════════════════════════════════════════
+//  🚀 KADRO SİSTEMİ (missingPlayers DÜZELTMESİ EKLENDİ)
+// ═══════════════════════════════════════════════
 app.get('/api/event/:id/lineups', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
     const data = await api(`/event/${req.params.id}/lineups`);
+    
     const formatPlayers = (td) => (td?.players || []).map(p => sanitizeObject({
       id: Number(p.player?.id) || 0,
       name: p.player?.shortName || p.player?.name || '',
@@ -328,9 +332,26 @@ app.get('/api/event/:id/lineups', async (req, res) => {
       img: `https://api.sofascore.app/api/v1/player/${Number(p.player?.id) || 0}/image`,
       stats: p.statistics || {}
     }));
+
+    // HATA BURADAN KAYNAKLANIYORDU, missingPlayers EKLENDİ
+    const formatMissing = (td) => (td?.missingPlayers || td?.missing || []).map(p => sanitizeObject({
+      id: Number(p.player?.id) || 0,
+      name: p.player?.shortName || p.player?.name || '',
+      type: p.type || '',
+      reason: p.reason || ''
+    }));
+
     res.json({
-      home: { formation: sanitizeString(data.home?.formation || ''), players: formatPlayers(data.home) },
-      away: { formation: sanitizeString(data.away?.formation || ''), players: formatPlayers(data.away) }
+      home: { 
+        formation: sanitizeString(data.home?.formation || ''), 
+        players: formatPlayers(data.home),
+        missing: formatMissing(data.home) // <-- SAKAT/CEZALILAR
+      },
+      away: { 
+        formation: sanitizeString(data.away?.formation || ''), 
+        players: formatPlayers(data.away),
+        missing: formatMissing(data.away) // <-- SAKAT/CEZALILAR
+      }
     });
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
@@ -359,6 +380,31 @@ app.get('/api/event/:id/h2h', async (req, res) => {
     res.json({ events: matches });
   } catch (err) { 
     res.json({ events: [] }); 
+  }
+});
+
+// ═══════════════════════════════════════════════
+//  OYUNCU MODALI İÇİN GEREKLİ YENİ ENDPOINT
+// ═══════════════════════════════════════════════
+app.get('/api/player/:id/details', async (req, res) => {
+  if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
+  try {
+    const pId = req.params.id;
+    let eventsData = { events: [] };
+    let transferData = { transferHistory: [] };
+    let charData = { characteristics: {} };
+
+    try { eventsData = await api(`/player/${pId}/events/last/0`); } catch(e) {}
+    try { transferData = await safeFetch(`https://api.sofascore.app/api/v1/player/${pId}/transfer-history`, { 'User-Agent': 'Mozilla/5.0' }); } catch(e) {}
+    try { charData = await safeFetch(`https://api.sofascore.app/api/v1/player/${pId}/characteristics`, { 'User-Agent': 'Mozilla/5.0' }); } catch(e) {}
+    
+    res.json({
+      matches: (eventsData.events || []).slice(0, 10).map(e => formatEvent(e)),
+      transfers: transferData.transferHistory || [],
+      characteristics: charData.characteristics || {}
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Sunucu hatası' });
   }
 });
 
@@ -394,13 +440,12 @@ app.get('/api/search/:sport', async (req, res) => {
   let data = null;
   const errors = [];
 
-  // STRATEJİ 1: RapidAPI Çoklu Yol Denemesi
   if (RAPID_API_KEY) {
       const rapidEndpoints = [
-          `/search/all?q=${encodeURIComponent(q)}`,     // SofaScore standardı
-          `/search/search?q=${encodeURIComponent(q)}`,  // Swagger birebir ismi
-          `/search/search/${encodeURIComponent(q)}`,    // Swagger URL path param
-          `/search/${encodeURIComponent(q)}`            // Klasik API tarzı
+          `/search/all?q=${encodeURIComponent(q)}`,     
+          `/search/search?q=${encodeURIComponent(q)}`,  
+          `/search/search/${encodeURIComponent(q)}`,    
+          `/search/${encodeURIComponent(q)}`            
       ];
 
       for (const ep of rapidEndpoints) {
@@ -413,7 +458,6 @@ app.get('/api/search/:sport', async (req, res) => {
               
               if (res.ok) {
                   data = await res.json();
-                  console.log(`[RAPIDAPI BAŞARILI] Çalışan yol: ${ep}`);
               } else {
                   errors.push(`RapidAPI ${ep} -> HTTP ${res.status}`);
               }
@@ -423,7 +467,6 @@ app.get('/api/search/:sport', async (req, res) => {
       }
   }
 
-  // STRATEJİ 2: Eğer RapidAPI'deki arama endpointlerinin tümü çökerse/404 atarsa SofaScore Mobil'e doğrudan istek atar.
   if (!data || !data.results) {
     try {
       data = await safeFetch(`https://api.sofascore.app/api/v1/search/all?q=${encodeURIComponent(q)}`, {
@@ -431,17 +474,13 @@ app.get('/api/search/:sport', async (req, res) => {
         'Accept': 'application/json',
         'Accept-Encoding': 'identity'
       });
-      console.log(`[SOFASCORE BAŞARILI] Mobil API Fallback kullanıldı.`);
     } catch(e) { errors.push(`SofaScore Mobil: ${e.message}`); }
   }
 
-  // Eğer tüm arama stratejileri patlarsa
   if (!data || !data.results) {
-    console.error(`[ARAMA TÜM STRATEJİLER ÇÖKTÜ] "${q}" aranırken... Hatalar:`, errors.join(' | '));
     return res.status(500).json({ error: 'Arama sunucularına ulaşılamıyor, lütfen biraz bekleyin.' });
   }
 
-  // Sonuçları İsteğe Uygun Formatlama
   try {
     const results = { teams: [], players: [] };
     
@@ -473,12 +512,10 @@ app.get('/api/search/:sport', async (req, res) => {
     res.json(results);
 
   } catch (err) {
-    console.error(`[SEARCH FORMAT HATA] Kod: ${err.message}`);
     res.status(500).json({ error: 'Sonuçlar işlenirken bir hata oluştu.' });
   }
 });
 
-// Takım maçları endpoint'i
 app.get('/api/team/:id/events', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
@@ -491,12 +528,10 @@ app.get('/api/team/:id/events', async (req, res) => {
     const matches = allEvents.slice(0, 20).map(e => formatEvent(e));
     res.json({ matches });
   } catch (err) {
-    console.error(`[TEAM EVENTS] ${req.params.id}:`, err.message);
     res.status(500).json({ error: 'Sunucu hatası' });
   }
 });
 
-// Debug
 if (process.env.NODE_ENV !== 'production') {
   app.get('/api/debug', (req, res) => {
     const now = Math.floor(Date.now() / 1000);
@@ -504,7 +539,6 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-// Catch-all
 app.get('*', (_, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 app.use((err, req, res, next) => {
