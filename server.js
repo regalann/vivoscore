@@ -125,6 +125,15 @@ async function api(endpoint) {
   return data;
 }
 
+// GÜVENLİ FETCH EKLENDİ (Tüm sistemin sorunsuz kullanabilmesi için)
+async function safeFetch(url, headers) {
+  const r = await fetch(url, { headers, signal: AbortSignal.timeout(8000) });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const text = await r.text();
+  if (!text || text.length < 2) throw new Error('Boş yanıt');
+  return JSON.parse(text);
+}
+
 function getTRDateString(timestamp) {
   const d = new Date(timestamp * 1000);
   const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Istanbul', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d);
@@ -384,7 +393,7 @@ app.get('/api/event/:id/h2h', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════
-//  OYUNCU MODALI İÇİN GEREKLİ YENİ ENDPOINT
+//  OYUNCU MODALI İÇİN GEREKLİ YENİ ENDPOINT (Kariyer / İstatistik Gösterimi İçin)
 // ═══════════════════════════════════════════════
 app.get('/api/player/:id/details', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
@@ -415,15 +424,6 @@ function validateSearchQuery(q) {
   if (typeof q !== 'string') return false;
   if (q.length < 2 || q.length > 80) return false;
   return /^[\p{L}\p{N}\s\-'.]+$/u.test(q);
-}
-
-// Güvenli JSON fetch (SofaScore fallback'i için gerekli)
-async function safeFetch(url, headers) {
-  const r = await fetch(url, { headers, signal: AbortSignal.timeout(8000) });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const text = await r.text();
-  if (!text || text.length < 2) throw new Error('Boş yanıt');
-  return JSON.parse(text);
 }
 
 app.get('/api/search/:sport', async (req, res) => {
