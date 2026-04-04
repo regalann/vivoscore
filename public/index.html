@@ -526,7 +526,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 </div>
 
 <div class="modal-overlay" id="playerModalOverlay" onclick="V.closePlayerModal(event)">
-  <div class="custom-modal player-modal" id="playerModalContent">
+  <div class="custom-modal player-modal" id="playerModalContent" style="width: 480px; max-width: 95%;">
     <div class="pm-close" onclick="V.closePlayerModal()">✕</div>
     <div class="pm-header">
       <img id="pmImg" src="" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='">
@@ -536,10 +536,17 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
         <div class="pm-rating" id="pmRating">7.0</div>
       </div>
     </div>
-    <div class="pm-body">
-      <div class="pm-grid" id="pmStatsGrid"></div>
-      <button id="pmFavBtn" class="pm-fav-btn" onclick="V.toggleFavFromModal()">⭐ Favorilere Ekle</button>
+    
+    <div class="detail-tabs" style="margin-bottom: 12px; background: transparent;">
+        <div class="detail-tab active" data-ptab="season" onclick="V.loadPlayerTab('season')">Sezon</div>
+        <div class="detail-tab" data-ptab="matches" onclick="V.loadPlayerTab('matches')">Maçlar</div>
+        <div class="detail-tab" data-ptab="career" onclick="V.loadPlayerTab('career')">Kariyer</div>
     </div>
+    
+    <div class="pm-body" id="pmBodyContent" style="min-height: 200px; padding-bottom: 15px;">
+        </div>
+    
+    <button id="pmFavBtn" class="pm-fav-btn" onclick="V.toggleFavFromModal()">⭐ Favorilere Ekle</button>
   </div>
 </div>
 
