@@ -96,11 +96,14 @@ function sanitizeObject(obj) {
 const cache = new Map();
 const CACHE_TTL = 5 * 60 * 1000;
 
+// 🚀 CANLI MAÇLARIN ÖN BELLEĞİNİ 15 SANİYEYE DÜŞÜRDÜK
 function getCached(key) {
   const entry = cache.get(key);
-  if (entry && Date.now() - entry.ts < CACHE_TTL) return entry.data;
+  const ttl = key.includes('/live') ? 15 * 1000 : CACHE_TTL;
+  if (entry && Date.now() - entry.ts < ttl) return entry.data;
   return null;
 }
+
 function setCache(key, data) {
   cache.set(key, { data, ts: Date.now() });
   if (cache.size > 500) {
@@ -125,7 +128,6 @@ async function api(endpoint) {
   return data;
 }
 
-// GÜVENLİ FETCH EKLENDİ (Tüm sistemin sorunsuz kullanabilmesi için)
 async function safeFetch(url, headers) {
   const r = await fetch(url, { headers, signal: AbortSignal.timeout(8000) });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -323,9 +325,6 @@ app.get('/api/event/:id/stats', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
-// ═══════════════════════════════════════════════
-//  🚀 KADRO SİSTEMİ (missingPlayers DÜZELTMESİ EKLENDİ)
-// ═══════════════════════════════════════════════
 app.get('/api/event/:id/lineups', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
@@ -342,7 +341,6 @@ app.get('/api/event/:id/lineups', async (req, res) => {
       stats: p.statistics || {}
     }));
 
-    // HATA BURADAN KAYNAKLANIYORDU, missingPlayers EKLENDİ
     const formatMissing = (td) => (td?.missingPlayers || td?.missing || []).map(p => sanitizeObject({
       id: Number(p.player?.id) || 0,
       name: p.player?.shortName || p.player?.name || '',
@@ -354,12 +352,12 @@ app.get('/api/event/:id/lineups', async (req, res) => {
       home: { 
         formation: sanitizeString(data.home?.formation || ''), 
         players: formatPlayers(data.home),
-        missing: formatMissing(data.home) // <-- SAKAT/CEZALILAR
+        missing: formatMissing(data.home)
       },
       away: { 
         formation: sanitizeString(data.away?.formation || ''), 
         players: formatPlayers(data.away),
-        missing: formatMissing(data.away) // <-- SAKAT/CEZALILAR
+        missing: formatMissing(data.away)
       }
     });
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
@@ -392,9 +390,6 @@ app.get('/api/event/:id/h2h', async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════
-//  OYUNCU MODALI İÇİN GEREKLİ YENİ ENDPOINT (Kariyer / İstatistik Gösterimi İçin)
-// ═══════════════════════════════════════════════
 app.get('/api/player/:id/details', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
@@ -417,9 +412,6 @@ app.get('/api/player/:id/details', async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════
-//  ÇOKLU ENDPOINT TESTİ VE FALLBACK MİMARİSİ
-// ═══════════════════════════════════════════════
 function validateSearchQuery(q) {
   if (typeof q !== 'string') return false;
   if (q.length < 2 || q.length > 80) return false;
