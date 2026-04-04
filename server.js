@@ -412,28 +412,43 @@ app.get('/api/search/:sport', async (req, res) => {
   let data = null;
   let errors = [];
 
-  // STRATEJİ 1: Mobil Uygulama Taklidi (Cloudflare korumasını aşmak için)
-  try {
-    const mobileRes = await fetch(`https://api.sofascore.app/api/v1/search/all?q=${encodeURIComponent(q)}`, {
-      headers: {
-        'User-Agent': 'Sofascore/5.11.0 (Android; 10)', 
-        'Accept': 'application/json',
-        'Cache-Control': 'no-cache'
-      },
-      signal: AbortSignal.timeout(6000)
-    });
-    if (mobileRes.ok) data = await mobileRes.json();
-    else errors.push(`Mobil:${mobileRes.status}`);
-  } catch(e) { errors.push(`Mobil:${e.message}`); }
-
-  // STRATEJİ 2: RapidAPI Genel Arama
-  if (!data || !data.results) {
-    try { data = await api(`/search/${encodeURIComponent(q)}`); } catch(e) { errors.push(`Rapid1:${e.message}`); }
+  // Güvenli JSON fetch: önce text oku, sonra parse et (gzip/boş yanıt koruması)
+  async function safeFetch(url, headers) {
+    const r = await fetch(url, { headers, signal: AbortSignal.timeout(8000) });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const text = await r.text();
+    if (!text || text.length < 2) throw new Error('Boş yanıt');
+    return JSON.parse(text);
   }
 
-  // STRATEJİ 3: RapidAPI Spora Özel Arama
+  // STRATEJİ 1: SofaScore Mobil API
+  try {
+    data = await safeFetch(`https://api.sofascore.app/api/v1/search/all?q=${encodeURIComponent(q)}`, {
+      'User-Agent': 'Dalvik/2.1.0 (Linux; Android 10)',
+      'Accept': 'application/json',
+      'Accept-Encoding': 'identity'
+    });
+  } catch(e) { errors.push(`S1:${e.message}`); }
+
+  // STRATEJİ 2: SofaScore Web API
   if (!data || !data.results) {
-    try { data = await api(`/sport/${sport}/search/${encodeURIComponent(q)}`); } catch(e) { errors.push(`Rapid2:${e.message}`); }
+    try {
+      data = await safeFetch(`https://www.sofascore.com/api/v1/search/all?q=${encodeURIComponent(q)}`, {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Accept-Encoding': 'identity'
+      });
+    } catch(e) { errors.push(`S2:${e.message}`); }
+  }
+
+  // STRATEJİ 3: RapidAPI Genel Arama
+  if (!data || !data.results) {
+    try { data = await api(`/search/${encodeURIComponent(q)}`); } catch(e) { errors.push(`S3:${e.message}`); }
+  }
+
+  // STRATEJİ 4: RapidAPI Spora Özel Arama
+  if (!data || !data.results) {
+    try { data = await api(`/sport/${sport}/search/${encodeURIComponent(q)}`); } catch(e) { errors.push(`S4:${e.message}`); }
   }
 
   if (!data || !data.results) {
