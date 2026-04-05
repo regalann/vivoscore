@@ -347,6 +347,43 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .social-btn svg { width: 22px; height: 22px; }
 .auth-error { padding: 10px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 14px; display: none; font-weight: 600; }
 
+/* AUTH MULTI-STEP VIEWS */
+.auth-view { display: none; }
+.auth-view.active { display: block; }
+.auth-back-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; color: var(--text3); font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; padding: 6px 10px; border-radius: 6px; margin-bottom: 12px; }
+.auth-back-btn:hover { color: var(--text); background: var(--surface2); }
+.auth-back-btn svg { flex-shrink: 0; }
+.auth-box { position: relative; }
+
+/* AUTH INPUT GROUPS WITH ICONS */
+.auth-input-group { position: relative; margin-bottom: 12px; }
+.auth-input-group .auth-input { padding-left: 42px; margin-bottom: 0; }
+.auth-input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text3); pointer-events: none; display: flex; transition: 0.2s; }
+.auth-input-group .auth-input:focus + .auth-input-icon,
+.auth-input-group:focus-within .auth-input-icon { color: var(--brand); }
+.auth-input-hint { font-size: 11px; color: var(--text3); margin-top: 4px; margin-bottom: 12px; text-align: left; padding-left: 2px; }
+
+/* REMEMBER ME CUSTOM CHECKBOX */
+.auth-remember { display: flex; align-items: center; gap: 10px; margin: 6px 0 18px; cursor: pointer; user-select: none; font-size: 13px; color: var(--text2); font-weight: 600; }
+.auth-remember input[type="checkbox"] { display: none; }
+.auth-remember .checkmark { width: 20px; height: 20px; border-radius: 5px; border: 2px solid var(--border2); background: var(--bg2); transition: 0.2s; position: relative; flex-shrink: 0; }
+.auth-remember input:checked + .checkmark { background: var(--brand); border-color: var(--brand); }
+.auth-remember input:checked + .checkmark::after { content: ''; position: absolute; left: 6px; top: 2px; width: 5px; height: 10px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+
+/* AUTH SWITCH LINK */
+.auth-switch { font-size: 13px; color: var(--text3); margin-top: 16px; }
+.auth-switch a { color: var(--brand); font-weight: 700; cursor: pointer; transition: 0.2s; }
+.auth-switch a:hover { text-decoration: underline; }
+
+/* USERNAME AVATAR PREVIEW */
+.username-avatar-preview { width: 64px; height: 64px; border-radius: 50%; background: var(--brand); color: #fff; font-size: 28px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; border: 3px solid var(--brand-dim); transition: 0.3s; }
+
+/* AUTH STEP INDICATOR */
+.auth-step-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 16px; }
+.auth-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); transition: 0.3s; }
+.auth-step-dot.active { background: var(--brand); width: 20px; border-radius: 4px; }
+@keyframes authFadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
 /* 🚀 YENİ KESİN MOBİL TASARIM 🚀 */
 @media (max-width: 768px) {
     .app { flex-direction: column; }
@@ -569,40 +606,120 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 <div class="modal-overlay" id="authModalOverlay" onclick="Auth.hideModal(event)">
   <div class="custom-modal auth-box" id="authModalBody">
     <div class="pm-close" onclick="Auth.hideModal('force')">✕</div>
-    <div class="logo" style="justify-content:center; margin-bottom:16px;">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-        <line x1="4" y1="3" x2="4" y2="21" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"/>
-        <path d="M4 4L19 4C19 4 21 4 21 6C21 8 19 8 19 8L4 8" fill="var(--brand)" stroke="var(--brand)" stroke-width="1.5" stroke-linejoin="round"/>
-        <path d="M4 8L16 8C16 8 18 8 18 10C18 12 16 12 16 12L4 12" fill="#fff" fill-opacity="0.9" stroke="var(--brand)" stroke-width="0.8" stroke-linejoin="round"/>
-        <circle cx="4" cy="3" r="1.5" fill="var(--brand)"/>
-      </svg>
-      <span class="v">Vivo</span><span class="s">Score</span>
+
+    <!-- ════ GİRİŞ GÖRÜNÜMÜ ════ -->
+    <div class="auth-view active" id="authLoginView">
+      <div class="logo" style="justify-content:center; margin-bottom:16px;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <line x1="4" y1="3" x2="4" y2="21" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M4 4L19 4C19 4 21 4 21 6C21 8 19 8 19 8L4 8" fill="var(--brand)" stroke="var(--brand)" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M4 8L16 8C16 8 18 8 18 10C18 12 16 12 16 12L4 12" fill="#fff" fill-opacity="0.9" stroke="var(--brand)" stroke-width="0.8" stroke-linejoin="round"/>
+          <circle cx="4" cy="3" r="1.5" fill="var(--brand)"/>
+        </svg>
+        <span class="v">Vivo</span><span class="s">Score</span>
+      </div>
+      <div style="font-size:20px; font-weight:800; margin-bottom:6px;">Hesabınıza Giriş Yapın</div>
+      <div style="font-size:13px; color:var(--text2); margin-bottom:20px;">Favori takımlarınızı ve oyuncularınızı buluta kaydedin.</div>
+      
+      <div class="auth-error" id="authError"></div>
+
+      <div class="auth-input-group">
+        <div class="auth-input-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div>
+        <input type="email" id="authEmail" class="auth-input" placeholder="E-posta adresiniz" autocomplete="email">
+      </div>
+      <div class="auth-input-group">
+        <div class="auth-input-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <input type="password" id="authPassword" class="auth-input" placeholder="Şifreniz" autocomplete="current-password">
+      </div>
+
+      <label class="auth-remember" onclick="">
+        <input type="checkbox" id="authRememberMe" checked>
+        <div class="checkmark"></div>
+        <span>Beni Hatırla</span>
+      </label>
+      
+      <button class="auth-btn-main" onclick="Auth.loginWithEmail()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Giriş Yap
+      </button>
+
+      <div style="display: flex; align-items: center; gap: 12px; margin: 16px 0; color: var(--text3); font-size: 12px;">
+          <div style="flex: 1; height: 1px; background: var(--border);"></div>
+          VEYA
+          <div style="flex: 1; height: 1px; background: var(--border);"></div>
+      </div>
+
+      <button class="social-btn" onclick="Auth.socialLogin('github')" style="background:#24292f;color:#fff;border:1px solid #24292f;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub ile Devam Et
+      </button>
+
+      <div class="auth-switch">
+        Hesabınız yok mu? <a onclick="Auth.switchView('register')">Yeni Hesap Oluştur</a>
+      </div>
+
+      <div style="font-size:10px; color:var(--text3); margin-top:16px;">
+        Giriş yaparak Kullanım Şartları ve <a href="/privacy.html" target="_blank" style="color: var(--brand); text-decoration: none;">Gizlilik Politikamızı</a> kabul etmiş sayılırsınız.
+      </div>
     </div>
-    <div style="font-size:20px; font-weight:800; margin-bottom:6px;">Hesabınıza Giriş Yapın</div>
-    <div style="font-size:13px; color:var(--text2); margin-bottom:20px;">Favori takımlarınızı ve oyuncularınızı buluta kaydedin.</div>
-    
-    <div class="auth-error" id="authError"></div>
 
-    <input type="email" id="authEmail" class="auth-input" placeholder="E-posta adresiniz" autocomplete="email">
-    <input type="password" id="authPassword" class="auth-input" placeholder="Şifreniz">
-    
-    <button class="auth-btn-main" onclick="Auth.loginWithEmail()">Giriş Yap</button>
-    <button class="auth-btn-sec" onclick="Auth.registerWithEmail()">Yeni Hesap Oluştur</button>
+    <!-- ════ KAYIT GÖRÜNÜMÜ ════ -->
+    <div class="auth-view" id="authRegisterView">
+      <button class="auth-back-btn" onclick="Auth.switchView('login')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Geri Dön
+      </button>
+      
+      <div style="font-size:20px; font-weight:800; margin-bottom:6px;">Yeni Hesap Oluştur</div>
+      <div style="font-size:13px; color:var(--text2); margin-bottom:20px;">Hemen üye olun, verilerinizi bulutta saklayın.</div>
+      
+      <div class="auth-error" id="authRegError"></div>
 
-    <div style="display: flex; align-items: center; gap: 12px; margin: 16px 0; color: var(--text3); font-size: 12px;">
-        <div style="flex: 1; height: 1px; background: var(--border);"></div>
-        VEYA
-        <div style="flex: 1; height: 1px; background: var(--border);"></div>
+      <div class="auth-input-group">
+        <div class="auth-input-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <input type="text" id="regUsername" class="auth-input" placeholder="Kullanıcı adınız" autocomplete="username" maxlength="20">
+      </div>
+      <div class="auth-input-hint">3-20 karakter, harf, rakam ve alt çizgi kullanılabilir</div>
+
+      <div class="auth-input-group">
+        <div class="auth-input-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div>
+        <input type="email" id="regEmail" class="auth-input" placeholder="E-posta adresiniz" autocomplete="email">
+      </div>
+
+      <div class="auth-input-group">
+        <div class="auth-input-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <input type="password" id="regPassword" class="auth-input" placeholder="Şifreniz (min. 6 karakter)" autocomplete="new-password">
+      </div>
+      
+      <button class="auth-btn-main" onclick="Auth.registerWithEmail()" style="background: var(--green);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        Hesap Oluştur
+      </button>
+      <div class="auth-switch">
+        Zaten hesabınız var mı? <a onclick="Auth.switchView('login')">Giriş Yap</a>
+      </div>
     </div>
 
-    <button class="social-btn" onclick="Auth.socialLogin('github')" style="background:#24292f;color:#fff;border:1px solid #24292f;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-      GitHub ile Devam Et
-    </button>
+    <!-- ════ KULLANICI ADI BELİRLEME GÖRÜNÜMÜ ════ -->
+    <div class="auth-view" id="authUsernameView">
+      <div class="username-avatar-preview" id="usernameAvatarPreview">?</div>
+      <div style="font-size:20px; font-weight:800; margin-bottom:6px;">Kullanıcı Adınızı Belirleyin</div>
+      <div style="font-size:13px; color:var(--text2); margin-bottom:20px;">Profilinizi tamamlamak için bir kullanıcı adı seçin.</div>
+      
+      <div class="auth-error" id="authUsernameError"></div>
 
-    <div style="font-size:10px; color:var(--text3); margin-top:20px;">
-      Giriş yaparak Kullanım Şartları ve <a href="/privacy.html" target="_blank" style="color: var(--brand); text-decoration: none;">Gizlilik Politikamızı</a> kabul etmiş sayılırsınız.
+      <div class="auth-input-group">
+        <div class="auth-input-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <input type="text" id="usernameInput" class="auth-input" placeholder="Kullanıcı adınız" maxlength="20" oninput="Auth.previewUsername(this.value)">
+      </div>
+      <div class="auth-input-hint">3-20 karakter, harf, rakam ve alt çizgi kullanılabilir</div>
+
+      <button class="auth-btn-main" onclick="Auth.saveUsername()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><polyline points="20 6 9 17 4 12"/></svg>
+        Kaydet ve Devam Et
+      </button>
     </div>
+
   </div>
 </div>
 
@@ -634,6 +751,7 @@ function getSupabase() {
 // ═══════════════════════════════════════════════
 var Auth = {
   user: null,
+  cachedUsername: null,
 
   init: function() {
     var sb = getSupabase();
@@ -641,20 +759,63 @@ var Auth = {
     
     var self = this;
     sb.auth.getSession().then(function(res) {
-      if (res.data && res.data.session) { self.user = res.data.session.user; self.renderUser(); self.loadCloudData(); }
+      if (res.data && res.data.session) {
+        // Beni Hatırla kontrolü
+        var remembered = false;
+        try { remembered = localStorage.getItem('vivo_remember') === '1'; } catch(e) {}
+        var sessionActive = false;
+        try { sessionActive = sessionStorage.getItem('vivo_session_active') === '1'; } catch(e) {}
+        
+        if (!remembered && !sessionActive) {
+          // Ne hatırla işaretli ne de aktif oturum var → çıkış yap
+          sb.auth.signOut().then(function() { self.renderGuest(); });
+          return;
+        }
+        
+        self.user = res.data.session.user;
+        self.renderUser();
+        self.loadCloudData();
+        self.checkUsername();
+      }
       else self.renderGuest();
     }).catch(function() { self.renderGuest(); });
 
     sb.auth.onAuthStateChange(function(event, session) {
-      if (session) { self.user = session.user; self.renderUser(); if (event === 'SIGNED_IN') self.loadCloudData(); }
-      else { self.user = null; self.renderGuest(); }
+      if (session) {
+        self.user = session.user;
+        self.renderUser();
+        if (event === 'SIGNED_IN') {
+          self.loadCloudData();
+          self.checkUsername();
+        }
+      }
+      else { self.user = null; self.cachedUsername = null; self.renderGuest(); }
     });
   },
 
-  showModal: function() {
+  switchView: function(view) {
+    var views = ['authLoginView', 'authRegisterView', 'authUsernameView'];
+    views.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    var map = { login: 'authLoginView', register: 'authRegisterView', username: 'authUsernameView' };
+    var target = document.getElementById(map[view]);
+    if (target) {
+      target.style.display = 'block';
+      target.style.animation = 'none';
+      target.offsetHeight;
+      target.style.animation = 'authFadeIn 0.3s ease';
+    }
+    ['authError', 'authRegError', 'authUsernameError'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  },
+
+  showModal: function(view) {
     var modal = document.getElementById('authModalOverlay');
-    var err = document.getElementById('authError');
-    if(err) err.style.display = 'none';
+    this.switchView(view || 'login');
     if (modal) modal.style.display = 'flex';
   },
 
@@ -669,8 +830,8 @@ var Auth = {
     if (modal) modal.style.display = 'none';
   },
 
-  showError: function(msg) {
-    var el = document.getElementById('authError');
+  showError: function(msg, target) {
+    var el = document.getElementById(target || 'authError');
     if (el) { 
         el.textContent = msg; 
         el.style.display = 'block'; 
@@ -679,8 +840,8 @@ var Auth = {
     }
   },
 
-  showSuccess: function(msg) {
-    var el = document.getElementById('authError');
+  showSuccess: function(msg, target) {
+    var el = document.getElementById(target || 'authError');
     if (el) { 
         el.textContent = msg; 
         el.style.display = 'block'; 
@@ -692,10 +853,21 @@ var Auth = {
   loginWithEmail: function() {
     var email = document.getElementById('authEmail').value;
     var password = document.getElementById('authPassword').value;
+    var rememberMe = document.getElementById('authRememberMe').checked;
     if (!email || !password) return this.showError('Lütfen e-posta ve şifre girin.');
     
     var sb = getSupabase();
     if (!sb) return this.showError('Sistem bağlantısı kurulamadı. Lütfen sayfayı yenileyin.');
+
+    // Beni Hatırla ayarla
+    try {
+      if (rememberMe) {
+        localStorage.setItem('vivo_remember', '1');
+      } else {
+        localStorage.removeItem('vivo_remember');
+        sessionStorage.setItem('vivo_session_active', '1');
+      }
+    } catch(e) {}
 
     sb.auth.signInWithPassword({ email: email, password: password }).then(function(res) {
       if (res.error) {
@@ -708,28 +880,115 @@ var Auth = {
   },
 
   registerWithEmail: function() {
-    var email = document.getElementById('authEmail').value;
-    var password = document.getElementById('authPassword').value;
-    if (!email || !password) return this.showError('Lütfen e-posta ve şifre girin.');
-    if (password.length < 6) return this.showError('Şifre en az 6 karakter olmalıdır.');
+    var username = document.getElementById('regUsername').value.trim();
+    var email = document.getElementById('regEmail').value;
+    var password = document.getElementById('regPassword').value;
+    
+    if (!username) return this.showError('Lütfen bir kullanıcı adı girin.', 'authRegError');
+    if (username.length < 3) return this.showError('Kullanıcı adı en az 3 karakter olmalıdır.', 'authRegError');
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) return this.showError('Kullanıcı adı sadece harf, rakam ve alt çizgi içerebilir.', 'authRegError');
+    if (!email || !password) return this.showError('Lütfen tüm alanları doldurun.', 'authRegError');
+    if (password.length < 6) return this.showError('Şifre en az 6 karakter olmalıdır.', 'authRegError');
     
     var sb = getSupabase();
-    if (!sb) return this.showError('Sistem bağlantısı kurulamadı. Lütfen sayfayı yenileyin.');
+    if (!sb) return this.showError('Sistem bağlantısı kurulamadı. Lütfen sayfayı yenileyin.', 'authRegError');
 
-    sb.auth.signUp({ email: email, password: password }).then(function(res) {
-      if (res.error) {
-        if (res.error.message.includes('already registered')) Auth.showError('Bu e-posta adresi zaten kayıtlı.');
-        else Auth.showError(res.error.message);
-      } else { 
-        Auth.showSuccess('Kayıt başarılı! Giriş yapılıyor...'); 
-        setTimeout(function() { Auth.hideModal('force'); }, 1000); 
+    // Kullanıcı adı benzersizlik kontrolü
+    var self = this;
+    sb.from('user_settings').select('username').eq('username', username).then(function(checkRes) {
+      if (checkRes.data && checkRes.data.length > 0) {
+        return self.showError('Bu kullanıcı adı zaten alınmış. Başka bir tane dene.', 'authRegError');
+      }
+
+      // Beni Hatırla - yeni kayıtlarda otomatik olarak hatırla
+      try { localStorage.setItem('vivo_remember', '1'); } catch(e) {}
+
+      sb.auth.signUp({ email: email, password: password }).then(function(res) {
+        if (res.error) {
+          if (res.error.message.includes('already registered')) self.showError('Bu e-posta adresi zaten kayıtlı.', 'authRegError');
+          else self.showError(res.error.message, 'authRegError');
+        } else { 
+          // Kullanıcı adını kaydet
+          self.cachedUsername = username;
+          if (res.data && res.data.user) {
+            sb.from('user_settings').upsert({
+              user_id: res.data.user.id,
+              username: username,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' }).then(function() {});
+          }
+          self.showSuccess('Kayıt başarılı! Giriş yapılıyor...', 'authRegError'); 
+          setTimeout(function() { self.hideModal('force'); }, 1000); 
+        }
+      });
+    });
+  },
+
+  checkUsername: function() {
+    var sb = getSupabase();
+    if (!sb || !this.user) return;
+    var self = this;
+    
+    sb.from('user_settings').select('username').eq('user_id', this.user.id).single().then(function(res) {
+      if (res.data && res.data.username) {
+        self.cachedUsername = res.data.username;
+        self.renderUser();
+      } else {
+        // Kullanıcı adı yok → belirleme ekranını göster
+        self.showModal('username');
       }
     });
+  },
+
+  saveUsername: function() {
+    var username = document.getElementById('usernameInput').value.trim();
+    if (!username) return this.showError('Lütfen bir kullanıcı adı girin.', 'authUsernameError');
+    if (username.length < 3) return this.showError('Kullanıcı adı en az 3 karakter olmalıdır.', 'authUsernameError');
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) return this.showError('Kullanıcı adı sadece harf, rakam ve alt çizgi içerebilir.', 'authUsernameError');
+
+    var sb = getSupabase();
+    if (!sb || !this.user) return;
+    var self = this;
+
+    // Benzersizlik kontrolü
+    sb.from('user_settings').select('username').eq('username', username).then(function(checkRes) {
+      if (checkRes.data && checkRes.data.length > 0) {
+        return self.showError('Bu kullanıcı adı zaten alınmış.', 'authUsernameError');
+      }
+
+      sb.from('user_settings').upsert({
+        user_id: self.user.id,
+        username: username,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' }).then(function(res) {
+        if (res.error) {
+          self.showError('Bir hata oluştu, tekrar dene.', 'authUsernameError');
+        } else {
+          self.cachedUsername = username;
+          self.renderUser();
+          self.showSuccess('Kullanıcı adın ayarlandı!', 'authUsernameError');
+          setTimeout(function() { self.hideModal('force'); }, 800);
+        }
+      });
+    });
+  },
+
+  skipUsername: function() {
+    this.hideModal('force');
+  },
+
+  previewUsername: function(val) {
+    var preview = document.getElementById('usernameAvatarPreview');
+    if (preview) {
+      preview.textContent = val && val.length > 0 ? val.charAt(0).toUpperCase() : '?';
+    }
   },
 
   socialLogin: function(provider) {
     var sb = getSupabase();
     if (!sb) return this.showError('Sistem bağlantısı kurulamadı. (Sayfayı yenileyin).');
+    // Sosyal girişlerde beni hatırla varsayılan açık
+    try { localStorage.setItem('vivo_remember', '1'); } catch(e) {}
     sb.auth.signInWithOAuth({
       provider: provider,
       options: { redirectTo: window.location.origin }
@@ -739,6 +998,11 @@ var Auth = {
   logout: function() {
     var sb = getSupabase();
     if (!sb) return;
+    try {
+      localStorage.removeItem('vivo_remember');
+      sessionStorage.removeItem('vivo_session_active');
+    } catch(e) {}
+    this.cachedUsername = null;
     sb.auth.signOut().then(function() { Auth.renderGuest(); });
   },
 
@@ -753,7 +1017,7 @@ var Auth = {
     var el = document.getElementById('authSection');
     if (!el || !this.user) return;
     var email = esc(this.user.email || '');
-    var displayName = email.split('@')[0] || 'Kullanıcı';
+    var displayName = this.cachedUsername ? esc(this.cachedUsername) : (email.split('@')[0] || 'Kullanıcı');
     
     var avatarHtml = '<div class="user-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;font-weight:800;font-size:16px;">' + displayName.charAt(0).toUpperCase() + '</div>';
     var mobileLogout = 'onclick="if(window.innerWidth <= 768) Auth.logout()"';
@@ -784,6 +1048,7 @@ var Auth = {
         hide_scores: V.state.hideScores,
         updated_at: new Date().toISOString()
       };
+      if (self.cachedUsername) data.username = self.cachedUsername;
       sb.from('user_settings').upsert(data, { onConflict: 'user_id' }).then(function(res) {
         if (res.error) console.error('[Auth] Kayıt hatası:', res.error.message);
       });
@@ -798,6 +1063,7 @@ var Auth = {
       if (res.error || !res.data) return;
       var d = res.data;
       try {
+        if (d.username) { self.cachedUsername = d.username; self.renderUser(); }
         if (d.favorites) { V.state.favorites = JSON.parse(d.favorites); safeStorage.set('vivo_favs', V.state.favorites); }
         if (d.fav_players) { V.state.favPlayers = JSON.parse(d.fav_players); safeStorage.set('vivo_fav_players', V.state.favPlayers); }
         if (d.theme) { V.state.theme = d.theme; safeStorage.set('vivo_theme', d.theme); V.applyTheme(); }
