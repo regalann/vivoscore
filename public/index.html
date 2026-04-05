@@ -755,7 +755,7 @@ var Auth = {
     var email = esc(this.user.email || '');
     var displayName = email.split('@')[0] || 'Kullanıcı';
     
-    var avatarHtml = '<div class="user-avatar">' + displayName.charAt(0).toUpperCase() + '</div>';
+    var avatarHtml = '<div class="user-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;font-weight:800;font-size:16px;">' + displayName.charAt(0).toUpperCase() + '</div>';
     var mobileLogout = 'onclick="if(window.innerWidth <= 768) Auth.logout()"';
 
     el.innerHTML =
@@ -848,7 +848,6 @@ var SPORTS = [
   { id: 'motorsport', name: 'Motor Sporları', icon: '🏎️' }
 ];
 
-// 🚀 KUSURSUZ ÇÖZÜM: LİGLERİ İSİMLE DEĞİL ID İLE EŞLEŞTİRİYORUZ
 var POPULAR_LEAGUES = {
   'football': [
     {name: 'Şampiyonlar Ligi', id: '7', img: 'https://api.sofascore.app/api/v1/unique-tournament/7/image'},
@@ -898,7 +897,8 @@ var V = {
     hiddenMatchScores: safeStorage.get('vivo_hidden_matches', {}),
     theme: safeStorage.get('vivo_theme', 'dark'),
     showOdds: safeStorage.get('vivo_show_odds', false),
-    betSlip: [] 
+    betSlip: [],
+    pendingFilter: null // 🚀 BEKLEYEN FİLTRE MANTIĞI EKLENDİ
   },
 
   init: function() { 
@@ -1164,6 +1164,7 @@ var V = {
     for(var i=0; i<SPORTS.length; i++) {
       var s = SPORTS[i];
       var activeCls = (s.id === this.state.selectedSport) ? ' active' : '';
+      // Hover eventleri eklendi
       html += '<div class="sport-item'+activeCls+'" onclick="V.selectSport(\''+s.id+'\')" onmouseenter="V.showPopMenu(event, \''+s.id+'\')" onmouseleave="V.hidePopMenu()"><span class="flag">'+s.icon+'</span><span>'+s.name+'</span></div>';
     }
     el.innerHTML = html;
@@ -1201,7 +1202,8 @@ var V = {
     
     var html = '<div class="spm-title">En Popüler Müsabakalar</div><div class="spm-grid">';
     leagues.forEach(function(l) {
-        html += '<div class="spm-item" onclick="V.filterLeague(\'' + l.id + '\', \'' + esc(l.name) + '\')"><img src="' + l.img + '" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'">' + esc(l.name) + '</div>';
+        // Tıklanınca hem sportId hem de lgId yollanıyor
+        html += '<div class="spm-item" onclick="V.filterLeague(\'' + sportId + '\', \'' + l.id + '\', \'' + esc(l.name) + '\')"><img src="' + l.img + '" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'">' + esc(l.name) + '</div>';
     });
     html += '</div>';
     menu.innerHTML = html;
@@ -1222,19 +1224,44 @@ var V = {
     }
   },
 
-  // 🚀 KUSURSUZ ÇÖZÜM: ARTIK TEXT İLE DEĞİL DOĞRUDAN ID İLE ARAMA YAPIYOR 🚀
-  filterLeague: function(lgId, name) {
+  // 🚀 KUSURSUZ ÇÖZÜM: SPOR DEĞİŞİKLİĞİNİ ALGILAYAN BEKLEYEN FİLTRE MANTIĞI 🚀
+  filterLeague: function(sportId, lgId, name) {
     this.hidePopMenu(true);
-    if(this.state.page !== 'matches') return;
     
+    // Eğer favoriler sayfasındaysak ana maç listesine dön
+    if (this.state.page !== 'matches') {
+      this.state.page = 'matches';
+      var fb = document.getElementById('favToggleBtn'); 
+      if(fb) fb.classList.remove('active');
+    }
+
+    // Tıklanan ligin sporu, mevcut spordan FARKLIYSA
+    if (this.state.selectedSport !== sportId) {
+      this.state.selectedSport = sportId;
+      this.renderSports(); // Sol menüyü yeni spora göre boya
+      
+      var sObj = SPORTS.find(function(x){ return x.id === sportId; });
+      var iconEl = document.getElementById('detailEmptyIcon');
+      if (iconEl && sObj) iconEl.textContent = sObj.icon;
+      
+      // Filtreyi hafızaya al ve yeni sporun maçlarını sunucudan çek
+      this.state.pendingFilter = { lgId: lgId, name: name };
+      this.loadMatches();
+    } else {
+      // Zaten aynı spordaysak direkt ekrandaki maçları filtrele
+      this._applyLeagueFilter(lgId, name);
+    }
+  },
+
+  // Asıl DOM filtreleme işini yapan gizli fonksiyon
+  _applyLeagueFilter: function(lgId, name) {
     var groups = document.querySelectorAll('.league-group');
     var foundCount = 0;
     
     groups.forEach(function(g) {
-        // Lig kartlarının ID'leri "lg-17" veya "lg-52" formatında kaydedilir
         if(g.id === 'lg-' + lgId) {
             g.style.display = 'block';
-            g.classList.remove('collapsed'); // Filtre uygulanınca otomatik açılsın
+            g.classList.remove('collapsed'); // Filtrelenen ligi açık göster
             foundCount++;
         } else {
             g.style.display = 'none';
@@ -1285,20 +1312,28 @@ var V = {
     this.apiFetch(endpoint).then(function(data) {
       if (!data.groups || Object.keys(data.groups).length === 0) {
         var emptyMsg = V.state.isLiveOnly ? 'Şu anda canlı maç bulunmuyor.' : '<strong>' + dateStr + '</strong> tarihinde maç bulunamadı.<br><span style="font-size:12px;margin-top:8px;display:block;opacity:0.6;">API bu tarih için veri döndürmedi. Başka bir tarih deneyin.</span>';
-        return el.innerHTML = T.empty(emptyMsg);
+        el.innerHTML = T.empty(emptyMsg);
+      } else {
+        var html = ''; var gKeys = Object.keys(data.groups);
+        for (var i = 0; i < gKeys.length; i++) html += T.leagueGroup(data.groups[gKeys[i]].name, gKeys[i], data.groups[gKeys[i]].matches);
+        el.innerHTML = html;
+        if(V.state.showOdds) V.loadOddsForAll();
+        
+        setTimeout(function() {
+          for(var b=0; b<V.state.betSlip.length; b++) {
+            var item = V.state.betSlip[b];
+            var btn = document.querySelector('.odd-btn[data-mid="'+item.matchId+'"][data-sel="'+item.selection+'"][data-mark="'+item.market+'"]');
+            if(btn) btn.classList.add('selected');
+          }
+        }, 500);
       }
-      var html = ''; var gKeys = Object.keys(data.groups);
-      for (var i = 0; i < gKeys.length; i++) html += T.leagueGroup(data.groups[gKeys[i]].name, gKeys[i], data.groups[gKeys[i]].matches);
-      el.innerHTML = html;
-      if(V.state.showOdds) V.loadOddsForAll();
       
-      setTimeout(function() {
-        for(var b=0; b<V.state.betSlip.length; b++) {
-          var item = V.state.betSlip[b];
-          var btn = document.querySelector('.odd-btn[data-mid="'+item.matchId+'"][data-sel="'+item.selection+'"][data-mark="'+item.market+'"]');
-          if(btn) btn.classList.add('selected');
-        }
-      }, 500);
+      // 🚀 EĞER BEKLEYEN BİR FİLTRE VARSA ŞİMDİ UYGULA 🚀
+      if (V.state.pendingFilter) {
+        V._applyLeagueFilter(V.state.pendingFilter.lgId, V.state.pendingFilter.name);
+        V.state.pendingFilter = null; // Filtreyi uyguladıktan sonra sıfırla
+      }
+
     }).catch(function(err) {
       el.innerHTML = T.empty('Veri yüklenirken hata oluştu.<br><span style="font-size:12px;opacity:0.6;">' + dateStr + ' | ' + (err.message || 'Bağlantı hatası') + '</span>');
     });
