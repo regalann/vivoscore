@@ -59,12 +59,29 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .logo { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 3px; cursor: pointer; transition: opacity 0.2s; }
 .logo:hover { opacity: 0.8; }
 .logo .v { color: var(--text); } .logo .s { color: var(--brand); }
-.sidebar-nav { padding: 12px 10px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+.sidebar-nav { padding: 12px 10px; flex: 1; overflow-y: auto; overflow-x: visible; display: flex; flex-direction: column; }
 .nav-label { font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text3); padding: 0 10px; margin-bottom: 8px; letter-spacing: 1px; margin-top:15px; }
 
-.sport-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; color: var(--text2); cursor: pointer; transition: var(--transition); margin-bottom: 2px;}
+.sport-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; color: var(--text2); cursor: pointer; transition: var(--transition); margin-bottom: 2px; position: relative; }
 .sport-item:hover { background: var(--surface2); color: var(--text); } .sport-item.active { background: var(--brand-dim); color: var(--brand); }
 .sport-item .flag { font-size: 18px; width: 24px; text-align: center; } 
+
+/* 🚀 YENİ: POPÜLER LİGLER HOVER MENÜSÜ CSS 🚀 */
+.sport-pop-menu {
+  position: fixed; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; display: none; z-index: 1000;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5); width: max-content; min-width: 250px;
+  animation: fadeLeft 0.2s ease;
+}
+@keyframes fadeLeft { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:translateX(0); } }
+.spm-title { font-size: 12px; font-weight: 800; color: var(--text3); margin-bottom: 12px; text-transform: uppercase; letter-spacing:0.5px; }
+.spm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.spm-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; cursor: pointer; padding: 10px 12px; border-radius: var(--radius-sm); transition: var(--transition); border: 1px solid transparent; }
+.spm-item:hover { background: var(--surface2); color: var(--brand); border-color: var(--border); }
+.spm-item img { width: 22px; height: 22px; object-fit: contain; }
+.clear-filter-alert { background: var(--brand-dim); color: var(--text); padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--brand); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; animation: fadeUp 0.3s ease; }
+.clear-filter-alert button { background: var(--brand); border:none; color: #fff; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 12px; cursor: pointer; transition: 0.2s; }
+.clear-filter-alert button:hover { background: #2563eb; }
 
 .user-profile-section { padding: 16px 14px; border-top: 1px solid var(--border); flex-shrink: 0; }
 .auth-btn { width: 100%; padding: 12px; background: var(--brand); color: #fff; font-weight: 800; font-size: 14px; border-radius: var(--radius-sm); transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;}
@@ -104,8 +121,16 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 
 .league-group { margin-bottom: 20px; animation: fadeUp 0.3s ease; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-.league-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 15px; font-weight: 700; color: var(--text); background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; border: 1px solid var(--border); border-bottom: none; }
+
+/* 🚀 YENİ: LİG BAŞLIĞI VE KULAKÇIK (CHEVRON) KONTROLÜ 🚀 */
+.league-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 15px; font-weight: 700; color: var(--text); background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; border: 1px solid var(--border); border-bottom: none; cursor: pointer; user-select: none; transition: background 0.2s; }
+.league-header:hover { background: var(--surface2); }
 .league-header img { width: 22px; height: 22px; border-radius: 3px; object-fit: contain; background: transparent; padding: 1px; }
+.lg-chevron { margin-left: auto; transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); color: var(--text3); }
+.league-matches { display: block; }
+.league-group.collapsed .league-matches { display: none; }
+.league-group.collapsed .league-header { border-bottom: 1px solid var(--border); border-radius: var(--radius); }
+.league-group.collapsed .lg-chevron { transform: rotate(-90deg); }
 
 .match-card { display: flex; align-items: center; padding: 12px 14px; background: var(--surface); border-left: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transition: var(--transition); position: relative; }
 .match-card:last-child { border-radius: 0 0 var(--radius) var(--radius); } .match-card:hover { background: var(--surface2); }
@@ -113,7 +138,6 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .match-time { width: 56px; flex-shrink: 0; text-align: center; font-size: 13px; font-weight: 600; color: var(--text2); line-height: 1.4; overflow: hidden; }
 .match-time.live-time { color: var(--green); }
 .minute-badge { display: inline-block; background: var(--green); color: #000; font-size: 12px; font-weight: 700; padding: 2px 6px; border-radius: 4px; animation: pulse-live 1.5s infinite; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@keyframes pulse-live { 0% { opacity:1; } 50% { opacity:0.6; } 100% { opacity:1; } }
 
 .match-info-area { flex:1; min-width:0; display:flex; align-items:center; cursor: pointer; overflow: hidden; } 
 .match-teams { flex: 1; min-width: 0; max-width: 260px; padding: 0 12px; border-right: 1px solid var(--border); }
@@ -123,7 +147,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 
 .match-score-wrap { display: flex; align-items: center; flex-shrink: 0; margin-left: auto; gap: 12px; }
 .match-score { width: 55px; flex-shrink: 0; text-align: center; position: relative; }
-.score-num { font-size: 16px; font-weight: 800; line-height: 1.8; color: var(--text); transition: color 0.3s; } .score-num.loser { color: var(--text3); } .score-num.live-score { color: var(--green); }
+.score-num { font-size: 16px; font-weight: 800; line-height: 1.8; color: var(--text); } .score-num.loser { color: var(--text3); } .score-num.live-score { color: var(--green); }
 
 .hide-single-btn { background: transparent; border: none; color: var(--text3); font-size: 16px; cursor: pointer; transition: 0.2s; flex-shrink: 0;}
 .hide-single-btn:hover { color: var(--text); }
@@ -336,7 +360,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     }
     .sidebar-header { display: none; }
     .sidebar-nav { 
-        flex-direction: row; width: 100%; padding: 0; overflow-x: auto; overflow-y: hidden;
+        flex-direction: row; width: 100%; padding: 0; overflow-x: auto; overflow-y: visible;
         align-items: center; justify-content: flex-start;
     }
     .nav-section { display: flex; flex-direction: row; align-items: center; margin: 0 !important; padding: 0 5px !important; border: none !important; }
@@ -509,7 +533,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 
   <aside class="detail-panel" id="detailPanel">
     <div class="detail-empty">
-      <div class="de-icon">⚽</div>
+      <div class="de-icon" id="detailEmptyIcon">⚽</div>
       <div class="de-text">Detayları görmek için bir maça tıklayın</div>
     </div>
   </aside>
@@ -587,7 +611,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 
 <script>
 // ═══════════════════════════════════════════════
-//  SUPABASE BAĞLANTISI (YEDEK VE GÜVENLİ BAŞLATMA)
+//  SUPABASE BAĞLANTISI
 // ═══════════════════════════════════════════════
 var SUPABASE_URL = 'https://heflhadmyaubzkaldgwz.supabase.co'; 
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhlZmxoYWRteWF1YnprYWxkZ3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODcwODMsImV4cCI6MjA5MDY2MzA4M30.mpnk_9B38xDDjYQaoOZsziThLFrZW_HzF-j6XoKwOzM';
@@ -734,7 +758,7 @@ var Auth = {
     var email = esc(this.user.email || '');
     var displayName = email.split('@')[0] || 'Kullanıcı';
     
-    var avatarHtml = '<div class="user-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;font-weight:800;font-size:16px;">' + displayName.charAt(0).toUpperCase() + '</div>';
+    var avatarHtml = '<div class="user-avatar">' + displayName.charAt(0).toUpperCase() + '</div>';
     var mobileLogout = 'onclick="if(window.innerWidth <= 768) Auth.logout()"';
 
     el.innerHTML =
@@ -789,7 +813,7 @@ var Auth = {
 };
 
 // ═══════════════════════════════════════════════
-//  GÜVENLİK, FORMATLAMA VE RAM CACHE MİMARİSİ
+//  GÜVENLİK VE POPÜLER LİGLER MİMARİSİ
 // ═══════════════════════════════════════════════
 function esc(str) {
   if (str === null || str === undefined) return '';
@@ -827,6 +851,25 @@ var SPORTS = [
   { id: 'motorsport', name: 'Motor Sporları', icon: '🏎️' }
 ];
 
+var POPULAR_LEAGUES = {
+  'football': [
+    {name: 'UEFA Champions League', img: 'https://api.sofascore.app/api/v1/unique-tournament/7/image'},
+    {name: 'UEFA Europa League', img: 'https://api.sofascore.app/api/v1/unique-tournament/679/image'},
+    {name: 'Premier League', img: 'https://api.sofascore.app/api/v1/unique-tournament/17/image'},
+    {name: 'LaLiga', img: 'https://api.sofascore.app/api/v1/unique-tournament/8/image'},
+    {name: 'Bundesliga', img: 'https://api.sofascore.app/api/v1/unique-tournament/35/image'},
+    {name: 'Serie A', img: 'https://api.sofascore.app/api/v1/unique-tournament/23/image'},
+    {name: 'Süper Lig', img: 'https://api.sofascore.app/api/v1/unique-tournament/52/image'},
+    {name: '1. Lig', img: 'https://api.sofascore.app/api/v1/unique-tournament/53/image'}
+  ],
+  'basketball': [
+    {name: 'NBA', img: 'https://api.sofascore.app/api/v1/unique-tournament/132/image'},
+    {name: 'Euroleague', img: 'https://api.sofascore.app/api/v1/unique-tournament/138/image'},
+    {name: 'Türkiye Sigorta Süper Ligi', img: 'https://api.sofascore.app/api/v1/unique-tournament/140/image'},
+    {name: 'Türkiye KBSL', img: 'https://api.sofascore.app/api/v1/unique-tournament/4836/image'}
+  ]
+};
+
 var STAT_DICT = {
   goals: 'Gol', assists: 'Asist', totalShots: 'Toplam Şut', shotsOnTarget: 'İsabetli Şut',
   shotsOffTarget: 'İsabetsiz Şut', blockedShots: 'Engellenen Şut', hitWoodwork: 'Direkten Dönen',
@@ -850,7 +893,7 @@ var V = {
   state: {
     page: 'matches', selectedSport: 'football', dateOffset: 0, isLiveOnly: false,
     selectedMatch: null, detailTab: 'summary', matchCache: {},
-    detailHistory: [], // 🚀 EKLENDİ: Geri butonu için panel geçmişi
+    detailHistory: [],
     playerData: {}, 
     favorites: safeStorage.get('vivo_favs', []),
     favPlayers: safeStorage.get('vivo_fav_players', []),
@@ -872,15 +915,11 @@ var V = {
     this.updateOddsBtn();
     
     Auth.init();
-    
-    // 🚀 CANLI SKOR DÖNGÜSÜNÜ BAŞLAT
     this.startAutoUpdate();
   },
 
-  // 🚀 SAYFA YENİLENMEDEN ANLIK GÜNCELLEME YAPAN FONKSİYON
   startAutoUpdate: function() {
     setInterval(function() {
-      // Sadece ana maç sayfasındaysak ve "Bugün" veya "Canlı" filtrelerindeysek çalışır (Sunucuyu yormamak için)
       if (V.state.page !== 'matches') return;
       if (!V.state.isLiveOnly && V.state.dateOffset !== 0) return;
 
@@ -893,7 +932,6 @@ var V = {
         });
         
         liveMatches.forEach(function(m) {
-          // 1. ANA LİSTEDEKİ SKORLARI GÜNCELLE
           var card = document.querySelector('.match-card[data-match="' + m.id + '"]');
           if (card) {
             var scoreEls = card.querySelectorAll('.score-num');
@@ -911,7 +949,6 @@ var V = {
             if (timeBadge && m.minute) timeBadge.textContent = m.minute;
           }
 
-          // 2. SAĞ TARAFTAKİ DETAY PANELİ AÇIKSA ONU DA GÜNCELLE
           if (V.state.selectedMatch == m.id) {
             var dScore = document.querySelector('.detail-score');
             if (dScore && m.homeScore !== null) dScore.textContent = m.homeScore + ' - ' + m.awayScore;
@@ -1079,6 +1116,12 @@ var V = {
     }
   },
 
+  // 🚀 YENİ: KULAKÇIKLI LİG GİZLE/AÇ MANTIĞI 🚀
+  toggleLeague: function(lgId) {
+    var g = document.getElementById(lgId);
+    if(g) g.classList.toggle('collapsed');
+  },
+
   getDateStr: function(offset) {
     var d = new Date();
     d.setDate(d.getDate() + (offset || 0) + this.state.dateOffset);
@@ -1119,20 +1162,105 @@ var V = {
     this.loadMatches();
   },
 
+  // 🚀 YENİ: HOVER MENÜLÜ SPOR SEÇİCİ 🚀
   renderSports: function() {
     var el = document.getElementById('sportList'); if (!el) return;
     var html = '';
     for(var i=0; i<SPORTS.length; i++) {
       var s = SPORTS[i];
       var activeCls = (s.id === this.state.selectedSport) ? ' active' : '';
-      html += '<div class="sport-item'+activeCls+'" onclick="V.selectSport(\''+s.id+'\')"><span class="flag">'+s.icon+'</span><span>'+s.name+'</span></div>';
+      html += '<div class="sport-item'+activeCls+'" onclick="V.selectSport(\''+s.id+'\')" onmouseenter="V.showPopMenu(event, \''+s.id+'\')" onmouseleave="V.hidePopMenu()"><span class="flag">'+s.icon+'</span><span>'+s.name+'</span></div>';
     }
     el.innerHTML = html;
   },
   
   selectSport: function(id) {
-    this.state.selectedSport = id; this.renderSports();
+    this.state.selectedSport = id; 
+    this.renderSports();
+    
+    var sObj = SPORTS.find(function(x){ return x.id === id; });
+    var iconEl = document.getElementById('detailEmptyIcon');
+    if (iconEl && sObj) iconEl.textContent = sObj.icon;
+    
     if(this.state.page === 'matches') this.loadMatches(); 
+  },
+
+  // 🚀 YENİ: POPÜLER LİGLER AÇILIR MENÜ MANTIĞI 🚀
+  _popMenuTimer: null,
+  showPopMenu: function(ev, sportId) {
+    if(window.innerWidth <= 768) return; 
+    var leagues = POPULAR_LEAGUES[sportId];
+    if(!leagues) return;
+    
+    clearTimeout(this._popMenuTimer);
+    var rect = ev.currentTarget.getBoundingClientRect();
+    var menu = document.getElementById('sportPopMenu');
+    
+    if(!menu) {
+        menu = document.createElement('div');
+        menu.id = 'sportPopMenu';
+        menu.className = 'sport-pop-menu';
+        menu.onmouseenter = function(){ clearTimeout(V._popMenuTimer); };
+        menu.onmouseleave = function(){ V.hidePopMenu(true); };
+        document.body.appendChild(menu);
+    }
+    
+    var html = '<div class="spm-title">En Popüler Müsabakalar</div><div class="spm-grid">';
+    leagues.forEach(function(l) {
+        html += '<div class="spm-item" onclick="V.filterLeague(\'' + esc(l.name) + '\')"><img src="' + l.img + '" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'">' + esc(l.name) + '</div>';
+    });
+    html += '</div>';
+    menu.innerHTML = html;
+    menu.style.top = rect.top + 'px';
+    menu.style.left = (rect.right + 10) + 'px';
+    menu.style.display = 'block';
+  },
+  
+  hidePopMenu: function(immediate) {
+    if (immediate) {
+        var menu = document.getElementById('sportPopMenu');
+        if(menu) menu.style.display = 'none';
+    } else {
+        this._popMenuTimer = setTimeout(function() {
+            var menu = document.getElementById('sportPopMenu');
+            if(menu) menu.style.display = 'none';
+        }, 200);
+    }
+  },
+
+  // 🚀 YENİ: LİGLERİ FİLTRELEYEN FONKSİYON 🚀
+  filterLeague: function(name) {
+    this.hidePopMenu(true);
+    if(this.state.page !== 'matches') return;
+    
+    var groups = document.querySelectorAll('.league-group');
+    var foundCount = 0;
+    groups.forEach(function(g) {
+        var headerTxt = g.querySelector('.league-header').textContent;
+        if(headerTxt.toLowerCase().includes(name.toLowerCase())) {
+            g.style.display = 'block';
+            foundCount++;
+        } else {
+            g.style.display = 'none';
+        }
+    });
+    
+    var scroll = document.getElementById('matchScroll');
+    var existingBtn = document.getElementById('clearFilterBtn');
+    if(existingBtn) existingBtn.remove();
+    
+    if(foundCount === 0) {
+        scroll.insertAdjacentHTML('afterbegin', '<div id="clearFilterBtn" class="clear-filter-alert"><span><strong>' + esc(name) + '</strong> için şu anki listede maç bulunmuyor.</span> <button onclick="V.clearLeagueFilter()">Filtreyi Temizle</button></div>');
+    } else {
+        scroll.insertAdjacentHTML('afterbegin', '<div id="clearFilterBtn" class="clear-filter-alert"><span><strong>' + esc(name) + '</strong> maçları filtrelendi.</span> <button onclick="V.clearLeagueFilter()">Tümünü Göster</button></div>');
+    }
+  },
+
+  clearLeagueFilter: function() {
+    var groups = document.querySelectorAll('.league-group');
+    groups.forEach(function(g) { g.style.display = 'block'; });
+    var existingBtn = document.getElementById('clearFilterBtn');
+    if(existingBtn) existingBtn.remove();
   },
 
   apiFetch: function(url) {
@@ -1149,6 +1277,8 @@ var V = {
   },
 
   loadMatches: function() {
+    this.hidePopMenu(true);
+    this.clearLeagueFilter();
     var el = document.getElementById('matchScroll'); if (!el) return;
     var dateStr = this.getDateStr(0);
     var endpoint = this.state.isLiveOnly ? '/api/live/' + this.state.selectedSport : '/api/schedule/' + this.state.selectedSport + '/' + dateStr;
@@ -1364,7 +1494,9 @@ var V = {
     if(panel) {
         panel.classList.remove('open');
         setTimeout(function() {
-            panel.innerHTML = '<div class="detail-empty"><div class="de-icon">⚽</div><div class="de-text">Detayları görmek için bir maça tıklayın</div></div>';
+            var sObj = SPORTS.find(function(x){ return x.id === V.state.selectedSport; });
+            var ic = sObj ? sObj.icon : '⚽';
+            panel.innerHTML = '<div class="detail-empty"><div class="de-icon" id="detailEmptyIcon">' + ic + '</div><div class="de-text">Detayları görmek için bir maça tıklayın</div></div>';
         }, 300);
     }
     this.state.selectedMatch = null;
@@ -1655,11 +1787,15 @@ var T = {
       '</div><div class="match-fav' + (isFav ? ' faved' : '') + '" data-fav="' + safeId + '" onclick="V.toggleFav(' + safeId + ',event)">\u2605</div></div>';
   },
 
+  // 🚀 YENİ: CHEVRON OKU İLE LİGİ KÜÇÜLTME BÖLÜMÜ 🚀
   leagueGroup: function(name, id, matches) {
     var cards = ''; for (var i = 0; i < matches.length; i++) cards += this.matchCard(matches[i]);
     var safeId = esc(String(id));
     var imgHtml = id === 'fav' ? '⭐' : '<img src="https://api.sofascore.app/api/v1/unique-tournament/' + safeId + '/image" onerror="this.style.display=\'none\'" width="22" height="22">';
-    return '<div class="league-group"><div class="league-header">' + imgHtml + '<span style="margin-left:6px">' + esc(name) + '</span></div>' + cards + '</div>';
+    var chevron = '<svg class="lg-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+    return '<div class="league-group expanded" id="lg-' + safeId + '">' +
+           '<div class="league-header" onclick="V.toggleLeague(\'lg-' + safeId + '\')">' + imgHtml + '<span style="margin-left:6px; flex:1;">' + esc(name) + '</span>' + chevron + '</div>' + 
+           '<div class="league-matches">' + cards + '</div></div>';
   },
 
   statBar: function(s) {
@@ -1775,7 +1911,6 @@ var T = {
         return lHtml + '</div>';
     };
 
-    // EKSİK OYUNCULAR (YENİ FONKSİYON)
     var renderMissing = function(missingPlayers) {
         if (!missingPlayers || missingPlayers.length === 0) return '';
         var mHtml = '<div class="lineup-section-title" style="color:var(--red); border-color:var(--red-dim); margin-top:16px;">Eksik & Şüpheli Oyuncular</div><div class="lineup-list">';
@@ -1807,9 +1942,7 @@ var T = {
     var hSubs = hp.filter(function(p){ return p.substitute; }); 
     if(hSubs.length > 0) html += renderList(hSubs, 'Yedekler'); 
     
-    // Ev sahibi takım eksikleri
     html += renderMissing(hm);
-
     html += '</div>';
     
     html += '<div class="team-lineup-wrapper" style="margin-top:30px;"><div class="team-lineup-header">' + starterLabel + ' - Deplasman</div>';
@@ -1822,9 +1955,7 @@ var T = {
     var aSubs = ap.filter(function(p){ return p.substitute; }); 
     if(aSubs.length > 0) html += renderList(aSubs, 'Yedekler'); 
     
-    // Deplasman takımı eksikleri
     html += renderMissing(am);
-
     html += '</div>';
 
     return html;
@@ -1973,15 +2104,12 @@ var Search = {
       return;
     }
 
-    // Maç yükleme alanı + takımlar + oyuncular
     var html = '';
 
-    // En üstte maç placeholder (sonra dolacak)
     if (teams.length > 0) {
       html += '<div id="searchMatchSection"><div class="search-loading" style="padding:12px;"><div class="spinner" style="width:14px;height:14px;"></div> Maçlar yükleniyor...</div></div>';
     }
 
-    // Takımlar
     if (teams.length > 0) {
       html += '<div class="search-section-title">TAKIMLAR</div>';
       for (var i = 0; i < Math.min(teams.length, 5); i++) {
@@ -1994,7 +2122,6 @@ var Search = {
       }
     }
 
-    // Oyuncular
     if (players.length > 0) {
       html += '<div class="search-section-title">OYUNCULAR</div>';
       for (var j = 0; j < Math.min(players.length, 5); j++) {
@@ -2010,7 +2137,6 @@ var Search = {
     }
     dropdown.innerHTML = html;
 
-    // Takımların en yakın maçlarını async yükle
     if (teams.length > 0) {
       Search._loadMatchesForTeams(teams.slice(0, 3));
     }
@@ -2029,12 +2155,10 @@ var Search = {
         if (!data || !data.matches) return;
         var matches = data.matches;
 
-        // Canlı maçlar
         matches.filter(function(m) { return m.status === 'live'; }).forEach(function(m) {
           if (!seenIds[m.id]) { seenIds[m.id] = true; matchItems.unshift({ match: m, type: 'live' }); }
         });
 
-        // En yakın planlanmış maç
         var upcoming = matches.filter(function(m) { return m.status === 'scheduled' && m.timestamp > Date.now() - 86400000; });
         upcoming.sort(function(a, b) { return a.timestamp - b.timestamp; });
         if (upcoming.length > 0 && !seenIds[upcoming[0].id]) {
@@ -2134,15 +2258,13 @@ var Search = {
         matches.forEach(function(m) {
           if (m.status === 'live') live.push(m);
           else if (m.status === 'scheduled') {
-            // Geçmiş tarihli "scheduled" maçları filtreleme (ertelenmiş/iptal)
-            if (m.timestamp > now - 86400000) upcoming.push(m); // 1 gün tolerans
+            if (m.timestamp > now - 86400000) upcoming.push(m); 
           }
           else finished.push(m);
         });
         upcoming.sort(function(a,b){ return a.timestamp - b.timestamp; });
         finished.sort(function(a,b){ return b.timestamp - a.timestamp; });
 
-        // miniMatchCard'lar yerine geri butonlu versiyon
         var makeCard = function(m) {
           var hasScore = m.homeScore !== null && m.homeScore !== undefined;
           var hS = hasScore ? safeNum(m.homeScore) : '-'; var aS = hasScore ? safeNum(m.awayScore) : '-';
@@ -2177,11 +2299,9 @@ var Search = {
     V.apiFetch('/api/event/' + matchId).then(function(data) {
       V.state.matchCache[matchId] = { match: data.event };
       V.renderDetail(matchId);
-      // Geri butonunu takım paneline yönlendir
       setTimeout(function() {
         var backBtn = panel.querySelector('.btn-back-panel');
         if (!backBtn) {
-          // Geri butonu yoksa ekle
           var header = panel.querySelector('.detail-header');
           if (header) {
             var btn = document.createElement('div');
@@ -2224,7 +2344,6 @@ var Search = {
   }
 };
 
-// V.init'e Search.init() bağla
 var _origVInit = V.init;
 V.init = function() { _origVInit.call(this); Search.init(); };
 
