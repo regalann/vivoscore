@@ -109,6 +109,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .btn-toggle:hover { color: var(--text); background:var(--surface2); } 
 .live-toggle.active { background: var(--red-dim); color: var(--red); border-color: var(--red); }
 .fav-toggle.active { background: var(--yellow-dim); color: var(--yellow); border-color: var(--yellow); }
+.standings-toggle.active { background: var(--brand-dim); color: var(--brand); border-color: var(--brand); }
 .standings-btn-wrap { position: relative; display: inline-flex; }
 .standings-dropdown { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 12px 36px rgba(0,0,0,0.5); z-index: 300; display: none; min-width: 280px; padding: 12px; animation: fadeUp 0.2s ease; }
 .standings-dropdown.active { display: block; }
@@ -859,6 +860,10 @@ var V = {
     var favBtn = document.getElementById('favToggleBtn');
     if(favBtn) favBtn.classList.toggle('active', page === 'favorites');
 
+    // Puan durumu butonu aktiflik
+    var stBtn = document.getElementById('standingsToggleBtn');
+    if(stBtn) stBtn.classList.toggle('active', page === 'standings');
+
     var dateRow = document.getElementById('tbDateRow');
     var actionRow = document.getElementById('tbActionRow');
 
@@ -1028,6 +1033,11 @@ var V = {
     }, 200);
   },
   toggleStandingsDropdown: function() {
+    // Eğer zaten puan durumu sayfasındaysak, maçlara dön
+    if (this.state.page === 'standings') {
+      this.setPage('matches');
+      return;
+    }
     var dd = document.getElementById('standingsDropdown');
     if (!dd) return;
     if (dd.classList.contains('active')) { dd.classList.remove('active'); }
@@ -1040,10 +1050,16 @@ var V = {
       this.state.selectedSport = sportId;
       this.renderSports();
     }
-    this.setPage('standings');
-    // After setPage loads default, reload with specific league
-    var self = this;
-    setTimeout(function() { self.loadStandings(lgId); }, 50);
+    // Sayfa state'ini güncelle ama loadStandings'i kendimiz çağıralım
+    this.state.page = 'standings';
+    var favBtn = document.getElementById('favToggleBtn');
+    if(favBtn) favBtn.classList.remove('active');
+    var stBtn = document.getElementById('standingsToggleBtn');
+    if(stBtn) stBtn.classList.add('active');
+    var dateRow = document.getElementById('tbDateRow');
+    if(dateRow) dateRow.style.display = 'none';
+    this.closeDetail();
+    this.loadStandings(lgId);
   },
 
   toggleSingleScore: function(matchId, ev) {
@@ -1115,8 +1131,8 @@ var V = {
     var sObj = SPORTS.find(function(x){ return x.id === id; });
     var iconEl = document.getElementById('detailEmptyIcon'); if (iconEl && sObj) iconEl.textContent = sObj.icon;
     
-    if (this.state.page === 'matches') this.loadMatches(); 
-    else if (this.state.page === 'standings') this.loadStandings();
+    // Her zaman maç sayfasına dön
+    this.setPage('matches');
   },
 
   _popMenuTimer: null,
@@ -1229,30 +1245,76 @@ var V = {
     } else {
        document.querySelectorAll('.st-lg-btn').forEach(function(btn) {
           btn.classList.remove('active');
-          if(btn.getAttribute('onclick').includes(activeLg)) btn.classList.add('active');
+          if(btn.getAttribute('onclick').indexOf(activeLg) !== -1) btn.classList.add('active');
        });
        document.getElementById('standingsContent').innerHTML = T.loading('Puan durumu yükleniyor...');
     }
 
     this.apiFetch('/api/standings/' + activeLg).then(function(data) {
        var content = document.getElementById('standingsContent'); if (!content) return;
-       if (!data || data.length === 0) { content.innerHTML = T.empty('Bu lig için puan durumu verisi bulunamadı.'); return; }
+       
+       // Gelen veriyi normalize et - farklı API formatlarını destekle
+       var groups = [];
+       if (Array.isArray(data)) {
+         // data doğrudan bir dizi ise
+         if (data.length > 0 && data[0].rows) {
+           // Her element bir grup (name + rows)
+           groups = data;
+         } else if (data.length > 0 && data[0].team) {
+           // Doğrudan satır dizisi
+           groups = [{ name: '', rows: data }];
+         } else if (data.length > 0 && data[0].standings) {
+           // İç içe standings yapısı
+           data.forEach(function(item) {
+             if (Array.isArray(item.standings)) {
+               groups = groups.concat(item.standings);
+             }
+           });
+         } else {
+           groups = data;
+         }
+       } else if (data && data.standings) {
+         groups = Array.isArray(data.standings) ? data.standings : [data.standings];
+       } else if (data && data.rows) {
+         groups = [data];
+       }
+       
+       if (!groups || groups.length === 0) { 
+         content.innerHTML = T.empty('Bu lig için puan durumu verisi bulunamadı.'); 
+         return; 
+       }
        
        var html = '';
-       data.forEach(function(group) {
-          if(group.name) html += '<div class="league-group-title" style="font-size:15px; font-weight:800; margin-bottom:12px; margin-top:10px;">' + esc(group.name) + ' Puan Durumu</div>';
+       groups.forEach(function(group) {
+          if(!group) return;
+          var groupName = group.name || group.tournament_name || '';
+          if(groupName) html += '<div style="font-size:15px; font-weight:800; margin-bottom:12px; margin-top:10px; color:var(--text);">' + esc(groupName) + '</div>';
+          
           html += '<div class="standings-wrap"><table class="standings-table"><thead><tr>' +
                   '<th>#</th><th style="text-align:left">Takım</th><th>O</th><th>G</th><th>B</th><th>M</th><th>A</th><th>Y</th><th>Av</th><th>P</th>' +
                   '</tr></thead><tbody>';
           
-          var rows = group.rows || [];
+          var rows = group.rows || group.teamStandings || [];
+          if (rows.length === 0 && Array.isArray(group)) { rows = group; }
+          
           rows.forEach(function(r) {
-             var O = r.matches || 0; var G = r.wins || 0; var B = r.draws || 0; var M = r.losses || 0;
-             var A = r.scoresFor || 0; var Y = r.scoresAgainst || 0; var Av = A - Y; var Pts = r.points !== undefined ? r.points : '-';
+             if(!r) return;
+             var team = r.team || {};
+             var teamId = team.id || 0;
+             var teamName = team.name || team.shortName || 'Bilinmiyor';
+             var pos = r.position || r.rank || '-';
+             var O = r.matches || r.played || r.games || 0;
+             var G = r.wins || r.victories || 0;
+             var B = r.draws !== undefined ? r.draws : (r.ties || 0);
+             var M = r.losses || r.defeats || 0;
+             var A = r.scoresFor || r.goalsScored || r.goalsFor || r.scored || 0;
+             var Y = r.scoresAgainst || r.goalsConceded || r.goalsAgainst || r.conceded || 0;
+             var Av = A - Y;
+             var Pts = r.points !== undefined ? r.points : '-';
              
              html += '<tr>' +
-                     '<td class="st-pos">' + r.position + '</td>' +
-                     '<td><div class="st-team" style="cursor:pointer" onclick="Search.pickTeam(' + r.team.id + ')"><img src="https://api.sofascore.app/api/v1/team/'+r.team.id+'/image" onerror="this.style.display=\'none\'"> ' + esc(r.team.name) + '</div></td>' +
+                     '<td class="st-pos">' + pos + '</td>' +
+                     '<td><div class="st-team" style="cursor:pointer" onclick="Search.pickTeam(' + teamId + ')"><img src="https://api.sofascore.app/api/v1/team/'+teamId+'/image" onerror="this.style.display=\'none\'"> ' + esc(teamName) + '</div></td>' +
                      '<td>' + O + '</td>' +
                      '<td>' + G + '</td>' +
                      '<td>' + B + '</td>' +
@@ -1265,10 +1327,15 @@ var V = {
           });
           html += '</tbody></table></div>';
        });
-       content.innerHTML = html;
+       
+       if(!html) {
+         content.innerHTML = T.empty('Bu lig için puan durumu verisi bulunamadı.');
+       } else {
+         content.innerHTML = html;
+       }
     }).catch(function(err) {
        var content = document.getElementById('standingsContent');
-       if(content) content.innerHTML = T.empty('Puan durumu yüklenirken hata oluştu.');
+       if(content) content.innerHTML = T.empty('Puan durumu yüklenirken hata oluştu: ' + (err.message || 'Bağlantı hatası'));
     });
   },
 
