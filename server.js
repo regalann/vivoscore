@@ -300,22 +300,59 @@ app.get('/api/standings/:id', async (req, res) => {
     const cached = getCached(cacheKey);
     if (cached) return res.json(cached);
 
-    // Ana kaynaktan doğrudan ve hatasız çekim (Fallback yapısı)
-    let tData;
-    try { tData = await api(`/unique-tournament/${tId}`); } 
-    catch(e) { 
-      try { tData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}`, { 'User-Agent': 'Mozilla/5.0' }); }
-      catch(e2) { throw new Error('Turnuva bilgisi alınamadı'); }
+    // Sezon ID'sini bul - birden fazla yol dene
+    let seasonId = null;
+
+    // Yol 1: /unique-tournament/{id} den currentSeason çek
+    try {
+      const tData = await api(`/unique-tournament/${tId}`);
+      seasonId = tData?.uniqueTournament?.currentSeason?.id 
+              || tData?.tournament?.currentSeason?.id 
+              || tData?.currentSeason?.id;
+    } catch(e) {}
+
+    // Yol 2: /unique-tournament/{id}/seasons den ilk sezonu al
+    if (!seasonId) {
+      try {
+        const seasonsData = await api(`/unique-tournament/${tId}/seasons`);
+        const seasons = seasonsData?.seasons || seasonsData || [];
+        if (Array.isArray(seasons) && seasons.length > 0) {
+          seasonId = seasons[0].id;
+        }
+      } catch(e) {}
     }
 
-    const seasonId = tData?.uniqueTournament?.currentSeason?.id || tData?.tournament?.currentSeason?.id || tData?.currentSeason?.id;
+    // Yol 3: Sofascore fallback
+    if (!seasonId) {
+      try {
+        const tData2 = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}`, { 'User-Agent': 'Mozilla/5.0' });
+        seasonId = tData2?.uniqueTournament?.currentSeason?.id || tData2?.currentSeason?.id;
+      } catch(e) {}
+    }
+
+    // Yol 4: Sofascore seasons fallback
+    if (!seasonId) {
+      try {
+        const sData2 = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/seasons`, { 'User-Agent': 'Mozilla/5.0' });
+        const seasons2 = sData2?.seasons || sData2 || [];
+        if (Array.isArray(seasons2) && seasons2.length > 0) {
+          seasonId = seasons2[0].id;
+        }
+      } catch(e) {}
+    }
+
     if (!seasonId) throw new Error('Sezon bulunamadı');
 
+    // Puan durumunu çek
     let sData;
-    try { sData = await api(`/unique-tournament/${tId}/season/${seasonId}/standings/total`); } 
-    catch(e) { 
-      try { sData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/season/${seasonId}/standings/total`, { 'User-Agent': 'Mozilla/5.0' }); }
-      catch(e2) { throw new Error('Puan durumu verisi alınamadı'); }
+    try { 
+      sData = await api(`/unique-tournament/${tId}/season/${seasonId}/standings/total`); 
+    } catch(e) { 
+      try { 
+        sData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/season/${seasonId}/standings/total`, { 'User-Agent': 'Mozilla/5.0' }); 
+      } catch(e2) { 
+        throw new Error('Puan durumu verisi alınamadı'); 
+      }
     }
 
     // Farklı API formatlarını normalize et
