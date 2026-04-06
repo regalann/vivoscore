@@ -303,24 +303,59 @@ app.get('/api/standings/:id', async (req, res) => {
     // Ana kaynaktan doğrudan ve hatasız çekim (Fallback yapısı)
     let tData;
     try { tData = await api(`/unique-tournament/${tId}`); } 
-    catch(e) { tData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}`, { 'User-Agent': 'Mozilla/5.0' }); }
+    catch(e) { 
+      try { tData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}`, { 'User-Agent': 'Mozilla/5.0' }); }
+      catch(e2) { throw new Error('Turnuva bilgisi alınamadı'); }
+    }
 
-    const seasonId = tData?.uniqueTournament?.currentSeason?.id || tData?.tournament?.currentSeason?.id;
+    const seasonId = tData?.uniqueTournament?.currentSeason?.id || tData?.tournament?.currentSeason?.id || tData?.currentSeason?.id;
     if (!seasonId) throw new Error('Sezon bulunamadı');
 
     let sData;
     try { sData = await api(`/unique-tournament/${tId}/season/${seasonId}/standings/total`); } 
-    catch(e) { sData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/season/${seasonId}/standings/total`, { 'User-Agent': 'Mozilla/5.0' }); }
+    catch(e) { 
+      try { sData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/season/${seasonId}/standings/total`, { 'User-Agent': 'Mozilla/5.0' }); }
+      catch(e2) { throw new Error('Puan durumu verisi alınamadı'); }
+    }
 
+    // Farklı API formatlarını normalize et
     let standings = [];
-    if (sData.standings) standings = sData.standings;
-    else if (Array.isArray(sData) && sData[0] && sData[0].standings) standings = sData[0].standings;
-    else if (Array.isArray(sData)) standings = sData;
+    if (sData && sData.standings && Array.isArray(sData.standings)) {
+      standings = sData.standings;
+    } else if (Array.isArray(sData) && sData.length > 0) {
+      if (sData[0].standings) {
+        sData.forEach(s => { if (Array.isArray(s.standings)) standings = standings.concat(s.standings); });
+      } else if (sData[0].rows) {
+        standings = sData;
+      } else {
+        standings = [{ name: '', rows: sData }];
+      }
+    }
 
-    setCache(cacheKey, standings);
-    res.json(standings);
+    // Her grup için satırları normalize et
+    const normalizedStandings = standings.map(group => {
+      const rows = (group.rows || group.teamStandings || []).map(r => {
+        const team = r.team || {};
+        return sanitizeObject({
+          position: r.position || r.rank || 0,
+          team: { id: Number(team.id) || 0, name: team.name || team.shortName || '' },
+          matches: r.matches || r.played || r.games || 0,
+          wins: r.wins || r.victories || 0,
+          draws: r.draws !== undefined ? r.draws : (r.ties || 0),
+          losses: r.losses || r.defeats || 0,
+          scoresFor: r.scoresFor || r.goalsScored || r.goalsFor || r.scored || 0,
+          scoresAgainst: r.scoresAgainst || r.goalsConceded || r.goalsAgainst || r.conceded || 0,
+          points: r.points !== undefined ? r.points : 0
+        });
+      });
+      return { name: group.name || group.tournament?.name || '', rows: rows };
+    });
+
+    setCache(cacheKey, normalizedStandings);
+    res.json(normalizedStandings);
   } catch (err) {
-    res.status(500).json({ error: 'Puan durumu yüklenemedi' });
+    console.error('Standings error:', err.message);
+    res.status(500).json({ error: 'Puan durumu yüklenemedi: ' + (err.message || '') });
   }
 });
 
