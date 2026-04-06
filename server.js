@@ -292,7 +292,6 @@ app.get('/api/player/:id/details', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
-// 🚀 GÜÇLENDİRİLMİŞ PUAN DURUMU API ENDPOINT'İ 🚀
 app.get('/api/standings/:id', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
@@ -305,18 +304,14 @@ app.get('/api/standings/:id', async (req, res) => {
 
     try {
       const tData = await api(`/unique-tournament/${tId}`);
-      seasonId = tData?.uniqueTournament?.currentSeason?.id 
-              || tData?.tournament?.currentSeason?.id 
-              || tData?.currentSeason?.id;
+      seasonId = tData?.uniqueTournament?.currentSeason?.id || tData?.tournament?.currentSeason?.id || tData?.currentSeason?.id;
     } catch(e) {}
 
     if (!seasonId) {
       try {
         const seasonsData = await api(`/unique-tournament/${tId}/seasons`);
         const seasons = seasonsData?.seasons || seasonsData || [];
-        if (Array.isArray(seasons) && seasons.length > 0) {
-          seasonId = seasons[0].id;
-        }
+        if (Array.isArray(seasons) && seasons.length > 0) seasonId = seasons[0].id;
       } catch(e) {}
     }
 
@@ -331,9 +326,7 @@ app.get('/api/standings/:id', async (req, res) => {
       try {
         const sData2 = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/seasons`, { 'User-Agent': 'Mozilla/5.0' });
         const seasons2 = sData2?.seasons || sData2 || [];
-        if (Array.isArray(seasons2) && seasons2.length > 0) {
-          seasonId = seasons2[0].id;
-        }
+        if (Array.isArray(seasons2) && seasons2.length > 0) seasonId = seasons2[0].id;
       } catch(e) {}
     }
 
@@ -389,7 +382,7 @@ app.get('/api/standings/:id', async (req, res) => {
   }
 });
 
-// 🚀 EŞLEŞME VE PLAYOFF (CUPTREES) API ENDPOINT'İ 🚀
+// 🚀 AĞAÇ VERİSİ (CUPTREES) API'Sİ 🚀
 app.get('/api/cuptrees/:id', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
@@ -407,30 +400,73 @@ app.get('/api/cuptrees/:id', async (req, res) => {
 
     if (!seasonId) {
       try {
+        const tData2 = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}`, { 'User-Agent': 'Mozilla/5.0' });
+        seasonId = tData2?.uniqueTournament?.currentSeason?.id || tData2?.currentSeason?.id;
+      } catch(e) {}
+    }
+
+    if (!seasonId) {
+      try {
         const sData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/seasons`, { 'User-Agent': 'Mozilla/5.0' });
         const seasons = sData?.seasons || sData || [];
         if (Array.isArray(seasons) && seasons.length > 0) seasonId = seasons[0].id;
       } catch(e) {}
     }
 
-    if (!seasonId) throw new Error('Sezon bulunamadı');
+    if (!seasonId) {
+        return res.json({ cuptrees: [] }); 
+    }
 
-    let treeData;
+    let treeData = { cuptrees: [] };
     try { 
       treeData = await api(`/unique-tournament/${tId}/season/${seasonId}/cuptrees`); 
     } catch(e) { 
       try { 
-        treeData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/season/${seasonId}/cuptrees`, { 'User-Agent': 'Mozilla/5.0' }); 
+        treeData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/season/${seasonId}/cuptrees`, { 
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }); 
       } catch(e2) { 
-        throw new Error('Eşleşme verisi alınamadı'); 
+        return res.json({ cuptrees: [] }); 
       }
+    }
+
+    if (Array.isArray(treeData)) {
+        treeData = { cuptrees: treeData };
+    } else if (!treeData || !treeData.cuptrees) {
+        treeData = { cuptrees: [] };
     }
 
     setCache(cacheKey, treeData);
     res.json(treeData);
   } catch (err) {
-    console.error('Cuptrees error:', err.message);
-    res.status(500).json({ error: 'Eşleşmeler yüklenemedi: ' + (err.message || '') });
+    res.json({ cuptrees: [] });
+  }
+});
+
+// 🚀 YENİ: AĞAÇ YOKSA YAKLAŞAN MAÇLARI/EŞLEŞMELERİ ÇEKME APİ'Sİ 🚀
+app.get('/api/tournament/:id/next', async (req, res) => {
+  if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
+  try {
+    const tId = req.params.id;
+    const cacheKey = `tournext_${tId}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
+
+    let data;
+    try {
+      data = await api(`/unique-tournament/${tId}/events/next/0`);
+    } catch(e) {
+      data = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/events/next/0`, { 
+          'User-Agent': 'Mozilla/5.0'
+      }).catch(() => ({events: []}));
+    }
+    
+    const events = (data.events || []).map(e => formatEvent(e));
+    const result = { matches: events };
+    setCache(cacheKey, result);
+    res.json(result);
+  } catch (err) {
+    res.json({ matches: [] });
   }
 });
 
