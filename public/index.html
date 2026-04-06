@@ -1019,7 +1019,7 @@ var V = {
     
     for (var i = 0; i < SPORTS.length; i++) {
       var sp = SPORTS[i];
-      if (allowedStandingsSports.indexOf(sp.id) === -1) continue;
+      if (allowedStandingsSports.indexOf(sp.id) === -1) continue; 
       
       var leagues = POPULAR_LEAGUES[sp.id];
       if (!leagues || leagues.length === 0) continue;
@@ -1045,6 +1045,7 @@ var V = {
     }, 200);
   },
   toggleStandingsDropdown: function() {
+    // Eğer zaten puan durumu sayfasındaysak, maçlara dön
     if (this.state.page === 'standings') {
       this.setPage('matches');
       return;
@@ -1061,6 +1062,7 @@ var V = {
       this.state.selectedSport = sportId;
       this.renderSports();
     }
+    // Sayfa state'ini güncelle ama loadStandings'i kendimiz çağıralım
     this.state.page = 'standings';
     var favBtn = document.getElementById('favToggleBtn');
     if(favBtn) favBtn.classList.remove('active');
@@ -1141,6 +1143,7 @@ var V = {
     var sObj = SPORTS.find(function(x){ return x.id === id; });
     var iconEl = document.getElementById('detailEmptyIcon'); if (iconEl && sObj) iconEl.textContent = sObj.icon;
     
+    // Her zaman maç sayfasına dön
     this.setPage('matches');
   },
 
@@ -1276,7 +1279,7 @@ var V = {
            });
          } else {
            groups = data;
-       }
+         }
        } else if (data && data.standings) {
          groups = Array.isArray(data.standings) ? data.standings : [data.standings];
        } else if (data && data.rows) {
@@ -1378,14 +1381,18 @@ var V = {
             
             html += '<div class="bracket-match-block">';
             events.forEach(function(m) {
-              var hTeam = m.homeTeam?.shortName || m.homeTeam?.name || 'Belirsiz';
-              var aTeam = m.awayTeam?.shortName || m.awayTeam?.name || 'Belirsiz';
+              var homeT = m.homeTeam || {};
+              var awayT = m.awayTeam || {};
+              var hTeam = homeT.shortName || homeT.name || 'Belirsiz';
+              var aTeam = awayT.shortName || awayT.name || 'Belirsiz';
               
-              var hScore = m.homeScore?.display !== undefined ? m.homeScore.display : (m.homeScore?.current !== undefined ? m.homeScore.current : '-');
-              var aScore = m.awayScore?.display !== undefined ? m.awayScore.display : (m.awayScore?.current !== undefined ? m.awayScore.current : '-');
+              var hScoreData = m.homeScore || {};
+              var aScoreData = m.awayScore || {};
+              var hScore = hScoreData.display !== undefined ? hScoreData.display : (hScoreData.current !== undefined ? hScoreData.current : '-');
+              var aScore = aScoreData.display !== undefined ? aScoreData.display : (aScoreData.current !== undefined ? aScoreData.current : '-');
               
               var timeStr = '';
-              if (m.status?.type === 'notstarted' && m.startTimestamp) {
+              if (m.status && m.status.type === 'notstarted' && m.startTimestamp) {
                   var d = new Date(m.startTimestamp * 1000);
                   timeStr = ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth()+1)).slice(-2);
                   hScore = timeStr; aScore = 'v';
