@@ -443,6 +443,17 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     .pm-grid { grid-template-columns: 1fr; }
 }
 @media (max-width:1200px) and (min-width:769px) { .detail-panel { width:340px; } }
+
+/* 🚀 EŞLEŞME AĞACI VE PLAYOFF CSS 🚀 */
+.brackets-container { width: 100%; overflow-x: auto; padding-bottom: 20px; }
+.bracket-scroll-area { display: flex; gap: 32px; min-width: max-content; margin-top: 10px; }
+.bracket-round { display: flex; flex-direction: column; gap: 16px; justify-content: center; }
+.bracket-round-title { font-size: 12px; font-weight: 800; color: var(--text3); text-align: center; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+.bracket-match-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px; display: flex; flex-direction: column; gap: 2px; min-width: 180px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; }
+.b-match { cursor: pointer; border: 1px solid transparent; border-radius: 4px; transition: 0.2s; padding: 6px; }
+.b-match:hover { background: var(--surface2); border-color: var(--border2); }
+.b-team { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; padding: 4px; color: var(--text); }
+.b-score { font-weight: 800; color: var(--brand); background: var(--bg2); padding: 2px 6px; border-radius: 4px; font-size: 12px; border: 1px solid var(--border); }
 </style>
 </head>
 <body>
@@ -808,6 +819,7 @@ var POPULAR_LEAGUES = {
   'football': [
     {name: 'Şampiyonlar Ligi', id: '7', img: 'https://api.sofascore.app/api/v1/unique-tournament/7/image'},
     {name: 'Avrupa Ligi', id: '679', img: 'https://api.sofascore.app/api/v1/unique-tournament/679/image'},
+    {name: 'Konferans Ligi', id: '17015', img: 'https://api.sofascore.app/api/v1/unique-tournament/17015/image'},
     {name: 'Süper Lig', id: '52', img: 'https://api.sofascore.app/api/v1/unique-tournament/52/image'},
     {name: '1. Lig', id: '53', img: 'https://api.sofascore.app/api/v1/unique-tournament/53/image'},
     {name: 'Premier League', id: '17', img: 'https://api.sofascore.app/api/v1/unique-tournament/17/image'},
@@ -823,10 +835,6 @@ var POPULAR_LEAGUES = {
   'volleyball': [
     {name: 'Efeler Ligi', id: '13598', img: 'https://api.sofascore.app/api/v1/unique-tournament/13598/image'},
     {name: 'Sultanlar Ligi', id: '13615', img: 'https://api.sofascore.app/api/v1/unique-tournament/13615/image'}
-  ],
-  'esports': [
-    {name: 'LoL Worlds', id: '16395', img: 'https://api.sofascore.app/api/v1/unique-tournament/16395/image'},
-    {name: 'CS2 Major', id: '18912', img: 'https://api.sofascore.app/api/v1/unique-tournament/18912/image'}
   ]
 };
 
@@ -1005,13 +1013,17 @@ var V = {
     clearTimeout(this._standingsDropTimer);
     var dd = document.getElementById('standingsDropdown');
     if (!dd) return;
-    // Build dropdown content with sports that have leagues
     var html = '<div class="sd-title">Puan Durumu</div>';
-    var sportKeys = Object.keys(POPULAR_LEAGUES);
+    
+    var allowedStandingsSports = ['football', 'basketball', 'volleyball'];
+    
     for (var i = 0; i < SPORTS.length; i++) {
       var sp = SPORTS[i];
+      if (allowedStandingsSports.indexOf(sp.id) === -1) continue;
+      
       var leagues = POPULAR_LEAGUES[sp.id];
       if (!leagues || leagues.length === 0) continue;
+      
       html += '<div class="sd-sport" onclick="event.stopPropagation()">';
       html += '<span class="sd-icon">' + sp.icon + '</span>' + esc(sp.name) + '</div>';
       html += '<div class="sd-leagues">';
@@ -1033,7 +1045,6 @@ var V = {
     }, 200);
   },
   toggleStandingsDropdown: function() {
-    // Eğer zaten puan durumu sayfasındaysak, maçlara dön
     if (this.state.page === 'standings') {
       this.setPage('matches');
       return;
@@ -1050,7 +1061,6 @@ var V = {
       this.state.selectedSport = sportId;
       this.renderSports();
     }
-    // Sayfa state'ini güncelle ama loadStandings'i kendimiz çağıralım
     this.state.page = 'standings';
     var favBtn = document.getElementById('favToggleBtn');
     if(favBtn) favBtn.classList.remove('active');
@@ -1131,7 +1141,6 @@ var V = {
     var sObj = SPORTS.find(function(x){ return x.id === id; });
     var iconEl = document.getElementById('detailEmptyIcon'); if (iconEl && sObj) iconEl.textContent = sObj.icon;
     
-    // Her zaman maç sayfasına dön
     this.setPage('matches');
   },
 
@@ -1253,18 +1262,13 @@ var V = {
     this.apiFetch('/api/standings/' + activeLg).then(function(data) {
        var content = document.getElementById('standingsContent'); if (!content) return;
        
-       // Gelen veriyi normalize et - farklı API formatlarını destekle
        var groups = [];
        if (Array.isArray(data)) {
-         // data doğrudan bir dizi ise
          if (data.length > 0 && data[0].rows) {
-           // Her element bir grup (name + rows)
            groups = data;
          } else if (data.length > 0 && data[0].team) {
-           // Doğrudan satır dizisi
            groups = [{ name: '', rows: data }];
          } else if (data.length > 0 && data[0].standings) {
-           // İç içe standings yapısı
            data.forEach(function(item) {
              if (Array.isArray(item.standings)) {
                groups = groups.concat(item.standings);
@@ -1272,7 +1276,7 @@ var V = {
            });
          } else {
            groups = data;
-         }
+       }
        } else if (data && data.standings) {
          groups = Array.isArray(data.standings) ? data.standings : [data.standings];
        } else if (data && data.rows) {
@@ -1333,9 +1337,77 @@ var V = {
        } else {
          content.innerHTML = html;
        }
+
+       var needsBracket = ['7', '679', '17015', '132'].indexOf(String(activeLg)) !== -1;
+       if (needsBracket) {
+           content.insertAdjacentHTML('beforeend', '<div id="bracketContent" style="margin-top:40px;">' + T.loading('Playoff/Eşleşme tablosu kontrol ediliyor...') + '</div>');
+           V.loadBrackets(activeLg);
+       }
+       
     }).catch(function(err) {
        var content = document.getElementById('standingsContent');
        if(content) content.innerHTML = T.empty('Puan durumu yüklenirken hata oluştu: ' + (err.message || 'Bağlantı hatası'));
+    });
+  },
+
+  loadBrackets: function(lgId) {
+    this.apiFetch('/api/cuptrees/' + lgId).then(function(data) {
+      var el = document.getElementById('bracketContent');
+      if (!el) return;
+      
+      if (!data || !data.cuptrees || data.cuptrees.length === 0) {
+        el.innerHTML = '<div style="text-align:center; color:var(--text3); font-size:14px; padding:20px;">Henüz eşleşme/playoff tablosu oluşmamış veya bulunamadı.</div>';
+        return;
+      }
+      
+      var html = '<div class="stat-group-title" style="font-size:16px; color:var(--text);">🏆 Eşleşmeler & Playoff Tablosu</div><div class="brackets-container">';
+      
+      data.cuptrees.forEach(function(tree) {
+        if (tree.name) html += '<div style="font-size:14px; font-weight:800; margin:20px 0 10px; color:var(--brand);">' + esc(tree.name) + '</div>';
+        
+        var rounds = tree.rounds || [];
+        html += '<div class="bracket-scroll-area">';
+        rounds.forEach(function(round) {
+          html += '<div class="bracket-round">';
+          html += '<div class="bracket-round-title">' + esc(round.description || 'Tur') + '</div>';
+          
+          var blocks = round.blocks || [];
+          blocks.forEach(function(block) {
+            var events = block.events || block.matches || [];
+            if(events.length === 0) return;
+            
+            html += '<div class="bracket-match-block">';
+            events.forEach(function(m) {
+              var hTeam = m.homeTeam?.shortName || m.homeTeam?.name || 'Belirsiz';
+              var aTeam = m.awayTeam?.shortName || m.awayTeam?.name || 'Belirsiz';
+              
+              var hScore = m.homeScore?.display !== undefined ? m.homeScore.display : (m.homeScore?.current !== undefined ? m.homeScore.current : '-');
+              var aScore = m.awayScore?.display !== undefined ? m.awayScore.display : (m.awayScore?.current !== undefined ? m.awayScore.current : '-');
+              
+              var timeStr = '';
+              if (m.status?.type === 'notstarted' && m.startTimestamp) {
+                  var d = new Date(m.startTimestamp * 1000);
+                  timeStr = ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth()+1)).slice(-2);
+                  hScore = timeStr; aScore = 'v';
+              }
+
+              html += '<div class="b-match" onclick="V.showDetail('+m.id+')">' + 
+                        '<div class="b-team"><span>'+esc(hTeam)+'</span><span class="b-score" style="'+(timeStr?'background:transparent;border:none;color:var(--text3)':'')+'">'+hScore+'</span></div>' +
+                        '<div class="b-team"><span>'+esc(aTeam)+'</span><span class="b-score" style="'+(timeStr?'background:transparent;border:none;color:var(--text3)':'')+'">'+aScore+'</span></div>' +
+                      '</div>';
+            });
+            html += '</div>';
+          });
+          html += '</div>';
+        });
+        html += '</div>';
+      });
+      
+      html += '</div>';
+      el.innerHTML = html;
+    }).catch(function(err) {
+      var el = document.getElementById('bracketContent');
+      if (el) el.innerHTML = T.empty('Eşleşmeler yüklenirken bir sorun oluştu.');
     });
   },
 
@@ -1671,7 +1743,7 @@ var T = {
 
     return '<div onclick="V.showDetail(' + m.id + ', true)" style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; background:var(--surface); border:1px solid var(--border); border-radius:6px; margin-bottom:6px; font-size:13px; cursor:pointer; transition:var(--transition); ' + resClass + '" onmouseover="this.style.background=\'var(--surface2)\'" onmouseout="this.style.background=\'var(--surface)\'">' +
              '<div style="color:var(--text3); width:40px; font-size:11px; font-weight:600;">' + shortDate + '</div>' +
-             '<div style="flex:1; text-align:right; font-weight:600; color:' + (hW ? 'var(--text)' : 'var(--text2)') + '; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + esc(m.homeTeam.shortName) + '</div>' +
+             '<div style="flex:1; text-align:right; font-weight:600; color:' + (hW ? 'var(--text)' : 'var(--text)' : 'var(--text2)') + '; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + esc(m.homeTeam.shortName) + '</div>' +
              '<div style="padding:0 12px; font-weight:800; font-size:14px; color:var(--text)">' + hS + ' - ' + aS + '</div>' +
              '<div style="flex:1; text-align:left; font-weight:600; color:' + (aW ? 'var(--text)' : 'var(--text2)') + '; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + esc(m.awayTeam.shortName) + '</div>' +
            '</div>';
@@ -1701,7 +1773,6 @@ var T = {
     var hideBtnHtml = '<button class="hide-single-btn" title="Skoru Gizle" onclick="V.toggleSingleScore(' + safeId + ', event)">' + (isHidden ? '👁️' : '🙈') + '</button>';
     var mNameEncoded = encodeURIComponent(esc(m.homeTeam.shortName) + ' - ' + esc(m.awayTeam.shortName));
     
-    // FIX: Oranlar container'ını her zaman uygun sporlar için oluştur (sadece henüz başlamamış maçlar için)
     var oddsContainer = '';
     if (isEligibleForOdds && !isLive && !isFin) {
       oddsContainer = '<div class="match-odds-wrapper empty" data-matchid="' + safeId + '" data-mname="' + mNameEncoded + '"></div>';
@@ -1813,7 +1884,6 @@ var T = {
         return mHtml + '</div>';
     };
 
-    // FIX: Ev sahibi takım adını göster
     var homeTeamName = '';
     var awayTeamName = '';
     if (V.state.selectedMatch && V.state.matchCache[V.state.selectedMatch]) {
