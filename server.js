@@ -71,8 +71,7 @@ function getCached(key) {
   let ttl = CACHE_TTL;
   if (key.includes('/live')) ttl = 30 * 1000; 
   if (key.includes('/h2h') || key.includes('/events/last') || key.includes('/events/next')) ttl = 12 * 60 * 60 * 1000;
-  // Puan durumu 15 dakikada bir güncellensin
-  if (key.includes('standings_')) ttl = 15 * 60 * 1000; 
+  if (key.includes('standings_')) ttl = 15 * 60 * 1000; // Puan durumu 15 dk
   
   if (entry && Date.now() - entry.ts < ttl) return entry.data;
   return null;
@@ -174,7 +173,7 @@ const poolFetchLog = new Map();
 app.get('/api/schedule/:sport/:date', async (req, res) => {
   const { sport, date } = req.params;
   if (!validateSport(sport)) return res.status(400).json({ error: 'Geçersiz spor dalı' });
-  if (!validateDate(date)) return res.status(400).json({ error: 'Geçersiz tarih formatı (YYYY-MM-DD)' });
+  if (!validateDate(date)) return res.status(400).json({ error: 'Geçersiz tarih formatı' });
 
   try {
     const prevDay = new Date(date + 'T00:00:00Z');
@@ -221,39 +220,22 @@ setInterval(() => {
 app.get('/api/odds/:matchId', async (req, res) => {
   if (!validateId(req.params.matchId)) return res.status(400).json({ error: 'Geçersiz ID' });
   const { matchId } = req.params;
-  
   const cachedOdds = getCached(`odds_${matchId}`);
   if (cachedOdds) return res.json(cachedOdds);
   
-  let oddsData = null;
-  let sport = 'football';
-
+  let oddsData = null; let sport = 'football';
   try {
     const matchEvent = eventPool.get(Number(matchId));
     let searchQuery = matchId; 
-    if (matchEvent) {
-        sport = matchEvent._sport || 'football'; 
-        if (matchEvent.homeTeam) searchQuery = matchEvent.homeTeam.name; 
-    }
-
-    const response = await fetch(`https://${ODDS_API_HOST}/events/odds?query=${encodeURIComponent(searchQuery)}`, {
-      headers: { 'x-rapidapi-key': ODDS_API_KEY, 'x-rapidapi-host': ODDS_API_HOST },
-      signal: AbortSignal.timeout(4000)
-    });
-
+    if (matchEvent) { sport = matchEvent._sport || 'football'; if (matchEvent.homeTeam) searchQuery = matchEvent.homeTeam.name; }
+    const response = await fetch(`https://${ODDS_API_HOST}/events/odds?query=${encodeURIComponent(searchQuery)}`, { headers: { 'x-rapidapi-key': ODDS_API_KEY, 'x-rapidapi-host': ODDS_API_HOST }, signal: AbortSignal.timeout(4000) });
     if (response.ok) { await response.json(); throw new Error('API eşleşmesi henüz kurulmadı'); } 
     else throw new Error(`OddsPapi Hatası: ${response.status}`);
-
   } catch (error) {
-    if (sport === 'basketball') {
-        oddsData = { sport: 'basketball', match: { home: (Math.random()*(0.8)+1.2).toFixed(2), away: (Math.random()*(0.8)+1.8).toFixed(2) }, totals: { line: (Math.floor(Math.random() * 40) + 140) + 0.5, over: 1.85, under: 1.85 }, handicap: { line: "-" + ((Math.floor(Math.random() * 10) + 2) + 0.5), home: 1.90, away: 1.90 } };
-    } else {
-        oddsData = { sport: 'football', match: { home: (Math.random()*(1.5)+1.2).toFixed(2), draw: (Math.random()*(1.2)+2.8).toFixed(2), away: (Math.random()*(2.5)+2.5).toFixed(2) }, goals: { over: (Math.random()*(0.6)+1.5).toFixed(2), under: (Math.random()*(0.6)+1.6).toFixed(2) }, btts: { yes: (Math.random()*(0.4)+1.6).toFixed(2), no: (Math.random()*(0.4)+1.8).toFixed(2) } };
-    }
+    if (sport === 'basketball') { oddsData = { sport: 'basketball', match: { home: (Math.random()*(0.8)+1.2).toFixed(2), away: (Math.random()*(0.8)+1.8).toFixed(2) }, totals: { line: (Math.floor(Math.random() * 40) + 140) + 0.5, over: 1.85, under: 1.85 }, handicap: { line: "-" + ((Math.floor(Math.random() * 10) + 2) + 0.5), home: 1.90, away: 1.90 } }; }
+    else { oddsData = { sport: 'football', match: { home: (Math.random()*(1.5)+1.2).toFixed(2), draw: (Math.random()*(1.2)+2.8).toFixed(2), away: (Math.random()*(2.5)+2.5).toFixed(2) }, goals: { over: (Math.random()*(0.6)+1.5).toFixed(2), under: (Math.random()*(0.6)+1.6).toFixed(2) }, btts: { yes: (Math.random()*(0.4)+1.6).toFixed(2), no: (Math.random()*(0.4)+1.8).toFixed(2) } }; }
   }
-
-  setCache(`odds_${matchId}`, oddsData);
-  res.json(oddsData);
+  setCache(`odds_${matchId}`, oddsData); res.json(oddsData);
 });
 
 app.get('/api/live/:sport', async (req, res) => {
@@ -262,8 +244,7 @@ app.get('/api/live/:sport', async (req, res) => {
     const data = await api(`/sport/${req.params.sport}/events/live`);
     const grouped = {};
     (data.events || []).forEach(e => {
-      const m = formatEvent(e);
-      const tId = e.tournament?.uniqueTournament?.id || 'other';
+      const m = formatEvent(e); const tId = e.tournament?.uniqueTournament?.id || 'other';
       if (!grouped[tId]) grouped[tId] = { name: m.tournament.name, matches: [] };
       grouped[tId].matches.push(m);
     });
@@ -273,55 +254,44 @@ app.get('/api/live/:sport', async (req, res) => {
 
 app.get('/api/event/:id/stats', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
-  try {
-    const data = await api(`/event/${req.params.id}/statistics`);
-    res.json(sanitizeObject({ statistics: [], raw: data.statistics }));
-  } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
+  try { const data = await api(`/event/${req.params.id}/statistics`); res.json(sanitizeObject({ statistics: [], raw: data.statistics })); } 
+  catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
 app.get('/api/event/:id/lineups', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
-  try {
-    const data = await api(`/event/${req.params.id}/lineups`);
-    res.json(data);
-  } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
+  try { const data = await api(`/event/${req.params.id}/lineups`); res.json(data); } 
+  catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
 app.get('/api/event/:id/incidents', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
-  try {
-    const data = await api(`/event/${req.params.id}/incidents`);
-    res.json(sanitizeObject({ incidents: data.incidents || [] }));
-  } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
+  try { const data = await api(`/event/${req.params.id}/incidents`); res.json(sanitizeObject({ incidents: data.incidents || [] })); } 
+  catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
 app.get('/api/event/:id', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
-  try {
-    const data = await api(`/event/${req.params.id}`);
-    res.json({ event: formatEvent(data.event) });
-  } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
+  try { const data = await api(`/event/${req.params.id}`); res.json({ event: formatEvent(data.event) }); } 
+  catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
 app.get('/api/event/:id/h2h', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
-  try {
-    const data = await api(`/event/${req.params.id}/h2h/events`);
-    res.json({ events: (data.events || []).map(e => formatEvent(e)) });
-  } catch (err) { res.json({ events: [] }); }
+  try { const data = await api(`/event/${req.params.id}/h2h/events`); res.json({ events: (data.events || []).map(e => formatEvent(e)) }); } 
+  catch (err) { res.json({ events: [] }); }
 });
 
 app.get('/api/player/:id/details', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
-    const pId = req.params.id;
-    let eventsData = { events: [] };
+    const pId = req.params.id; let eventsData = { events: [] };
     try { eventsData = await api(`/player/${pId}/events/last/0`); } catch(e) {}
     res.json({ matches: (eventsData.events || []).slice(0, 10).map(e => formatEvent(e)) });
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
-// 🚀 YENİ: PUAN DURUMU API ENDPOINT'İ 🚀
+// 🚀 GÜÇLENDİRİLMİŞ PUAN DURUMU API ENDPOINT'İ 🚀
 app.get('/api/standings/:id', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
@@ -330,12 +300,22 @@ app.get('/api/standings/:id', async (req, res) => {
     const cached = getCached(cacheKey);
     if (cached) return res.json(cached);
 
-    const tData = await api(`/unique-tournament/${tId}`);
-    const seasonId = tData.uniqueTournament?.currentSeason?.id;
+    // Ana kaynaktan doğrudan ve hatasız çekim (Fallback yapısı)
+    let tData;
+    try { tData = await api(`/unique-tournament/${tId}`); } 
+    catch(e) { tData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}`, { 'User-Agent': 'Mozilla/5.0' }); }
+
+    const seasonId = tData?.uniqueTournament?.currentSeason?.id || tData?.tournament?.currentSeason?.id;
     if (!seasonId) throw new Error('Sezon bulunamadı');
 
-    const sData = await api(`/unique-tournament/${tId}/season/${seasonId}/standings/total`);
-    const standings = sData.standings || [];
+    let sData;
+    try { sData = await api(`/unique-tournament/${tId}/season/${seasonId}/standings/total`); } 
+    catch(e) { sData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/season/${seasonId}/standings/total`, { 'User-Agent': 'Mozilla/5.0' }); }
+
+    let standings = [];
+    if (sData.standings) standings = sData.standings;
+    else if (Array.isArray(sData) && sData[0] && sData[0].standings) standings = sData[0].standings;
+    else if (Array.isArray(sData)) standings = sData;
 
     setCache(cacheKey, standings);
     res.json(standings);
@@ -369,12 +349,8 @@ app.get('/api/search/:sport', async (req, res) => {
   try {
     const results = { teams: [], players: [] };
     data.results.forEach(r => {
-      if (r.type === 'team' && r.entity) {
-        results.teams.push(sanitizeObject({ id: Number(r.entity.id)||0, name: r.entity.name||'', tournament: r.entity.tournament?.name||'', img: `https://api.sofascore.app/api/v1/team/${r.entity.id}/image` }));
-      }
-      if (r.type === 'player' && r.entity) {
-        results.players.push(sanitizeObject({ id: Number(r.entity.id)||0, name: r.entity.name||'', position: r.entity.position||'', teamName: r.entity.team?.name||'', img: `https://api.sofascore.app/api/v1/player/${r.entity.id}/image` }));
-      }
+      if (r.type === 'team' && r.entity) { results.teams.push(sanitizeObject({ id: Number(r.entity.id)||0, name: r.entity.name||'', tournament: r.entity.tournament?.name||'', img: `https://api.sofascore.app/api/v1/team/${r.entity.id}/image` })); }
+      if (r.type === 'player' && r.entity) { results.players.push(sanitizeObject({ id: Number(r.entity.id)||0, name: r.entity.name||'', position: r.entity.position||'', teamName: r.entity.team?.name||'', img: `https://api.sofascore.app/api/v1/player/${r.entity.id}/image` })); }
     });
     setCache(cacheKey, results); res.json(results);
   } catch (err) { res.status(500).json({ error: 'Hata oluştu' }); }
