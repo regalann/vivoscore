@@ -71,7 +71,8 @@ function getCached(key) {
   let ttl = CACHE_TTL;
   if (key.includes('/live')) ttl = 30 * 1000; 
   if (key.includes('/h2h') || key.includes('/events/last') || key.includes('/events/next')) ttl = 12 * 60 * 60 * 1000;
-  if (key.includes('standings_')) ttl = 15 * 60 * 1000; // Puan durumu 15 dk
+  if (key.includes('standings_')) ttl = 15 * 60 * 1000;
+  if (key.includes('cuptrees_')) ttl = 30 * 60 * 1000;
   
   if (entry && Date.now() - entry.ts < ttl) return entry.data;
   return null;
@@ -300,10 +301,8 @@ app.get('/api/standings/:id', async (req, res) => {
     const cached = getCached(cacheKey);
     if (cached) return res.json(cached);
 
-    // Sezon ID'sini bul - birden fazla yol dene
     let seasonId = null;
 
-    // Yol 1: /unique-tournament/{id} den currentSeason çek
     try {
       const tData = await api(`/unique-tournament/${tId}`);
       seasonId = tData?.uniqueTournament?.currentSeason?.id 
@@ -311,7 +310,6 @@ app.get('/api/standings/:id', async (req, res) => {
               || tData?.currentSeason?.id;
     } catch(e) {}
 
-    // Yol 2: /unique-tournament/{id}/seasons den ilk sezonu al
     if (!seasonId) {
       try {
         const seasonsData = await api(`/unique-tournament/${tId}/seasons`);
@@ -322,7 +320,6 @@ app.get('/api/standings/:id', async (req, res) => {
       } catch(e) {}
     }
 
-    // Yol 3: Sofascore fallback
     if (!seasonId) {
       try {
         const tData2 = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}`, { 'User-Agent': 'Mozilla/5.0' });
@@ -330,7 +327,6 @@ app.get('/api/standings/:id', async (req, res) => {
       } catch(e) {}
     }
 
-    // Yol 4: Sofascore seasons fallback
     if (!seasonId) {
       try {
         const sData2 = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/seasons`, { 'User-Agent': 'Mozilla/5.0' });
@@ -343,7 +339,6 @@ app.get('/api/standings/:id', async (req, res) => {
 
     if (!seasonId) throw new Error('Sezon bulunamadı');
 
-    // Puan durumunu çek
     let sData;
     try { 
       sData = await api(`/unique-tournament/${tId}/season/${seasonId}/standings/total`); 
@@ -355,7 +350,6 @@ app.get('/api/standings/:id', async (req, res) => {
       }
     }
 
-    // Farklı API formatlarını normalize et
     let standings = [];
     if (sData && sData.standings && Array.isArray(sData.standings)) {
       standings = sData.standings;
@@ -369,7 +363,6 @@ app.get('/api/standings/:id', async (req, res) => {
       }
     }
 
-    // Her grup için satırları normalize et
     const normalizedStandings = standings.map(group => {
       const rows = (group.rows || group.teamStandings || []).map(r => {
         const team = r.team || {};
@@ -393,6 +386,51 @@ app.get('/api/standings/:id', async (req, res) => {
   } catch (err) {
     console.error('Standings error:', err.message);
     res.status(500).json({ error: 'Puan durumu yüklenemedi: ' + (err.message || '') });
+  }
+});
+
+// 🚀 EŞLEŞME VE PLAYOFF (CUPTREES) API ENDPOINT'İ 🚀
+app.get('/api/cuptrees/:id', async (req, res) => {
+  if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
+  try {
+    const tId = req.params.id;
+    const cacheKey = `cuptrees_${tId}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
+
+    let seasonId = null;
+
+    try {
+      const tData = await api(`/unique-tournament/${tId}`);
+      seasonId = tData?.uniqueTournament?.currentSeason?.id || tData?.tournament?.currentSeason?.id || tData?.currentSeason?.id;
+    } catch(e) {}
+
+    if (!seasonId) {
+      try {
+        const sData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/seasons`, { 'User-Agent': 'Mozilla/5.0' });
+        const seasons = sData?.seasons || sData || [];
+        if (Array.isArray(seasons) && seasons.length > 0) seasonId = seasons[0].id;
+      } catch(e) {}
+    }
+
+    if (!seasonId) throw new Error('Sezon bulunamadı');
+
+    let treeData;
+    try { 
+      treeData = await api(`/unique-tournament/${tId}/season/${seasonId}/cuptrees`); 
+    } catch(e) { 
+      try { 
+        treeData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/season/${seasonId}/cuptrees`, { 'User-Agent': 'Mozilla/5.0' }); 
+      } catch(e2) { 
+        throw new Error('Eşleşme verisi alınamadı'); 
+      }
+    }
+
+    setCache(cacheKey, treeData);
+    res.json(treeData);
+  } catch (err) {
+    console.error('Cuptrees error:', err.message);
+    res.status(500).json({ error: 'Eşleşmeler yüklenemedi: ' + (err.message || '') });
   }
 });
 
