@@ -672,8 +672,6 @@ app.get('/api/event/:id/missing-players', async (req, res) => {
       const UA = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' };
       let best = [];
 
-      // Try ALL sources, keep the one with most players
-
       // Source 1: sportapi7 team missing players
       try {
         const data = await api(`/team/${teamId}/missing-players`);
@@ -693,33 +691,95 @@ app.get('/api/event/:id/missing-players', async (req, res) => {
       // Source 3: SofaScore team near-events missing  
       try {
         const data = await safeFetch(`https://api.sofascore.app/api/v1/team/${teamId}/near-events`, UA);
-        const players = extractPlayers(data?.missingPlayers || data);
+        // Try multiple structures
+        let players = [];
+        if (data?.missingPlayers) {
+          if (Array.isArray(data.missingPlayers)) players = data.missingPlayers;
+          else {
+            // Could be { injured: [], suspended: [], doubtful: [] }
+            for (const key of Object.keys(data.missingPlayers)) {
+              const arr = data.missingPlayers[key];
+              if (Array.isArray(arr)) {
+                arr.forEach(p => { p._missingType = key; });
+                players = players.concat(arr);
+              }
+            }
+          }
+        }
         const parsed = parseMissing(players);
         if (parsed.length > best.length) best = parsed;
       } catch(e) {}
 
-      // Source 4: sportapi7 team players -> check injured/suspended flag
-      if (best.length <= 1) {
-        try {
-          const data = await api(`/team/${teamId}/players`);
-          const allPlayers = data?.players || [];
-          const injured = allPlayers.filter(p => {
-            const player = p.player || p;
-            return player.injured || player.suspended || player.missingInLineup;
-          }).map(p => {
-            const player = p.player || p;
-            return {
-              player: player,
-              name: player.name || player.shortName || '',
-              id: player.id || 0,
-              type: player.suspended ? 'suspended' : 'injury',
-              reason: ''
-            };
-          });
-          const parsed = parseMissing(injured);
+      // Source 4: sportapi7 team players -> check ALL possible injury/absence fields
+      try {
+        const data = await api(`/team/${teamId}/players`);
+        const allPlayers = data?.players || data?.squad || [];
+        const injured = allPlayers.filter(p => {
+          const player = p.player || p;
+          return player.injured === true || 
+                 player.suspended === true || 
+                 player.missingInLineup === true ||
+                 player.absent === true ||
+                 (player.injury && typeof player.injury === 'object') ||
+                 (player.injuryType && player.injuryType !== 'none') ||
+                 player.status === 'injured' || player.status === 'suspended' ||
+                 player.available === false ||
+                 player.availability === 'injured' || player.availability === 'suspended' ||
+                 player.availability === 'doubtful';
+        }).map(p => {
+          const player = p.player || p;
+          let type = 'injury';
+          if (player.suspended) type = 'suspended';
+          else if (player.availability === 'doubtful' || player.status === 'doubtful') type = 'doubtful';
+          return {
+            player: player,
+            name: player.name || player.shortName || '',
+            id: player.id || 0,
+            type: type,
+            reason: player.injuryType || player.injury?.type || player.injury?.reason || ''
+          };
+        });
+        const parsed = parseMissing(injured);
+        if (parsed.length > best.length) best = parsed;
+      } catch(e) {}
+
+      // Source 5: SofaScore player roster with injury flags
+      try {
+        const data = await safeFetch(`https://api.sofascore.app/api/v1/team/${teamId}/players`, UA);
+        const allPlayers = data?.players || data?.squad || [];
+        const injured = allPlayers.filter(p => {
+          const player = p.player || p;
+          return player.injured === true || 
+                 player.suspended === true ||
+                 (player.injury && typeof player.injury === 'object') ||
+                 player.available === false;
+        }).map(p => {
+          const player = p.player || p;
+          let type = 'injury';
+          if (player.suspended) type = 'suspended';
+          return {
+            player: player,
+            name: player.name || player.shortName || '',
+            id: player.id || 0,
+            type: type,
+            reason: player.injuryType || player.injury?.type || ''
+          };
+        });
+        const parsed = parseMissing(injured);
+        if (parsed.length > best.length) best = parsed;
+      } catch(e) {}
+
+      // Source 6: SofaScore event lineups (might have missing even for future games)
+      try {
+        const data = await safeFetch(`https://api.sofascore.app/api/v1/event/${eventId}/lineups`, UA);
+        const side = String(data?.home?.team?.id) === String(teamId) ? data.home : 
+                     String(data?.away?.team?.id) === String(teamId) ? data.away : null;
+        if (side) {
+          const missing = side.missingPlayers || side.missing || [];
+          const parsed = parseMissing(missing);
           if (parsed.length > best.length) best = parsed;
-        } catch(e) {}
-      }
+        }
+      } catch(e) {}
 
       return best;
     };
