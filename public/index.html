@@ -2550,29 +2550,33 @@ var Search = {
       }
       
       // Sezon istatistikleri
-      html += '<div class="stat-group-title" style="' + (liveData.inLiveMatch ? 'margin-top:30px;' : 'margin-top:0;') + '">📊 Sezon İstatistikleri</div>';
+      var statTitle = '📊 Sezon İstatistikleri';
+      if (seasonData.tournamentName) statTitle += ' — ' + esc(seasonData.tournamentName);
+      if (seasonData.statisticsSource === 'lastMatch') statTitle = '📊 Son Maç İstatistikleri';
+      html += '<div class="stat-group-title" style="' + (liveData.inLiveMatch ? 'margin-top:30px;' : 'margin-top:0;') + '">' + statTitle + '</div>';
       var sStats = seasonData.statistics || {};
-      var sKeys = Object.keys(sStats);
-      if (sKeys.length > 0) {
+      // Flatten: collect all displayable key-value pairs
+      var flatStats = [];
+      var skipKeys = {'id':1,'type':1,'position':1,'appearences':0};
+      var collectStats = function(obj, prefix) {
+        if (!obj || typeof obj !== 'object') return;
+        var keys = Object.keys(obj);
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i]; var v = obj[k];
+          if (v === undefined || v === null || k === 'id' || k === 'type') continue;
+          if (typeof v === 'boolean') v = v ? 'Evet' : 'Hayır';
+          if (typeof v === 'object' && !Array.isArray(v)) { collectStats(v, (prefix ? prefix + '.' : '') + k); continue; }
+          if (Array.isArray(v)) continue;
+          if (typeof v === 'number' && v % 1 !== 0) v = parseFloat(v).toFixed(2);
+          var label = STAT_DICT[k] || k.replace(/([A-Z])/g, ' $1').replace(/^./, function(s){ return s.toUpperCase(); });
+          flatStats.push({ key: k, label: label, value: v });
+        }
+      };
+      collectStats(sStats, '');
+      if (flatStats.length > 0) {
         html += '<div class="pm-grid">';
-        for (var si = 0; si < sKeys.length; si++) {
-          var sk = sKeys[si]; var sv = sStats[sk];
-          if (sv === undefined || sv === null || sk === 'id' || sk === 'type') continue;
-          if (typeof sv === 'object') {
-            // Nested stats object
-            var subKeys = Object.keys(sv);
-            for (var sj = 0; sj < subKeys.length; sj++) {
-              var subk = subKeys[sj]; var subv = sv[subk];
-              if (subv === undefined || subv === null || typeof subv === 'object') continue;
-              if (typeof subv === 'number' && subv % 1 !== 0) subv = parseFloat(subv).toFixed(2);
-              var sublabel = STAT_DICT[subk] || subk.replace(/([A-Z])/g, ' $1').replace(/^./, function(s){ return s.toUpperCase(); });
-              html += '<div class="pm-stat-box"><div class="pm-stat-lbl">' + sublabel + '</div><div class="pm-stat-val">' + subv + '</div></div>';
-            }
-          } else {
-            if (typeof sv === 'number' && sv % 1 !== 0) sv = parseFloat(sv).toFixed(2);
-            var slabel = STAT_DICT[sk] || sk.replace(/([A-Z])/g, ' $1').replace(/^./, function(s){ return s.toUpperCase(); });
-            html += '<div class="pm-stat-box"><div class="pm-stat-lbl">' + slabel + '</div><div class="pm-stat-val">' + sv + '</div></div>';
-          }
+        for (var fi = 0; fi < flatStats.length; fi++) {
+          html += '<div class="pm-stat-box"><div class="pm-stat-lbl">' + flatStats[fi].label + '</div><div class="pm-stat-val">' + flatStats[fi].value + '</div></div>';
         }
         html += '</div>';
       } else {
