@@ -2009,7 +2009,9 @@ var T = {
             if (!pName || /^\d+$/.test(pName)) return; // Skip if no name or only a number
             var icon = '🏥'; var typeLabel = 'Sakat/Eksik'; var t = p.type ? p.type.toLowerCase() : '';
             if (t.includes('suspend')) { icon = '🟥'; typeLabel = 'Cezalı'; } else if (t.includes('doubt')) { icon = '❓'; typeLabel = 'Şüpheli'; } else if (t.includes('injur')) { icon = '🏥'; typeLabel = 'Sakat'; }
-            var reasonHtml = p.reason ? '<div style="font-size:11px; opacity:0.8; margin-top:2px;">' + esc(p.reason) + '</div>' : '';
+            var rawReason = p.reason || '';
+            if (/^\d+$/.test(rawReason)) rawReason = ''; // Skip numeric-only reasons
+            var reasonHtml = rawReason ? '<div style="font-size:11px; opacity:0.8; margin-top:2px;">' + esc(rawReason) + '</div>' : '';
             mHtml += '<div class="ll-item" style="cursor:default; border-left:2px solid var(--red); padding-left:10px;">' +
                      '<div style="font-size:20px; flex-shrink:0; margin-right:12px; display:flex; align-items:center;">' + icon + '</div>' +
                      '<div class="ll-info"><div class="ll-name">' + esc(pName) + '</div>' + reasonHtml + '</div>' +
@@ -2491,6 +2493,9 @@ var Search = {
       var posLabel = posMap[playerPos] || playerPos;
       
       var html = '<div class="detail-header" style="position:relative">';
+      // Back button - always present
+      var backTarget = Search._lastTeamId ? 'Search.pickTeam(' + Search._lastTeamId + ')' : (V.state.selectedMatch ? 'V.renderDetail(' + V.state.selectedMatch + ')' : 'V.closeDetail()');
+      html += '<div class="btn-back-panel" onclick="' + backTarget + '">←</div>';
       html += '<div class="btn-close-panel" onclick="V.closeDetail()">✕</div>';
       html += '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 0;">';
       html += '<img src="https://api.sofascore.app/api/v1/player/' + id + '/image" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'" style="width:70px;height:70px;border-radius:50%;object-fit:cover;background:var(--bg2);border:2px solid var(--border);">';
