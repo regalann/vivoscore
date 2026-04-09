@@ -582,10 +582,12 @@ app.get('/api/event/:id/missing-players', async (req, res) => {
         const playerId = p.player?.id || p.id || p.playerId || 0;
         // If name is empty or just a number, use player ID for later enrichment
         if (!name || /^\d+$/.test(name)) name = '';
+        let reason = p.reason || p.availability?.reason || p.availabilityReason || '';
+        if (typeof reason === 'number' || /^\d+$/.test(String(reason))) reason = '';
         return sanitizeObject({
           name: name,
           type: p.type || p.availability?.type || p.availabilityType || 'injury',
-          reason: p.reason || p.availability?.reason || p.availabilityReason || '',
+          reason: reason,
           id: playerId
         });
       }).filter(p => p.name || p.id);
@@ -606,19 +608,44 @@ app.get('/api/event/:id/missing-players', async (req, res) => {
       return enriched;
     };
 
+    // Helper: extract player array from various response shapes
+    const extractPlayers = (data) => {
+      if (!data) return [];
+      if (Array.isArray(data)) return data;
+      if (data.players && Array.isArray(data.players)) return data.players;
+      if (data.missingPlayers && Array.isArray(data.missingPlayers)) return data.missingPlayers;
+      for (const key of Object.keys(data)) {
+        const val = data[key];
+        if (Array.isArray(val) && val.length > 0 && (val[0].player || val[0].name || val[0].type)) return val;
+      }
+      return [];
+    };
+
     // Yöntem 1: sportapi7 event-level missing players
     try {
       const data = await api(`/event/${eventId}/missing-players`);
-      if (data?.home?.length || data?.away?.length) {
-        result.home = await enrichNames(parseMissing(data.home || []));
-        result.away = await enrichNames(parseMissing(data.away || []));
+      if (data?.home || data?.away) {
+        result.home = await enrichNames(parseMissing(extractPlayers(data.home)));
+        result.away = await enrichNames(parseMissing(extractPlayers(data.away)));
         if (result.home.length > 0 || result.away.length > 0) return res.json(result);
       }
-      // Check alternative structure
       if (data?.missingPlayers) {
         const mp = data.missingPlayers;
-        if (mp.home) result.home = await enrichNames(parseMissing(mp.home));
-        if (mp.away) result.away = await enrichNames(parseMissing(mp.away));
+        if (mp.home || mp.away) {
+          result.home = await enrichNames(parseMissing(extractPlayers(mp.home)));
+          result.away = await enrichNames(parseMissing(extractPlayers(mp.away)));
+          if (result.home.length > 0 || result.away.length > 0) return res.json(result);
+        }
+      }
+    } catch(e) {}
+
+    // Yöntem 1b: SofaScore event missing players
+    try {
+      const UA = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' };
+      const data = await safeFetch(`https://api.sofascore.app/api/v1/event/${eventId}/missing-players`, UA);
+      if (data?.home || data?.away) {
+        result.home = await enrichNames(parseMissing(extractPlayers(data.home)));
+        result.away = await enrichNames(parseMissing(extractPlayers(data.away)));
         if (result.home.length > 0 || result.away.length > 0) return res.json(result);
       }
     } catch(e) {}
@@ -634,28 +661,61 @@ app.get('/api/event/:id/missing-players', async (req, res) => {
     if (!homeId && !awayId) return res.json(result);
 
     const fetchMissing = async (teamId) => {
+      const UA = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' };
+      
+      // Helper: extract player array from various response shapes
+      const extractPlayers = (data) => {
+        if (!data) return [];
+        if (Array.isArray(data)) return data;
+        if (data.players && Array.isArray(data.players)) return data.players;
+        if (data.missingPlayers && Array.isArray(data.missingPlayers)) return data.missingPlayers;
+        // Sometimes nested under the team
+        for (const key of Object.keys(data)) {
+          const val = data[key];
+          if (Array.isArray(val) && val.length > 0 && (val[0].player || val[0].name || val[0].type)) return val;
+        }
+        return [];
+      };
+
       // Yöntem 2: sportapi7 team missing players
       try {
         const data = await api(`/team/${teamId}/missing-players`);
-        const players = data?.players || data?.missingPlayers || [];
+        const players = extractPlayers(data);
         if (players.length > 0) return parseMissing(players);
       } catch(e) {}
 
       // Yöntem 3: SofaScore direct team missing players
       try {
-        const data = await safeFetch(`https://api.sofascore.app/api/v1/team/${teamId}/missing-players`, { 
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' 
-        });
-        const players = data?.players || data?.missingPlayers || [];
+        const data = await safeFetch(`https://api.sofascore.app/api/v1/team/${teamId}/missing-players`, UA);
+        const players = extractPlayers(data);
         if (players.length > 0) return parseMissing(players);
       } catch(e) {}
 
       // Yöntem 4: SofaScore team near-events missing  
       try {
-        const data = await safeFetch(`https://api.sofascore.app/api/v1/team/${teamId}/near-events`, {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        const data = await safeFetch(`https://api.sofascore.app/api/v1/team/${teamId}/near-events`, UA);
+        const players = extractPlayers(data?.missingPlayers || data);
+        if (players.length > 0) return parseMissing(players);
+      } catch(e) {}
+
+      // Yöntem 5: sportapi7 team players -> check injured flag
+      try {
+        const data = await api(`/team/${teamId}/players`);
+        const allPlayers = data?.players || [];
+        const injured = allPlayers.filter(p => {
+          const player = p.player || p;
+          return player.injured || player.suspended || player.missingInLineup;
+        }).map(p => {
+          const player = p.player || p;
+          return {
+            player: player,
+            name: player.name || player.shortName || '',
+            id: player.id || 0,
+            type: player.suspended ? 'suspended' : 'injury',
+            reason: ''
+          };
         });
-        if (data?.missingPlayers) return parseMissing(data.missingPlayers);
+        if (injured.length > 0) return parseMissing(injured);
       } catch(e) {}
 
       return [];
