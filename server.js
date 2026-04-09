@@ -575,27 +575,50 @@ app.get('/api/event/:id/missing-players', async (req, res) => {
     
     const parseMissing = (players) => {
       if (!Array.isArray(players)) return [];
-      return players.map(p => sanitizeObject({
-        name: p.player?.name || p.player?.shortName || p.name || p.shortName || '',
-        type: p.type || p.availability?.type || 'injury',
-        reason: p.reason || p.availability?.reason || p.availability || '',
-        id: p.player?.id || p.id || 0
-      })).filter(p => p.name);
+      return players.map(p => {
+        // Try multiple name fields
+        let name = p.player?.name || p.player?.shortName || p.player?.slug || 
+                   p.name || p.shortName || p.playerName || '';
+        const playerId = p.player?.id || p.id || p.playerId || 0;
+        // If name is empty or just a number, use player ID for later enrichment
+        if (!name || /^\d+$/.test(name)) name = '';
+        return sanitizeObject({
+          name: name,
+          type: p.type || p.availability?.type || p.availabilityType || 'injury',
+          reason: p.reason || p.availability?.reason || p.availabilityReason || '',
+          id: playerId
+        });
+      }).filter(p => p.name || p.id);
+    };
+
+    // Enrich missing players that have no name
+    const enrichNames = async (players) => {
+      const enriched = [];
+      for (const p of players) {
+        if (!p.name && p.id) {
+          try {
+            const pData = await api(`/player/${p.id}`);
+            p.name = pData?.player?.name || pData?.player?.shortName || ('Oyuncu #' + p.id);
+          } catch(e) { p.name = 'Oyuncu #' + p.id; }
+        }
+        if (p.name) enriched.push(p);
+      }
+      return enriched;
     };
 
     // Yöntem 1: sportapi7 event-level missing players
     try {
       const data = await api(`/event/${eventId}/missing-players`);
       if (data?.home?.length || data?.away?.length) {
-        result.home = parseMissing(data.home || []);
-        result.away = parseMissing(data.away || []);
+        result.home = await enrichNames(parseMissing(data.home || []));
+        result.away = await enrichNames(parseMissing(data.away || []));
         if (result.home.length > 0 || result.away.length > 0) return res.json(result);
       }
       // Check alternative structure
       if (data?.missingPlayers) {
         const mp = data.missingPlayers;
-        if (mp.home) result.home = parseMissing(mp.home);
-        if (mp.away) result.away = parseMissing(mp.away);
+        if (mp.home) result.home = await enrichNames(parseMissing(mp.home));
+        if (mp.away) result.away = await enrichNames(parseMissing(mp.away));
         if (result.home.length > 0 || result.away.length > 0) return res.json(result);
       }
     } catch(e) {}
@@ -638,8 +661,8 @@ app.get('/api/event/:id/missing-players', async (req, res) => {
       return [];
     };
       
-    if (homeId) result.home = await fetchMissing(homeId);
-    if (awayId) result.away = await fetchMissing(awayId);
+    if (homeId) result.home = await enrichNames(await fetchMissing(homeId));
+    if (awayId) result.away = await enrichNames(await fetchMissing(awayId));
     
     res.json(result);
   } catch (err) { res.json({ home: [], away: [] }); }
@@ -746,6 +769,7 @@ app.get('/api/cuptrees/:id', async (req, res) => {
 
     let seasonId = null;
 
+    // Sezon ID'yi bul
     try {
       const tData = await api(`/unique-tournament/${tId}`);
       seasonId = tData?.uniqueTournament?.currentSeason?.id || tData?.tournament?.currentSeason?.id || tData?.currentSeason?.id;
@@ -753,43 +777,153 @@ app.get('/api/cuptrees/:id', async (req, res) => {
 
     if (!seasonId) {
       try {
-        const tData2 = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}`, { 'User-Agent': 'Mozilla/5.0' });
+        const tData2 = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}`, { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' });
         seasonId = tData2?.uniqueTournament?.currentSeason?.id || tData2?.currentSeason?.id;
       } catch(e) {}
     }
 
     if (!seasonId) {
       try {
-        const sData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/seasons`, { 'User-Agent': 'Mozilla/5.0' });
+        const sData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/seasons`, { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' });
         const seasons = sData?.seasons || sData || [];
         if (Array.isArray(seasons) && seasons.length > 0) seasonId = seasons[0].id;
       } catch(e) {}
     }
 
-    if (!seasonId) {
-        return res.json({ cuptrees: [] }); 
-    }
+    if (!seasonId) return res.json({ cuptrees: [] });
 
-    let treeData = { cuptrees: [] };
+    const UA = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' };
+
+    // Extract cuptrees from various response structures
+    const extractTrees = (data) => {
+      if (!data) return [];
+      if (Array.isArray(data)) return data;
+      if (data.cuptrees && Array.isArray(data.cuptrees)) return data.cuptrees;
+      if (data.cupTrees && Array.isArray(data.cupTrees)) return data.cupTrees;
+      // Check for rounds structure  
+      if (data.rounds && Array.isArray(data.rounds)) return [{ rounds: data.rounds }];
+      return [];
+    };
+
+    let trees = [];
+
+    // Yöntem 1: sportapi7 cuptrees
     try { 
-      treeData = await api(`/unique-tournament/${tId}/season/${seasonId}/cuptrees`); 
-    } catch(e) { 
+      const d = await api(`/unique-tournament/${tId}/season/${seasonId}/cuptrees`);
+      trees = extractTrees(d);
+    } catch(e) {}
+
+    // Yöntem 2: SofaScore direct cuptrees  
+    if (trees.length === 0) {
       try { 
-        treeData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/season/${seasonId}/cuptrees`, { 
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }); 
-      } catch(e2) { 
-        return res.json({ cuptrees: [] }); 
-      }
+        const d = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/season/${seasonId}/cuptrees`, UA);
+        trees = extractTrees(d);
+      } catch(e) {}
     }
 
-    if (Array.isArray(treeData)) {
-        treeData = { cuptrees: treeData };
-    } else if (!treeData || !treeData.cuptrees) {
-        treeData = { cuptrees: [] };
+    // Yöntem 3: sportapi7 bracket/rounds approach
+    if (trees.length === 0) {
+      try {
+        const roundsData = await api(`/unique-tournament/${tId}/season/${seasonId}/rounds`);
+        const rounds = roundsData?.rounds || roundsData?.currentRounds || [];
+        if (Array.isArray(rounds) && rounds.length > 0) {
+          // Knockout turlarını bul (grup aşaması olmayan)
+          const knockoutRounds = rounds.filter(r => {
+            const name = (r.name || r.description || '').toLowerCase();
+            return name.includes('final') || name.includes('quarter') || name.includes('semi') || 
+                   name.includes('round of') || name.includes('knockout') || name.includes('playoff') ||
+                   name.includes('çeyrek') || name.includes('yarı') || r.knockoutRound || r.cupRound;
+          });
+          if (knockoutRounds.length > 0) {
+            const builtRounds = [];
+            for (const round of knockoutRounds) {
+              try {
+                const roundEvents = await api(`/unique-tournament/${tId}/season/${seasonId}/events/round/${round.round || round.id}`);
+                const events = roundEvents?.events || [];
+                if (events.length > 0) {
+                  builtRounds.push({
+                    description: round.name || round.description || ('Tur ' + (round.round || round.id)),
+                    blocks: [{ events: events }]
+                  });
+                }
+              } catch(e) {}
+            }
+            if (builtRounds.length > 0) trees = [{ rounds: builtRounds }];
+          }
+        }
+      } catch(e) {}
     }
 
-    setCache(cacheKey, treeData);
+    // Yöntem 4: SofaScore rounds
+    if (trees.length === 0) {
+      try {
+        const roundsData = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/season/${seasonId}/rounds`, UA);
+        const rounds = roundsData?.rounds || roundsData?.currentRounds || [];
+        if (Array.isArray(rounds) && rounds.length > 0) {
+          const knockoutRounds = rounds.filter(r => {
+            const name = (r.name || r.description || '').toLowerCase();
+            return name.includes('final') || name.includes('quarter') || name.includes('semi') || 
+                   name.includes('round of') || name.includes('knockout') || name.includes('playoff') ||
+                   r.knockoutRound || r.cupRound;
+          });
+          if (knockoutRounds.length > 0) {
+            const builtRounds = [];
+            for (const round of knockoutRounds) {
+              try {
+                const rId = round.round || round.id;
+                const roundEvents = await safeFetch(`https://api.sofascore.app/api/v1/unique-tournament/${tId}/season/${seasonId}/events/round/${rId}`, UA);
+                const events = roundEvents?.events || [];
+                if (events.length > 0) {
+                  builtRounds.push({
+                    description: round.name || round.description || ('Tur ' + rId),
+                    blocks: [{ events: events }]
+                  });
+                }
+              } catch(e) {}
+            }
+            if (builtRounds.length > 0) trees = [{ rounds: builtRounds }];
+          }
+        }
+      } catch(e) {}
+    }
+
+    // Yöntem 5: Last resort - tüm round'ları çekmeyi dene (knockout round numaraları genelde yüksek)
+    if (trees.length === 0) {
+      try {
+        const allEvents = [];
+        // Geçmiş ve gelecek maçları çek
+        for (let page = 0; page < 2; page++) {
+          try {
+            const d = await api(`/unique-tournament/${tId}/season/${seasonId}/events/last/${page}`);
+            if (d?.events) allEvents.push(...d.events);
+          } catch(e) { break; }
+        }
+        try {
+          const d = await api(`/unique-tournament/${tId}/season/${seasonId}/events/next/0`);
+          if (d?.events) allEvents.push(...d.events);
+        } catch(e) {}
+
+        // Round bilgisine göre grupla
+        const roundMap = {};
+        allEvents.forEach(e => {
+          const roundInfo = e.roundInfo || {};
+          const roundNum = roundInfo.round || 0;
+          const roundName = roundInfo.name || roundInfo.description || '';
+          const isKnockout = roundName.toLowerCase().match(/final|quarter|semi|round of|knockout|playoff|çeyrek|yarı|last/) || roundNum > 6;
+          if (isKnockout || roundName) {
+            const key = roundName || ('Round ' + roundNum);
+            if (!roundMap[key]) roundMap[key] = { description: key, blocks: [{ events: [] }], order: roundNum };
+            roundMap[key].blocks[0].events.push(e);
+          }
+        });
+
+        const sortedRounds = Object.values(roundMap).sort((a, b) => a.order - b.order);
+        if (sortedRounds.length > 0) trees = [{ rounds: sortedRounds }];
+      } catch(e) {}
+    }
+
+    const treeData = { cuptrees: trees };
+    if (trees.length > 0) setCache(cacheKey, treeData);
     res.json(treeData);
   } catch (err) {
     res.json({ cuptrees: [] });
