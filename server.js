@@ -621,21 +621,24 @@ app.get('/api/event/:id/missing-players', async (req, res) => {
       return [];
     };
 
+    // Collect from all sources, keep the best (most players) per side
+    let bestHome = [], bestAway = [];
+
     // Yöntem 1: sportapi7 event-level missing players
     try {
       const data = await api(`/event/${eventId}/missing-players`);
       if (data?.home || data?.away) {
-        result.home = await enrichNames(parseMissing(extractPlayers(data.home)));
-        result.away = await enrichNames(parseMissing(extractPlayers(data.away)));
-        if (result.home.length > 0 || result.away.length > 0) return res.json(result);
+        const h = parseMissing(extractPlayers(data.home));
+        const a = parseMissing(extractPlayers(data.away));
+        if (h.length > bestHome.length) bestHome = h;
+        if (a.length > bestAway.length) bestAway = a;
       }
       if (data?.missingPlayers) {
         const mp = data.missingPlayers;
-        if (mp.home || mp.away) {
-          result.home = await enrichNames(parseMissing(extractPlayers(mp.home)));
-          result.away = await enrichNames(parseMissing(extractPlayers(mp.away)));
-          if (result.home.length > 0 || result.away.length > 0) return res.json(result);
-        }
+        const h = parseMissing(extractPlayers(mp.home));
+        const a = parseMissing(extractPlayers(mp.away));
+        if (h.length > bestHome.length) bestHome = h;
+        if (a.length > bestAway.length) bestAway = a;
       }
     } catch(e) {}
 
@@ -644,9 +647,10 @@ app.get('/api/event/:id/missing-players', async (req, res) => {
       const UA = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' };
       const data = await safeFetch(`https://api.sofascore.app/api/v1/event/${eventId}/missing-players`, UA);
       if (data?.home || data?.away) {
-        result.home = await enrichNames(parseMissing(extractPlayers(data.home)));
-        result.away = await enrichNames(parseMissing(extractPlayers(data.away)));
-        if (result.home.length > 0 || result.away.length > 0) return res.json(result);
+        const h = parseMissing(extractPlayers(data.home));
+        const a = parseMissing(extractPlayers(data.away));
+        if (h.length > bestHome.length) bestHome = h;
+        if (a.length > bestAway.length) bestAway = a;
       }
     } catch(e) {}
 
@@ -658,71 +662,79 @@ app.get('/api/event/:id/missing-players', async (req, res) => {
       awayId = eventData?.event?.awayTeam?.id;
     } catch(e) {}
 
-    if (!homeId && !awayId) return res.json(result);
+    if (!homeId && !awayId) {
+      result.home = await enrichNames(bestHome);
+      result.away = await enrichNames(bestAway);
+      return res.json(result);
+    }
 
     const fetchMissing = async (teamId) => {
       const UA = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' };
-      
-      // Helper: extract player array from various response shapes
-      const extractPlayers = (data) => {
-        if (!data) return [];
-        if (Array.isArray(data)) return data;
-        if (data.players && Array.isArray(data.players)) return data.players;
-        if (data.missingPlayers && Array.isArray(data.missingPlayers)) return data.missingPlayers;
-        // Sometimes nested under the team
-        for (const key of Object.keys(data)) {
-          const val = data[key];
-          if (Array.isArray(val) && val.length > 0 && (val[0].player || val[0].name || val[0].type)) return val;
-        }
-        return [];
-      };
+      let best = [];
 
-      // Yöntem 2: sportapi7 team missing players
+      // Try ALL sources, keep the one with most players
+
+      // Source 1: sportapi7 team missing players
       try {
         const data = await api(`/team/${teamId}/missing-players`);
         const players = extractPlayers(data);
-        if (players.length > 0) return parseMissing(players);
+        const parsed = parseMissing(players);
+        if (parsed.length > best.length) best = parsed;
       } catch(e) {}
 
-      // Yöntem 3: SofaScore direct team missing players
+      // Source 2: SofaScore direct team missing players
       try {
         const data = await safeFetch(`https://api.sofascore.app/api/v1/team/${teamId}/missing-players`, UA);
         const players = extractPlayers(data);
-        if (players.length > 0) return parseMissing(players);
+        const parsed = parseMissing(players);
+        if (parsed.length > best.length) best = parsed;
       } catch(e) {}
 
-      // Yöntem 4: SofaScore team near-events missing  
+      // Source 3: SofaScore team near-events missing  
       try {
         const data = await safeFetch(`https://api.sofascore.app/api/v1/team/${teamId}/near-events`, UA);
         const players = extractPlayers(data?.missingPlayers || data);
-        if (players.length > 0) return parseMissing(players);
+        const parsed = parseMissing(players);
+        if (parsed.length > best.length) best = parsed;
       } catch(e) {}
 
-      // Yöntem 5: sportapi7 team players -> check injured flag
-      try {
-        const data = await api(`/team/${teamId}/players`);
-        const allPlayers = data?.players || [];
-        const injured = allPlayers.filter(p => {
-          const player = p.player || p;
-          return player.injured || player.suspended || player.missingInLineup;
-        }).map(p => {
-          const player = p.player || p;
-          return {
-            player: player,
-            name: player.name || player.shortName || '',
-            id: player.id || 0,
-            type: player.suspended ? 'suspended' : 'injury',
-            reason: ''
-          };
-        });
-        if (injured.length > 0) return parseMissing(injured);
-      } catch(e) {}
+      // Source 4: sportapi7 team players -> check injured/suspended flag
+      if (best.length <= 1) {
+        try {
+          const data = await api(`/team/${teamId}/players`);
+          const allPlayers = data?.players || [];
+          const injured = allPlayers.filter(p => {
+            const player = p.player || p;
+            return player.injured || player.suspended || player.missingInLineup;
+          }).map(p => {
+            const player = p.player || p;
+            return {
+              player: player,
+              name: player.name || player.shortName || '',
+              id: player.id || 0,
+              type: player.suspended ? 'suspended' : 'injury',
+              reason: ''
+            };
+          });
+          const parsed = parseMissing(injured);
+          if (parsed.length > best.length) best = parsed;
+        } catch(e) {}
+      }
 
-      return [];
+      return best;
     };
       
-    if (homeId) result.home = await enrichNames(await fetchMissing(homeId));
-    if (awayId) result.away = await enrichNames(await fetchMissing(awayId));
+    if (homeId) {
+      const teamHome = await fetchMissing(homeId);
+      if (teamHome.length > bestHome.length) bestHome = teamHome;
+    }
+    if (awayId) {
+      const teamAway = await fetchMissing(awayId);
+      if (teamAway.length > bestAway.length) bestAway = teamAway;
+    }
+
+    result.home = await enrichNames(bestHome);
+    result.away = await enrichNames(bestAway);
     
     res.json(result);
   } catch (err) { res.json({ home: [], away: [] }); }
