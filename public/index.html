@@ -606,11 +606,12 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     
     <div class="auth-error" id="authError"></div>
 
+    <input type="text" id="authUsername" class="auth-input" placeholder="Kullanıcı adınız" autocomplete="username" style="display:none;">
     <input type="email" id="authEmail" class="auth-input" placeholder="E-posta adresiniz" autocomplete="email">
     <input type="password" id="authPassword" class="auth-input" placeholder="Şifreniz">
     
     <button class="auth-btn-main" onclick="Auth.loginWithEmail()">Giriş Yap</button>
-    <button class="auth-btn-sec" onclick="Auth.registerWithEmail()">Yeni Hesap Oluştur</button>
+    <button class="auth-btn-sec" id="authRegisterBtn" onclick="Auth.toggleRegisterMode()">Yeni Hesap Oluştur</button>
 
     <div style="display: flex; align-items: center; gap: 12px; margin: 16px 0; color: var(--text3); font-size: 12px;">
         <div style="flex: 1; height: 1px; background: var(--border);"></div>
@@ -676,6 +677,13 @@ var Auth = {
     var modal = document.getElementById('authModalOverlay');
     var err = document.getElementById('authError');
     if(err) err.style.display = 'none';
+    this._isRegisterMode = false;
+    var usernameField = document.getElementById('authUsername');
+    if (usernameField) usernameField.style.display = 'none';
+    var btn = document.getElementById('authRegisterBtn');
+    if (btn) btn.textContent = 'Yeni Hesap Oluştur';
+    var mainBtn = document.querySelector('.auth-btn-main');
+    if (mainBtn) { mainBtn.textContent = 'Giriş Yap'; mainBtn.setAttribute('onclick', 'Auth.loginWithEmail()'); }
     if (modal) modal.style.display = 'flex';
   },
   hideModal: function(ev) {
@@ -705,13 +713,16 @@ var Auth = {
     });
   },
   registerWithEmail: function() {
+    var username = document.getElementById('authUsername').value.trim();
     var email = document.getElementById('authEmail').value;
     var password = document.getElementById('authPassword').value;
+    if (!username) return this.showError('Lütfen bir kullanıcı adı girin.');
     if (!email || !password) return this.showError('Lütfen e-posta ve şifre girin.');
+    if (username.length < 3) return this.showError('Kullanıcı adı en az 3 karakter olmalıdır.');
     if (password.length < 6) return this.showError('Şifre en az 6 karakter olmalıdır.');
     var sb = getSupabase();
     if (!sb) return this.showError('Sistem bağlantısı kurulamadı. Lütfen sayfayı yenileyin.');
-    sb.auth.signUp({ email: email, password: password }).then(function(res) {
+    sb.auth.signUp({ email: email, password: password, options: { data: { username: username } } }).then(function(res) {
       if (res.error) {
         if (res.error.message.includes('already registered')) Auth.showError('Bu e-posta adresi zaten kayıtlı.');
         else Auth.showError(res.error.message);
@@ -720,6 +731,24 @@ var Auth = {
         setTimeout(function() { Auth.hideModal('force'); }, 1000); 
       }
     });
+  },
+  _isRegisterMode: false,
+  toggleRegisterMode: function() {
+    this._isRegisterMode = !this._isRegisterMode;
+    var usernameField = document.getElementById('authUsername');
+    var btn = document.getElementById('authRegisterBtn');
+    var mainBtn = document.querySelector('.auth-btn-main');
+    if (this._isRegisterMode) {
+      usernameField.style.display = 'block';
+      btn.textContent = 'Giriş Yapmak İçin Tıklayın';
+      mainBtn.textContent = 'Kayıt Ol';
+      mainBtn.setAttribute('onclick', 'Auth.registerWithEmail()');
+    } else {
+      usernameField.style.display = 'none';
+      btn.textContent = 'Yeni Hesap Oluştur';
+      mainBtn.textContent = 'Giriş Yap';
+      mainBtn.setAttribute('onclick', 'Auth.loginWithEmail()');
+    }
   },
   socialLogin: function(provider) {
     var sb = getSupabase();
@@ -739,10 +768,11 @@ var Auth = {
     var el = document.getElementById('authSection');
     if (!el || !this.user) return;
     var email = esc(this.user.email || '');
-    var displayName = email.split('@')[0] || 'Kullanıcı';
-    var avatarHtml = '<div class="user-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;font-weight:800;font-size:16px;">' + displayName.charAt(0).toUpperCase() + '</div>';
+    var meta = this.user.user_metadata || {};
+    var displayName = meta.username || meta.full_name || meta.name || email.split('@')[0] || 'Kullanıcı';
+    var avatarHtml = '<div class="user-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;font-weight:800;font-size:16px;">' + esc(displayName).charAt(0).toUpperCase() + '</div>';
     var mobileLogout = 'onclick="if(window.innerWidth <= 768) Auth.logout()"';
-    el.innerHTML = '<div class="user-info-box" style="display:flex;" ' + mobileLogout + '>' + avatarHtml + '<div class="user-details"><div class="user-name" title="'+email+'">' + displayName + '</div><div class="user-logout" onclick="Auth.logout()">Çıkış Yap</div></div></div>';
+    el.innerHTML = '<div class="user-info-box" style="display:flex;" ' + mobileLogout + '>' + avatarHtml + '<div class="user-details"><div class="user-name" title="'+email+'">' + esc(displayName) + '</div><div class="user-logout" onclick="Auth.logout()">Çıkış Yap</div></div></div>';
   },
   _saveTimer: null,
   saveCloudData: function() {
@@ -1339,7 +1369,7 @@ var V = {
          content.innerHTML = html;
        }
 
-       var needsBracket = ['7', '679', '17015', '132'].indexOf(String(activeLg)) !== -1;
+       var needsBracket = ['7', '679', '17015', '132', '138'].indexOf(String(activeLg)) !== -1;
        if (needsBracket) {
            content.insertAdjacentHTML('beforeend', '<div id="bracketContent" style="margin-top:40px;">' + T.loading('Playoff/Eşleşme tablosu kontrol ediliyor...') + '</div>');
            V.loadBrackets(activeLg);
@@ -1357,7 +1387,31 @@ var V = {
       if (!el) return;
       
       if (!data || !data.cuptrees || data.cuptrees.length === 0) {
-        el.innerHTML = '<div style="text-align:center; color:var(--text3); font-size:14px; padding:20px;">Henüz eşleşme/playoff tablosu oluşmamış veya bulunamadı.</div>';
+        // Fallback: Yaklaşan maçları göster
+        V.apiFetch('/api/tournament/' + lgId + '/next').then(function(nextData) {
+          var matches = nextData.matches || [];
+          if (matches.length === 0) {
+            el.innerHTML = '<div style="text-align:center; color:var(--text3); font-size:14px; padding:20px;">Henüz eşleşme/playoff tablosu oluşmamış veya bulunamadı.</div>';
+            return;
+          }
+          var fHtml = '<div class="stat-group-title" style="font-size:16px; color:var(--text);">📅 Yaklaşan Eşleşmeler</div>';
+          matches.forEach(function(m) {
+            var hS = m.homeScore !== null ? m.homeScore : '-';
+            var aS = m.awayScore !== null ? m.awayScore : '-';
+            var dParts = m.date ? m.date.split('-') : [];
+            var shortDate = dParts.length === 3 ? (dParts[2] + '/' + dParts[1]) : (m.time || '');
+            var scoreStr = (hS === '-' && aS === '-') ? (m.time || 'vs') : hS + ' - ' + aS;
+            var statusBadge = m.status === 'live' ? '<span class="minute-badge" style="font-size:10px;">' + esc(m.minute || 'CANLI') + '</span>' : '';
+            fHtml += '<div onclick="V.showDetail(' + m.id + ')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:13px;cursor:pointer;transition:var(--transition);" onmouseover="this.style.background=\'var(--surface2)\'" onmouseout="this.style.background=\'var(--surface)\'">' +
+              '<div style="color:var(--text3);width:44px;font-size:11px;font-weight:600;">' + shortDate + '</div>' +
+              '<div style="flex:1;display:flex;align-items:center;gap:6px;justify-content:flex-end;"><img src="' + safeImgUrl(m.homeTeam.img) + '" style="width:18px;height:18px;" onerror="this.style.display=\'none\'"><span style="font-weight:700;">' + esc(m.homeTeam.shortName) + '</span></div>' +
+              '<div style="padding:0 12px;font-weight:800;font-size:14px;color:var(--text);min-width:60px;text-align:center;">' + scoreStr + ' ' + statusBadge + '</div>' +
+              '<div style="flex:1;display:flex;align-items:center;gap:6px;"><span style="font-weight:700;">' + esc(m.awayTeam.shortName) + '</span><img src="' + safeImgUrl(m.awayTeam.img) + '" style="width:18px;height:18px;" onerror="this.style.display=\'none\'"></div></div>';
+          });
+          el.innerHTML = fHtml;
+        }).catch(function() {
+          el.innerHTML = '<div style="text-align:center; color:var(--text3); font-size:14px; padding:20px;">Henüz eşleşme/playoff tablosu oluşmamış veya bulunamadı.</div>';
+        });
         return;
       }
       
@@ -1681,7 +1735,30 @@ var V = {
         if (!html) { content.innerHTML = T.empty('Bu maç için istatistik veya geçmiş veri bulunamadı'); } else { content.innerHTML = html; }
       });
     } else if (tab === 'lineups') {
-      this.apiFetch('/api/event/' + matchId + '/lineups').then(function(data) { content.innerHTML = T.lineups(data); }).catch(function() { content.innerHTML = T.empty('Kadro bilgisi henüz açıklanmadı'); });
+      Promise.all([
+        this.apiFetch('/api/event/' + matchId + '/lineups').catch(function(){ return null; }),
+        this.apiFetch('/api/event/' + matchId + '/missing-players').catch(function(){ return { home: [], away: [] }; })
+      ]).then(function(results) {
+        var data = results[0];
+        var missingData = results[1] || { home: [], away: [] };
+        if (!data) data = {};
+        // Merge missing players from separate endpoint
+        if (!data.home) data.home = { players: [] };
+        if (!data.away) data.away = { players: [] };
+        if (!data.home.missing) data.home.missing = [];
+        if (!data.away.missing) data.away.missing = [];
+        if (missingData.home && missingData.home.length > 0) {
+          data.home.missing = data.home.missing.concat(missingData.home);
+        }
+        if (missingData.away && missingData.away.length > 0) {
+          data.away.missing = data.away.missing.concat(missingData.away);
+        }
+        // Deduplicate missing by name
+        var dedup = function(arr) { var seen = {}; return arr.filter(function(p) { var k = p.name || ''; if (seen[k]) return false; seen[k] = true; return true; }); };
+        data.home.missing = dedup(data.home.missing);
+        data.away.missing = dedup(data.away.missing);
+        content.innerHTML = T.lineups(data);
+      }).catch(function() { content.innerHTML = T.empty('Kadro bilgisi henüz açıklanmadı'); });
     }
   },
 
@@ -2191,53 +2268,124 @@ var Search = {
     if(V.state.page !== 'matches') V.setPage('matches');
     var panel = document.getElementById('detailPanel'); if (!panel) return;
     panel.classList.add('open');
-    panel.innerHTML = '<div class="loading" style="height:100%"><div class="spinner"></div><div class="loading-text">Takım maçları yükleniyor...</div></div>';
-    V.apiFetch('/api/team/' + teamId + '/events').then(function(data) {
-      var matches = data.matches || [];
+    panel.innerHTML = '<div class="loading" style="height:100%"><div class="spinner"></div><div class="loading-text">Takım bilgileri yükleniyor...</div></div>';
+    
+    Promise.all([
+      V.apiFetch('/api/team/' + teamId + '/events').catch(function(){ return { matches: [] }; }),
+      V.apiFetch('/api/team/' + teamId + '/squad').catch(function(){ return { players: [], teamInfo: null }; }),
+      V.apiFetch('/api/team/' + teamId + '/season-stats').catch(function(){ return { stats: null }; })
+    ]).then(function(results) {
+      var matchesData = results[0] || { matches: [] };
+      var squadData = results[1] || { players: [], teamInfo: null };
+      var statsData = results[2] || { stats: null };
+      var matches = matchesData.matches || [];
       var teamImg = 'https://api.sofascore.app/api/v1/team/' + teamId + '/image';
-      var teamName = matches.length > 0 ? (matches[0].homeTeam.id == teamId ? matches[0].homeTeam.name : matches[0].awayTeam.name) : 'Takım';
+      var teamName = (squadData.teamInfo && squadData.teamInfo.name) ? squadData.teamInfo.name : (matches.length > 0 ? (matches[0].homeTeam.id == teamId ? matches[0].homeTeam.name : matches[0].awayTeam.name) : 'Takım');
+      var teamInfo = squadData.teamInfo || {};
+      
       var html = '<div class="detail-header" style="position:relative"><div class="btn-close-panel" onclick="V.closeDetail()">✕</div>' +
         '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 0;">' +
-        '<img src="' + safeImgUrl(teamImg) + '" onerror="this.style.display=\'none\'" style="width:56px;height:56px;object-fit:contain;">' +
-        '<div style="font-size:18px;font-weight:800">' + esc(teamName) + '</div></div></div>';
-      html += '<div class="detail-content" style="padding:16px;">';
-      if (matches.length === 0) { html += T.empty('Maç bulunamadı'); }
-      else {
-        var now = Date.now();
-        var live=[], upcoming=[], finished=[];
-        matches.forEach(function(m) {
-          if (m.status === 'live') live.push(m);
-          else if (m.status === 'scheduled') {
-            if (m.timestamp > now - 86400000) upcoming.push(m); 
-          }
-          else finished.push(m);
-        });
-        upcoming.sort(function(a,b){ return a.timestamp - b.timestamp; });
-        finished.sort(function(a,b){ return b.timestamp - a.timestamp; });
-
-        var makeCard = function(m) {
-          var hasScore = m.homeScore !== null && m.homeScore !== undefined;
-          var hS = hasScore ? safeNum(m.homeScore) : '-'; var aS = hasScore ? safeNum(m.awayScore) : '-';
-          var hW = hasScore && m.homeScore > m.awayScore; var aW = hasScore && m.awayScore > m.homeScore;
-          var dParts = m.date ? m.date.split('-') : []; var shortDate = dParts.length === 3 ? (dParts[2] + '/' + dParts[1]) : m.time;
-          var resClass = hW ? 'border-left:3px solid var(--brand);' : aW ? 'border-left:3px solid var(--orange);' : 'border-left:3px solid var(--text3);';
-          var scoreStr = (hS === '-' && aS === '-') ? 'vs' : hS + ' - ' + aS;
-          return '<div onclick="Search.pickMatchFromTeam(' + m.id + ',' + teamId + ')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:13px;cursor:pointer;transition:var(--transition);' + resClass + '" onmouseover="this.style.background=\'var(--surface2)\'" onmouseout="this.style.background=\'var(--surface)\'">' +
-            '<div style="color:var(--text3);width:40px;font-size:11px;font-weight:600;">' + shortDate + '</div>' +
-            '<div style="flex:1;text-align:right;font-weight:600;color:' + (hW ? 'var(--text)' : 'var(--text2)') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(m.homeTeam.shortName) + '</div>' +
-            '<div style="padding:0 12px;font-weight:800;font-size:14px;color:var(--text)">' + scoreStr + '</div>' +
-            '<div style="flex:1;text-align:left;font-weight:600;color:' + (aW ? 'var(--text)' : 'var(--text2)') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(m.awayTeam.shortName) + '</div>' +
-          '</div>';
-        };
-
-        if (live.length) { html += '<div class="stat-group-title" style="color:var(--green)">🔴 Canlı</div>'; live.forEach(function(m){ html += makeCard(m); }); }
-        if (upcoming.length) { html += '<div class="stat-group-title" style="color:var(--brand)">📅 Yaklaşan</div>'; upcoming.slice(0,5).forEach(function(m){ html += makeCard(m); }); }
-        if (finished.length) { html += '<div class="stat-group-title">✅ Tamamlanan</div>'; finished.slice(0,10).forEach(function(m){ html += makeCard(m); }); }
-      }
-      panel.innerHTML = html + '</div>';
+        '<img src="' + teamImg + '" onerror="this.style.display=\'none\'" style="width:56px;height:56px;object-fit:contain;">' +
+        '<div style="font-size:18px;font-weight:800">' + esc(teamName) + '</div>';
+      var metaParts = [];
+      if (teamInfo.country) metaParts.push(teamInfo.country);
+      if (teamInfo.stadium) metaParts.push('🏟️ ' + teamInfo.stadium);
+      if (teamInfo.manager) metaParts.push('👤 ' + teamInfo.manager);
+      if (metaParts.length > 0) html += '<div style="font-size:12px;color:var(--text3);">' + metaParts.map(function(p){ return esc(p); }).join(' · ') + '</div>';
+      html += '</div></div>';
+      html += '<div class="detail-tabs">';
+      html += '<div class="detail-tab active" data-tab="team-matches" onclick="Search._teamTab(\'team-matches\',' + teamId + ')">Maçlar</div>';
+      html += '<div class="detail-tab" data-tab="team-squad" onclick="Search._teamTab(\'team-squad\',' + teamId + ')">Kadro</div>';
+      html += '<div class="detail-tab" data-tab="team-stats" onclick="Search._teamTab(\'team-stats\',' + teamId + ')">İstatistik</div>';
+      html += '</div>';
+      html += '<div class="detail-content" id="teamDetailContent" style="padding:16px;overflow-y:auto;flex:1;"></div>';
+      panel.innerHTML = html;
+      Search._teamData = { matches: matches, squad: squadData, stats: statsData, teamId: teamId, teamName: teamName };
+      Search._renderTeamTab('team-matches');
     }).catch(function(err) {
       panel.innerHTML = '<div class="detail-header" style="position:relative"><div class="btn-close-panel" onclick="V.closeDetail()">✕</div></div><div class="detail-content">' + T.empty('Yüklenemedi: ' + (err.message||'')) + '</div>';
     });
+  },
+  _teamData: null,
+  _teamTab: function(tab, teamId) {
+    document.querySelectorAll('.detail-tab').forEach(function(el) { el.classList.toggle('active', el.getAttribute('data-tab') === tab); });
+    Search._renderTeamTab(tab);
+  },
+  _renderTeamTab: function(tab) {
+    var content = document.getElementById('teamDetailContent');
+    if (!content || !Search._teamData) return;
+    var d = Search._teamData;
+    var html = '';
+    if (tab === 'team-matches') {
+      var matches = d.matches;
+      if (matches.length === 0) { content.innerHTML = T.empty('Maç bulunamadı'); return; }
+      var now = Date.now(); var live=[], upcoming=[], finished=[];
+      matches.forEach(function(m) { if (m.status === 'live') live.push(m); else if (m.status === 'scheduled') { if (m.timestamp > now - 86400000) upcoming.push(m); } else finished.push(m); });
+      upcoming.sort(function(a,b){ return a.timestamp - b.timestamp; });
+      finished.sort(function(a,b){ return b.timestamp - a.timestamp; });
+      var makeCard = function(m) {
+        var hasScore = m.homeScore !== null && m.homeScore !== undefined;
+        var hS = hasScore ? safeNum(m.homeScore) : '-'; var aS = hasScore ? safeNum(m.awayScore) : '-';
+        var hW = hasScore && m.homeScore > m.awayScore; var aW = hasScore && m.awayScore > m.homeScore;
+        var dParts = m.date ? m.date.split('-') : []; var shortDate = dParts.length === 3 ? (dParts[2] + '/' + dParts[1]) : m.time;
+        var resClass = hW ? 'border-left:3px solid var(--brand);' : aW ? 'border-left:3px solid var(--orange);' : 'border-left:3px solid var(--text3);';
+        var scoreStr = (hS === '-' && aS === '-') ? 'vs' : hS + ' - ' + aS;
+        return '<div onclick="Search.pickMatchFromTeam(' + m.id + ',' + d.teamId + ')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:13px;cursor:pointer;transition:var(--transition);' + resClass + '" onmouseover="this.style.background=\'var(--surface2)\'" onmouseout="this.style.background=\'var(--surface)\'">' +
+          '<div style="color:var(--text3);width:40px;font-size:11px;font-weight:600;">' + shortDate + '</div>' +
+          '<div style="flex:1;text-align:right;font-weight:600;color:' + (hW ? 'var(--text)' : 'var(--text2)') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(m.homeTeam.shortName) + '</div>' +
+          '<div style="padding:0 12px;font-weight:800;font-size:14px;color:var(--text)">' + scoreStr + '</div>' +
+          '<div style="flex:1;text-align:left;font-weight:600;color:' + (aW ? 'var(--text)' : 'var(--text2)') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(m.awayTeam.shortName) + '</div></div>';
+      };
+      if (live.length) { html += '<div class="stat-group-title" style="color:var(--green)">🔴 Canlı</div>'; live.forEach(function(m){ html += makeCard(m); }); }
+      if (upcoming.length) { html += '<div class="stat-group-title" style="color:var(--brand)">📅 Yaklaşan</div>'; upcoming.slice(0,5).forEach(function(m){ html += makeCard(m); }); }
+      if (finished.length) { html += '<div class="stat-group-title">✅ Tamamlanan</div>'; finished.slice(0,10).forEach(function(m){ html += makeCard(m); }); }
+    } else if (tab === 'team-squad') {
+      var players = d.squad.players || [];
+      if (players.length === 0) { content.innerHTML = T.empty('Kadro bilgisi bulunamadı'); return; }
+      var totalValue = 0;
+      players.forEach(function(p) { if (p.marketValue) totalValue += p.marketValue; });
+      if (totalValue > 0) {
+        var tvStr = totalValue >= 1000000 ? '€' + (totalValue / 1000000).toFixed(1) + 'M' : '€' + (totalValue / 1000).toFixed(0) + 'K';
+        html += '<div style="text-align:center;padding:16px;background:var(--brand-dim);border:1px solid var(--brand);border-radius:var(--radius-sm);margin-bottom:16px;">' +
+          '<div style="font-size:12px;color:var(--text2);margin-bottom:4px;">Toplam Kadro Değeri</div>' +
+          '<div style="font-size:24px;font-weight:800;color:var(--brand);">' + tvStr + '</div></div>';
+      }
+      var posMap = { G:'Kaleciler', D:'Defans', M:'Ortasaha', F:'Forvet' };
+      var posGroups = { 'Kaleciler': [], 'Defans': [], 'Ortasaha': [], 'Forvet': [], 'Diğer': [] };
+      players.forEach(function(p) { posGroups[posMap[p.position] || 'Diğer'].push(p); });
+      ['Kaleciler', 'Defans', 'Ortasaha', 'Forvet', 'Diğer'].forEach(function(gk) {
+        var gP = posGroups[gk]; if (gP.length === 0) return;
+        html += '<div class="lineup-section-title">' + gk + ' (' + gP.length + ')</div><div class="lineup-list">';
+        gP.forEach(function(p) {
+          var mvStr = p.marketValue ? (p.marketValue >= 1000000 ? '€' + (p.marketValue/1000000).toFixed(1) + 'M' : '€' + (p.marketValue/1000).toFixed(0) + 'K') : '';
+          var ms = []; if (p.age) ms.push(p.age+' yaş'); if (p.nationality) ms.push(p.nationality); if (mvStr) ms.push(mvStr);
+          html += '<div class="ll-item" onclick="Search.pickPlayer(' + p.id + ',\'' + esc(p.name).replace(/'/g,"\\'") + '\',\'' + esc(posMap[p.position]||p.position||'').replace(/'/g,"\\'") + '\',\'' + safeImgUrl(p.img).replace(/'/g,"\\'") + '\')">' +
+            '<div class="ll-num">' + (p.shirtNumber || '-') + '</div>' +
+            '<img src="' + safeImgUrl(p.img) + '" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'" class="ll-img">' +
+            '<div class="ll-info"><div class="ll-name">' + esc(p.name) + '</div><div class="ll-pos">' + ms.join(' · ') + '</div></div></div>';
+        });
+        html += '</div>';
+      });
+    } else if (tab === 'team-stats') {
+      var stats = d.stats.stats;
+      if (stats) {
+        html += '<div class="stat-group-title" style="margin-top:0;">📊 ' + esc(stats.tournamentName || 'Lig') + '</div>';
+        html += '<div style="text-align:center;padding:20px;background:var(--brand-dim);border:1px solid var(--brand);border-radius:var(--radius-sm);margin-bottom:16px;">' +
+          '<div style="font-size:40px;font-weight:800;color:var(--brand);">#' + stats.position + '</div>' +
+          '<div style="font-size:13px;color:var(--text2);margin-top:4px;">' + stats.points + ' Puan</div></div>';
+        html += '<div class="pm-grid">';
+        html += '<div class="pm-stat-box"><div class="pm-stat-lbl">Maç</div><div class="pm-stat-val">' + stats.matches + '</div></div>';
+        html += '<div class="pm-stat-box"><div class="pm-stat-lbl">Galibiyet</div><div class="pm-stat-val" style="color:var(--green)">' + stats.wins + '</div></div>';
+        html += '<div class="pm-stat-box"><div class="pm-stat-lbl">Beraberlik</div><div class="pm-stat-val" style="color:var(--yellow)">' + stats.draws + '</div></div>';
+        html += '<div class="pm-stat-box"><div class="pm-stat-lbl">Mağlubiyet</div><div class="pm-stat-val" style="color:var(--red)">' + stats.losses + '</div></div>';
+        html += '<div class="pm-stat-box"><div class="pm-stat-lbl">Atılan Gol</div><div class="pm-stat-val">' + stats.goalsFor + '</div></div>';
+        html += '<div class="pm-stat-box"><div class="pm-stat-lbl">Yenilen Gol</div><div class="pm-stat-val">' + stats.goalsAgainst + '</div></div>';
+        html += '<div class="pm-stat-box"><div class="pm-stat-lbl">Averaj</div><div class="pm-stat-val">' + (stats.goalsFor - stats.goalsAgainst) + '</div></div>';
+        html += '<div class="pm-stat-box"><div class="pm-stat-lbl">Puan</div><div class="pm-stat-val" style="color:var(--brand)">' + stats.points + '</div></div>';
+        html += '</div>';
+      } else { html += T.empty('Sezon istatistik verisi bulunamadı.'); }
+    }
+    content.innerHTML = html || T.empty('Veri bulunamadı');
   },
 
   pickMatchFromTeam: function(matchId, teamId) {
@@ -2272,7 +2420,127 @@ var Search = {
   pickPlayer: function(id, name, pos, img) {
     Search.clear();
     V.state.playerData[id] = { id: id, name: name, pos: pos, img: img, rating: null, stats: {} };
-    V.showPlayerModal(id);
+    
+    // Detail panel'de açılsın
+    var panel = document.getElementById('detailPanel'); if (!panel) return;
+    panel.classList.add('open');
+    panel.innerHTML = '<div class="loading" style="height:100%"><div class="spinner"></div><div class="loading-text">Oyuncu bilgileri yükleniyor...</div></div>';
+    
+    Promise.all([
+      V.apiFetch('/api/player/' + id + '/live-match').catch(function(){ return { inLiveMatch: false }; }),
+      V.apiFetch('/api/player/' + id + '/season-stats').catch(function(){ return { statistics: [], info: null }; })
+    ]).then(function(results) {
+      var liveData = results[0] || { inLiveMatch: false };
+      var seasonData = results[1] || { statistics: [], info: null };
+      var info = seasonData.info || {};
+      
+      var playerName = info.name || name || 'Oyuncu';
+      var playerPos = info.position || pos || '';
+      var posMap = { G:'Kaleci', D:'Defans', M:'Ortasaha', F:'Forvet', PG:'PG', SG:'SG', SF:'SF', PF:'PF', C:'Pivot' };
+      var posLabel = posMap[playerPos] || playerPos;
+      
+      var html = '<div class="detail-header" style="position:relative">';
+      html += '<div class="btn-close-panel" onclick="V.closeDetail()">✕</div>';
+      html += '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 0;">';
+      html += '<img src="https://api.sofascore.app/api/v1/player/' + id + '/image" onerror="this.src=\'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=\'" style="width:70px;height:70px;border-radius:50%;object-fit:cover;background:var(--bg2);border:2px solid var(--border);">';
+      html += '<div style="font-size:20px;font-weight:800">' + esc(playerName) + '</div>';
+      html += '<div style="font-size:13px;color:var(--text2)">' + esc(posLabel);
+      if (info.teamName) html += ' · ' + esc(info.teamName);
+      if (info.nationality) html += ' · ' + esc(info.nationality);
+      html += '</div>';
+      
+      // Player meta info
+      var metaParts = [];
+      if (info.age) metaParts.push(info.age + ' yaş');
+      if (info.height) metaParts.push(info.height + ' cm');
+      if (info.shirtNumber) metaParts.push('#' + info.shirtNumber);
+      if (info.marketValue) {
+        var mv = info.marketValue;
+        if (mv >= 1000000) metaParts.push('€' + (mv/1000000).toFixed(1) + 'M');
+        else if (mv >= 1000) metaParts.push('€' + (mv/1000).toFixed(0) + 'K');
+      }
+      if (metaParts.length > 0) html += '<div style="font-size:12px;color:var(--text3);margin-top:4px;">' + metaParts.join(' · ') + '</div>';
+      
+      html += '</div></div>';
+      html += '<div class="detail-content" style="padding:16px;overflow-y:auto;flex:1;">';
+      
+      // Canlı maç istatistikleri
+      if (liveData.inLiveMatch && liveData.match) {
+        var m = liveData.match;
+        html += '<div class="stat-group-title" style="margin-top:0;color:var(--green);border-bottom-color:var(--green);">🔴 Canlı Maç İstatistikleri</div>';
+        html += '<div onclick="V.showDetail(' + m.id + ')" style="display:flex;align-items:center;justify-content:center;gap:12px;padding:12px;background:var(--green-dim);border:1px solid var(--green);border-radius:var(--radius-sm);margin-bottom:16px;cursor:pointer;">';
+        html += '<img src="' + safeImgUrl(m.homeTeam.img) + '" style="width:24px;height:24px;" onerror="this.style.display=\'none\'">';
+        html += '<span style="font-weight:700;font-size:14px;">' + esc(m.homeTeam.shortName) + '</span>';
+        var scoreText = (m.homeScore !== null) ? m.homeScore + ' - ' + m.awayScore : 'vs';
+        html += '<span style="font-weight:800;font-size:16px;color:var(--green);">' + scoreText + '</span>';
+        html += '<span style="font-weight:700;font-size:14px;">' + esc(m.awayTeam.shortName) + '</span>';
+        html += '<img src="' + safeImgUrl(m.awayTeam.img) + '" style="width:24px;height:24px;" onerror="this.style.display=\'none\'">';
+        if (m.minute) html += '<span class="minute-badge" style="font-size:11px;">' + esc(m.minute) + '</span>';
+        html += '</div>';
+        
+        if (liveData.liveStats && Object.keys(liveData.liveStats).length > 0) {
+          if (liveData.liveRating) {
+            var r = parseFloat(liveData.liveRating);
+            var rc = r >= 7.5 ? 'rating-high' : (r >= 6.5 ? 'rating-mid' : 'rating-low');
+            html += '<div style="text-align:center;margin-bottom:12px;"><span class="ll-rating ' + rc + '" style="font-size:16px;padding:6px 14px;">⭐ ' + liveData.liveRating + '</span></div>';
+          }
+          html += '<div class="pm-grid">';
+          var ls = liveData.liveStats;
+          var lKeys = Object.keys(ls);
+          for (var li = 0; li < lKeys.length; li++) {
+            var lk = lKeys[li]; var lv = ls[lk];
+            if (lv === undefined || lv === null || lk === 'rating') continue;
+            if (typeof lv === 'object') continue;
+            if (typeof lv === 'number' && lv % 1 !== 0) lv = parseFloat(lv).toFixed(2);
+            var llabel = STAT_DICT[lk] || lk.replace(/([A-Z])/g, ' $1').replace(/^./, function(s){ return s.toUpperCase(); });
+            html += '<div class="pm-stat-box"><div class="pm-stat-lbl">' + llabel + '</div><div class="pm-stat-val" style="color:var(--green);">' + lv + '</div></div>';
+          }
+          html += '</div>';
+        } else {
+          html += '<div style="text-align:center;color:var(--text3);font-size:13px;padding:10px;">Canlı istatistik verisi bekleniyor...</div>';
+        }
+      }
+      
+      // Sezon istatistikleri
+      html += '<div class="stat-group-title" style="' + (liveData.inLiveMatch ? 'margin-top:30px;' : 'margin-top:0;') + '">📊 Sezon İstatistikleri</div>';
+      var sStats = seasonData.statistics || {};
+      var sKeys = Object.keys(sStats);
+      if (sKeys.length > 0) {
+        html += '<div class="pm-grid">';
+        for (var si = 0; si < sKeys.length; si++) {
+          var sk = sKeys[si]; var sv = sStats[sk];
+          if (sv === undefined || sv === null || sk === 'id' || sk === 'type') continue;
+          if (typeof sv === 'object') {
+            // Nested stats object
+            var subKeys = Object.keys(sv);
+            for (var sj = 0; sj < subKeys.length; sj++) {
+              var subk = subKeys[sj]; var subv = sv[subk];
+              if (subv === undefined || subv === null || typeof subv === 'object') continue;
+              if (typeof subv === 'number' && subv % 1 !== 0) subv = parseFloat(subv).toFixed(2);
+              var sublabel = STAT_DICT[subk] || subk.replace(/([A-Z])/g, ' $1').replace(/^./, function(s){ return s.toUpperCase(); });
+              html += '<div class="pm-stat-box"><div class="pm-stat-lbl">' + sublabel + '</div><div class="pm-stat-val">' + subv + '</div></div>';
+            }
+          } else {
+            if (typeof sv === 'number' && sv % 1 !== 0) sv = parseFloat(sv).toFixed(2);
+            var slabel = STAT_DICT[sk] || sk.replace(/([A-Z])/g, ' $1').replace(/^./, function(s){ return s.toUpperCase(); });
+            html += '<div class="pm-stat-box"><div class="pm-stat-lbl">' + slabel + '</div><div class="pm-stat-val">' + sv + '</div></div>';
+          }
+        }
+        html += '</div>';
+      } else {
+        html += '<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px;">Sezon istatistik verisi bulunamadı.</div>';
+      }
+      
+      // Favori butonu
+      V.state.playerData[id] = { id: id, name: playerName, pos: posLabel, img: 'https://api.sofascore.app/api/v1/player/' + id + '/image', rating: liveData.liveRating || null, stats: sStats };
+      var isFav = V.state.favPlayers.some(function(fp){ return String(fp.id) === String(id); });
+      html += '<button class="pm-fav-btn ' + (isFav ? 'faved' : '') + '" onclick="V.toggleFavPlayer(\'' + id + '\', event)" style="margin-top:20px;">' + (isFav ? '★ Favorilerden Çıkar' : '⭐ Favorilere Ekle') + '</button>';
+      
+      html += '</div>';
+      panel.innerHTML = html;
+    }).catch(function(err) {
+      panel.innerHTML = '<div class="detail-header" style="position:relative"><div class="btn-close-panel" onclick="V.closeDetail()">✕</div></div><div class="detail-content">' + T.empty('Oyuncu bilgileri yüklenemedi') + '</div>';
+    });
   },
 
   clear: function() {
