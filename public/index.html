@@ -769,10 +769,58 @@ var Auth = {
     if (!el || !this.user) return;
     var email = esc(this.user.email || '');
     var meta = this.user.user_metadata || {};
-    var displayName = meta.username || meta.full_name || meta.name || email.split('@')[0] || 'Kullanıcı';
+    var displayName = meta.username || meta.full_name || meta.name || '';
+    
+    if (!displayName) {
+      // Kullanıcı adı yok — seçim ekranı göster
+      el.innerHTML = '<div style="padding:4px 0;">' +
+        '<div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600;">Kullanıcı adı seçin</div>' +
+        '<div style="display:flex;gap:6px;">' +
+          '<input type="text" id="usernameSetInput" placeholder="Kullanıcı adı" style="flex:1;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:inherit;font-size:13px;outline:none;min-width:0;" autocomplete="off">' +
+          '<button onclick="Auth.setUsername()" style="padding:8px 12px;background:var(--brand);color:#fff;border:none;border-radius:var(--radius-sm);font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;transition:0.2s;">Kaydet</button>' +
+        '</div>' +
+        '<div id="usernameSetError" style="font-size:11px;color:var(--red);margin-top:4px;display:none;"></div>' +
+        '<div class="user-logout" onclick="Auth.logout()" style="font-size:11px;margin-top:6px;text-align:center;">Çıkış Yap</div>' +
+      '</div>';
+      return;
+    }
+    
     var avatarHtml = '<div class="user-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;font-weight:800;font-size:16px;">' + esc(displayName).charAt(0).toUpperCase() + '</div>';
     var mobileLogout = 'onclick="if(window.innerWidth <= 768) Auth.logout()"';
     el.innerHTML = '<div class="user-info-box" style="display:flex;" ' + mobileLogout + '>' + avatarHtml + '<div class="user-details"><div class="user-name" title="'+email+'">' + esc(displayName) + '</div><div class="user-logout" onclick="Auth.logout()">Çıkış Yap</div></div></div>';
+  },
+  setUsername: function() {
+    var input = document.getElementById('usernameSetInput');
+    var errEl = document.getElementById('usernameSetError');
+    if (!input) return;
+    var username = input.value.trim();
+    if (username.length < 3) {
+      if (errEl) { errEl.textContent = 'En az 3 karakter olmalı.'; errEl.style.display = 'block'; }
+      return;
+    }
+    if (username.length > 20) {
+      if (errEl) { errEl.textContent = 'En fazla 20 karakter olabilir.'; errEl.style.display = 'block'; }
+      return;
+    }
+    if (!/^[a-zA-Z0-9_\u00C0-\u024F\u0400-\u04FF\u00E0-\u00FC]+$/u.test(username)) {
+      if (errEl) { errEl.textContent = 'Sadece harf, rakam ve _ kullanın.'; errEl.style.display = 'block'; }
+      return;
+    }
+    var sb = getSupabase();
+    if (!sb) { if (errEl) { errEl.textContent = 'Bağlantı hatası.'; errEl.style.display = 'block'; } return; }
+    input.disabled = true;
+    sb.auth.updateUser({ data: { username: username } }).then(function(res) {
+      if (res.error) {
+        input.disabled = false;
+        if (errEl) { errEl.textContent = res.error.message || 'Hata oluştu.'; errEl.style.display = 'block'; }
+      } else {
+        Auth.user = res.data.user;
+        Auth.renderUser();
+      }
+    }).catch(function(e) {
+      input.disabled = false;
+      if (errEl) { errEl.textContent = 'Bir hata oluştu.'; errEl.style.display = 'block'; }
+    });
   },
   _saveTimer: null,
   saveCloudData: function() {
