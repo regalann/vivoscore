@@ -2563,7 +2563,7 @@ var Search = {
         var keys = Object.keys(obj);
         for (var i = 0; i < keys.length; i++) {
           var k = keys[i]; var v = obj[k];
-          if (v === undefined || v === null || k === 'id' || k === 'type') continue;
+          if (v === undefined || v === null || k === 'id' || k === 'type' || k === 'sportSlug' || k === 'statisticsType' || k === 'sport_slug' || k === 'statistics_type') continue;
           if (typeof v === 'boolean') v = v ? 'Evet' : 'Hayır';
           if (typeof v === 'object' && !Array.isArray(v)) { collectStats(v, (prefix ? prefix + '.' : '') + k); continue; }
           if (Array.isArray(v)) continue;
