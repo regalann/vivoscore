@@ -322,23 +322,89 @@ app.get('/api/player/:id/season-stats', async (req, res) => {
       }
     } catch(e) {}
 
-    // Sezon istatistikleri
-    try {
-      const statsData = await api(`/player/${pId}/unique-tournament-seasons`);
-      const tournaments = statsData?.uniqueTournamentSeasons || [];
-      if (tournaments.length > 0) {
-        const t = tournaments[0];
-        const tId = t.uniqueTournament?.id;
-        const seasons = t.seasons || [];
-        if (tId && seasons.length > 0) {
-          const sId = seasons[0].id;
-          try {
-            const seasonStats = await api(`/player/${pId}/unique-tournament/${tId}/season/${sId}/statistics/overall`);
-            result.statistics = sanitizeObject(seasonStats?.statistics || {});
-          } catch(e) {}
+    // Sezon istatistikleri - birden fazla yöntem dene
+    let statsFound = false;
+
+    // Yöntem 1: unique-tournament-seasons -> statistics/overall
+    if (!statsFound) {
+      try {
+        const statsData = await api(`/player/${pId}/unique-tournament-seasons`);
+        const tournaments = statsData?.uniqueTournamentSeasons || [];
+        for (let ti = 0; ti < Math.min(tournaments.length, 3) && !statsFound; ti++) {
+          const t = tournaments[ti];
+          const tId = t.uniqueTournament?.id;
+          const seasons = t.seasons || [];
+          if (tId && seasons.length > 0) {
+            const sId = seasons[0].id;
+            try {
+              const seasonStats = await api(`/player/${pId}/unique-tournament/${tId}/season/${sId}/statistics/overall`);
+              const raw = seasonStats?.statistics || seasonStats;
+              if (raw && typeof raw === 'object' && Object.keys(raw).length > 0) {
+                result.statistics = sanitizeObject(raw);
+                result.tournamentName = t.uniqueTournament?.name || '';
+                statsFound = true;
+              }
+            } catch(e) {}
+          }
         }
-      }
-    } catch(e) {}
+      } catch(e) {}
+    }
+
+    // Yöntem 2: SofaScore direct API
+    if (!statsFound) {
+      try {
+        const utSeasons = await safeFetch(`https://api.sofascore.app/api/v1/player/${pId}/unique-tournament-seasons`, { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' });
+        const tournaments = utSeasons?.uniqueTournamentSeasons || [];
+        for (let ti = 0; ti < Math.min(tournaments.length, 3) && !statsFound; ti++) {
+          const t = tournaments[ti];
+          const tId = t.uniqueTournament?.id;
+          const seasons = t.seasons || [];
+          if (tId && seasons.length > 0) {
+            const sId = seasons[0].id;
+            try {
+              const sStats = await safeFetch(`https://api.sofascore.app/api/v1/player/${pId}/unique-tournament/${tId}/season/${sId}/statistics/overall`, { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' });
+              const raw = sStats?.statistics || sStats;
+              if (raw && typeof raw === 'object' && Object.keys(raw).length > 0) {
+                result.statistics = sanitizeObject(raw);
+                result.tournamentName = t.uniqueTournament?.name || '';
+                statsFound = true;
+              }
+            } catch(e) {}
+          }
+        }
+      } catch(e) {}
+    }
+
+    // Yöntem 3: Son maçlardan istatistik çıkar
+    if (!statsFound) {
+      try {
+        const evData = await api(`/player/${pId}/events/last/0`);
+        const events = evData?.events || [];
+        const finishedEvents = events.filter(e => e.status?.type === 'finished');
+        if (finishedEvents.length > 0) {
+          // İlk bitmiş maçtan oyuncu istatistikleri çek
+          for (let ei = 0; ei < Math.min(finishedEvents.length, 3) && !statsFound; ei++) {
+            try {
+              const lineupData = await api(`/event/${finishedEvents[ei].id}/lineups`);
+              const allPlayers = [
+                ...((lineupData?.home?.players || []).map(p => p)),
+                ...((lineupData?.away?.players || []).map(p => p))
+              ];
+              const playerEntry = allPlayers.find(p => String(p.player?.id) === String(pId) || String(p.id) === String(pId));
+              if (playerEntry) {
+                const pStats = playerEntry.statistics || playerEntry.stats || {};
+                if (Object.keys(pStats).length > 0) {
+                  result.statistics = sanitizeObject(pStats);
+                  result.statisticsSource = 'lastMatch';
+                  result.tournamentName = finishedEvents[ei].tournament?.uniqueTournament?.name || finishedEvents[ei].tournament?.name || '';
+                  statsFound = true;
+                }
+              }
+            } catch(e) {}
+          }
+        }
+      } catch(e) {}
+    }
 
     setCache(cacheKey, result);
     res.json(result);
