@@ -2005,11 +2005,14 @@ var T = {
         if (!missingPlayers || missingPlayers.length === 0) return '';
         var mHtml = '<div class="lineup-section-title" style="color:var(--red); border-color:var(--red-dim); margin-top:16px;">Eksik & Şüpheli Oyuncular</div><div class="lineup-list">';
         missingPlayers.forEach(function(p) {
+            var pName = p.name || p.player?.name || p.player?.shortName || '';
+            if (!pName || /^\d+$/.test(pName)) return; // Skip if no name or only a number
             var icon = '🏥'; var typeLabel = 'Sakat/Eksik'; var t = p.type ? p.type.toLowerCase() : '';
             if (t.includes('suspend')) { icon = '🟥'; typeLabel = 'Cezalı'; } else if (t.includes('doubt')) { icon = '❓'; typeLabel = 'Şüpheli'; } else if (t.includes('injur')) { icon = '🏥'; typeLabel = 'Sakat'; }
             var reasonHtml = p.reason ? '<div style="font-size:11px; opacity:0.8; margin-top:2px;">' + esc(p.reason) + '</div>' : '';
-            mHtml += '<div class="ll-item" style="cursor:default; border-left:2px solid var(--red); padding-left:10px;"><div class="ll-num" style="background:transparent; font-size:20px; width:auto; margin-right:10px;">' + icon + '</div>' +
-                     '<div class="ll-info"><div class="ll-name">' + esc(p.name) + '</div>' + reasonHtml + '</div>' +
+            mHtml += '<div class="ll-item" style="cursor:default; border-left:2px solid var(--red); padding-left:10px;">' +
+                     '<div style="font-size:20px; flex-shrink:0; margin-right:12px; display:flex; align-items:center;">' + icon + '</div>' +
+                     '<div class="ll-info"><div class="ll-name">' + esc(pName) + '</div>' + reasonHtml + '</div>' +
                      '<div class="ll-rating" style="background:var(--red-dim); color:var(--red); font-size:11px;">' + typeLabel + '</div></div>';
         });
         return mHtml + '</div>';
