@@ -292,6 +292,238 @@ app.get('/api/player/:id/details', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// Oyuncu sezon istatistikleri
+app.get('/api/player/:id/season-stats', async (req, res) => {
+  if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
+  try {
+    const pId = req.params.id;
+    const cacheKey = `player_season_${pId}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
+
+    let result = { statistics: [], info: null };
+
+    // Oyuncu bilgisi
+    try {
+      const pData = await api(`/player/${pId}`);
+      if (pData?.player) {
+        result.info = sanitizeObject({
+          name: pData.player.name || pData.player.shortName || '',
+          position: pData.player.position || '',
+          height: pData.player.height || null,
+          age: pData.player.dateOfBirthTimestamp ? Math.floor((Date.now()/1000 - pData.player.dateOfBirthTimestamp) / 31557600) : null,
+          nationality: pData.player.country?.name || '',
+          teamName: pData.player.team?.name || '',
+          teamId: pData.player.team?.id || null,
+          marketValue: pData.player.proposedMarketValue || pData.player.marketValue || null,
+          marketValueCurrency: pData.player.proposedMarketValueRaw?.currency || 'EUR',
+          shirtNumber: pData.player.jerseyNumber || null
+        });
+      }
+    } catch(e) {}
+
+    // Sezon istatistikleri
+    try {
+      const statsData = await api(`/player/${pId}/unique-tournament-seasons`);
+      const tournaments = statsData?.uniqueTournamentSeasons || [];
+      if (tournaments.length > 0) {
+        const t = tournaments[0];
+        const tId = t.uniqueTournament?.id;
+        const seasons = t.seasons || [];
+        if (tId && seasons.length > 0) {
+          const sId = seasons[0].id;
+          try {
+            const seasonStats = await api(`/player/${pId}/unique-tournament/${tId}/season/${sId}/statistics/overall`);
+            result.statistics = sanitizeObject(seasonStats?.statistics || {});
+          } catch(e) {}
+        }
+      }
+    } catch(e) {}
+
+    setCache(cacheKey, result);
+    res.json(result);
+  } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+// Oyuncu canlı maç kontrolü
+app.get('/api/player/:id/live-match', async (req, res) => {
+  if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
+  try {
+    const pId = req.params.id;
+    let result = { inLiveMatch: false, match: null, liveStats: null };
+    
+    try {
+      const evData = await api(`/player/${pId}/events/last/0`);
+      const events = evData?.events || [];
+      const liveEvent = events.find(e => e.status?.type === 'inprogress');
+      if (liveEvent) {
+        result.inLiveMatch = true;
+        result.match = formatEvent(liveEvent);
+        // Canlı maç istatistikleri
+        try {
+          const lineupData = await api(`/event/${liveEvent.id}/lineups`);
+          const allPlayers = [
+            ...((lineupData?.home?.players || []).map(p => ({...p, teamSide: 'home'}))),
+            ...((lineupData?.away?.players || []).map(p => ({...p, teamSide: 'away'})))
+          ];
+          const playerEntry = allPlayers.find(p => String(p.player?.id) === String(pId) || String(p.id) === String(pId));
+          if (playerEntry) {
+            result.liveStats = sanitizeObject(playerEntry.statistics || playerEntry.stats || {});
+            result.liveRating = playerEntry.statistics?.rating || playerEntry.rating || null;
+          }
+        } catch(e) {}
+      }
+    } catch(e) {}
+    
+    res.json(result);
+  } catch (err) { res.json({ inLiveMatch: false, match: null, liveStats: null }); }
+});
+
+// Takım kadrosu
+app.get('/api/team/:id/squad', async (req, res) => {
+  if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
+  try {
+    const teamId = req.params.id;
+    const cacheKey = `team_squad_${teamId}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
+
+    let result = { players: [], manager: null, teamInfo: null };
+
+    try {
+      const data = await api(`/team/${teamId}/players`);
+      const players = data?.players || [];
+      result.players = players.map(p => sanitizeObject({
+        id: p.player?.id || 0,
+        name: p.player?.name || p.player?.shortName || '',
+        position: p.player?.position || '',
+        shirtNumber: p.player?.jerseyNumber || p.player?.shirtNumber || null,
+        nationality: p.player?.country?.name || '',
+        height: p.player?.height || null,
+        age: p.player?.dateOfBirthTimestamp ? Math.floor((Date.now()/1000 - p.player.dateOfBirthTimestamp) / 31557600) : null,
+        marketValue: p.player?.proposedMarketValue || null,
+        img: `https://api.sofascore.app/api/v1/player/${p.player?.id || 0}/image`
+      }));
+    } catch(e) {}
+
+    // Takım bilgisi
+    try {
+      const tData = await api(`/team/${teamId}`);
+      if (tData?.team) {
+        result.teamInfo = sanitizeObject({
+          name: tData.team.name || '',
+          shortName: tData.team.shortName || '',
+          country: tData.team.country?.name || '',
+          stadium: tData.team.venue?.stadium?.name || tData.team.venue?.name || '',
+          stadiumCapacity: tData.team.venue?.stadium?.capacity || tData.team.venue?.capacity || null,
+          manager: tData.team.manager?.name || null,
+          teamColors: tData.team.teamColors || null
+        });
+        result.manager = tData.team.manager?.name || null;
+      }
+    } catch(e) {}
+
+    setCache(cacheKey, result);
+    res.json(result);
+  } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+// Takım sezon istatistikleri
+app.get('/api/team/:id/season-stats', async (req, res) => {
+  if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
+  try {
+    const teamId = req.params.id;
+    const cacheKey = `team_stats_${teamId}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
+
+    let result = { stats: null, topPlayers: [] };
+    
+    try {
+      const tData = await api(`/team/${teamId}`);
+      const tournament = tData?.team?.tournament;
+      if (tournament?.uniqueTournament?.id) {
+        const utId = tournament.uniqueTournament.id;
+        // Sezon bul
+        let seasonId = null;
+        try {
+          const utData = await api(`/unique-tournament/${utId}`);
+          seasonId = utData?.uniqueTournament?.currentSeason?.id || utData?.currentSeason?.id;
+        } catch(e) {}
+        if (!seasonId) {
+          try {
+            const sData = await api(`/unique-tournament/${utId}/seasons`);
+            const seasons = sData?.seasons || [];
+            if (seasons.length > 0) seasonId = seasons[0].id;
+          } catch(e) {}
+        }
+        if (seasonId) {
+          // Takım istatistikleri
+          try {
+            const statsData = await api(`/unique-tournament/${utId}/season/${seasonId}/standings/total`);
+            const standings = statsData?.standings || [];
+            for (const group of standings) {
+              const rows = group.rows || [];
+              const teamRow = rows.find(r => String(r.team?.id) === String(teamId));
+              if (teamRow) {
+                result.stats = sanitizeObject({
+                  position: teamRow.position || 0,
+                  matches: teamRow.matches || 0,
+                  wins: teamRow.wins || 0,
+                  draws: teamRow.draws || 0,
+                  losses: teamRow.losses || 0,
+                  goalsFor: teamRow.scoresFor || 0,
+                  goalsAgainst: teamRow.scoresAgainst || 0,
+                  points: teamRow.points || 0,
+                  tournamentName: tournament.uniqueTournament.name || ''
+                });
+                break;
+              }
+            }
+          } catch(e) {}
+        }
+      }
+    } catch(e) {}
+
+    setCache(cacheKey, result);
+    res.json(result);
+  } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+// Eksik oyuncular (sakatlık, ceza, şüpheli)
+app.get('/api/event/:id/missing-players', async (req, res) => {
+  if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
+  try {
+    const eventId = req.params.id;
+    let result = { home: [], away: [] };
+    
+    // Maç bilgisini al - takım ID'lerini bul
+    try {
+      const eventData = await api(`/event/${eventId}`);
+      const homeId = eventData?.event?.homeTeam?.id;
+      const awayId = eventData?.event?.awayTeam?.id;
+      
+      const fetchMissing = async (teamId) => {
+        try {
+          const data = await safeFetch(`https://api.sofascore.app/api/v1/team/${teamId}/missing-players`, { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' });
+          const players = data?.players || data?.missingPlayers || [];
+          return players.map(p => sanitizeObject({
+            name: p.player?.name || p.player?.shortName || p.name || '',
+            type: p.type || 'injury',
+            reason: p.reason || p.availability || '',
+            id: p.player?.id || p.id || 0
+          }));
+        } catch(e) { return []; }
+      };
+      
+      if (homeId) result.home = await fetchMissing(homeId);
+      if (awayId) result.away = await fetchMissing(awayId);
+    } catch(e) {}
+    
+    res.json(result);
+  } catch (err) { res.json({ home: [], away: [] }); }
+});
+
 app.get('/api/standings/:id', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
   try {
