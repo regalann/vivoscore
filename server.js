@@ -261,7 +261,17 @@ app.get('/api/event/:id/stats', async (req, res) => {
 
 app.get('/api/event/:id/lineups', async (req, res) => {
   if (!validateId(req.params.id)) return res.status(400).json({ error: 'Geçersiz ID' });
-  try { const data = await api(`/event/${req.params.id}/lineups`); res.json(data); } 
+  try { 
+    const data = await api(`/event/${req.params.id}/lineups`);
+    // Normalize missing players field names
+    if (data?.home) {
+      if (!data.home.missing && data.home.missingPlayers) data.home.missing = data.home.missingPlayers;
+    }
+    if (data?.away) {
+      if (!data.away.missing && data.away.missingPlayers) data.away.missing = data.away.missingPlayers;
+    }
+    res.json(data); 
+  } 
   catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
@@ -563,28 +573,73 @@ app.get('/api/event/:id/missing-players', async (req, res) => {
     const eventId = req.params.id;
     let result = { home: [], away: [] };
     
-    // Maç bilgisini al - takım ID'lerini bul
+    const parseMissing = (players) => {
+      if (!Array.isArray(players)) return [];
+      return players.map(p => sanitizeObject({
+        name: p.player?.name || p.player?.shortName || p.name || p.shortName || '',
+        type: p.type || p.availability?.type || 'injury',
+        reason: p.reason || p.availability?.reason || p.availability || '',
+        id: p.player?.id || p.id || 0
+      })).filter(p => p.name);
+    };
+
+    // Yöntem 1: sportapi7 event-level missing players
+    try {
+      const data = await api(`/event/${eventId}/missing-players`);
+      if (data?.home?.length || data?.away?.length) {
+        result.home = parseMissing(data.home || []);
+        result.away = parseMissing(data.away || []);
+        if (result.home.length > 0 || result.away.length > 0) return res.json(result);
+      }
+      // Check alternative structure
+      if (data?.missingPlayers) {
+        const mp = data.missingPlayers;
+        if (mp.home) result.home = parseMissing(mp.home);
+        if (mp.away) result.away = parseMissing(mp.away);
+        if (result.home.length > 0 || result.away.length > 0) return res.json(result);
+      }
+    } catch(e) {}
+
+    // Takım ID'lerini bul
+    let homeId, awayId;
     try {
       const eventData = await api(`/event/${eventId}`);
-      const homeId = eventData?.event?.homeTeam?.id;
-      const awayId = eventData?.event?.awayTeam?.id;
-      
-      const fetchMissing = async (teamId) => {
-        try {
-          const data = await safeFetch(`https://api.sofascore.app/api/v1/team/${teamId}/missing-players`, { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' });
-          const players = data?.players || data?.missingPlayers || [];
-          return players.map(p => sanitizeObject({
-            name: p.player?.name || p.player?.shortName || p.name || '',
-            type: p.type || 'injury',
-            reason: p.reason || p.availability || '',
-            id: p.player?.id || p.id || 0
-          }));
-        } catch(e) { return []; }
-      };
-      
-      if (homeId) result.home = await fetchMissing(homeId);
-      if (awayId) result.away = await fetchMissing(awayId);
+      homeId = eventData?.event?.homeTeam?.id;
+      awayId = eventData?.event?.awayTeam?.id;
     } catch(e) {}
+
+    if (!homeId && !awayId) return res.json(result);
+
+    const fetchMissing = async (teamId) => {
+      // Yöntem 2: sportapi7 team missing players
+      try {
+        const data = await api(`/team/${teamId}/missing-players`);
+        const players = data?.players || data?.missingPlayers || [];
+        if (players.length > 0) return parseMissing(players);
+      } catch(e) {}
+
+      // Yöntem 3: SofaScore direct team missing players
+      try {
+        const data = await safeFetch(`https://api.sofascore.app/api/v1/team/${teamId}/missing-players`, { 
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' 
+        });
+        const players = data?.players || data?.missingPlayers || [];
+        if (players.length > 0) return parseMissing(players);
+      } catch(e) {}
+
+      // Yöntem 4: SofaScore team near-events missing  
+      try {
+        const data = await safeFetch(`https://api.sofascore.app/api/v1/team/${teamId}/near-events`, {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        });
+        if (data?.missingPlayers) return parseMissing(data.missingPlayers);
+      } catch(e) {}
+
+      return [];
+    };
+      
+    if (homeId) result.home = await fetchMissing(homeId);
+    if (awayId) result.away = await fetchMissing(awayId);
     
     res.json(result);
   } catch (err) { res.json({ home: [], away: [] }); }
