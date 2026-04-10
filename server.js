@@ -1131,5 +1131,182 @@ app.get('/api/team/:id/events', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// ═══════════════════════════════════════════════
+// 🔴 CANLI SKOR SSE (Server-Sent Events) SİSTEMİ
+// ═══════════════════════════════════════════════
+
+// Her spor dalı için bağlı clientlar ve durum
+const sseClients = new Map(); // sport -> Set<res>
+const liveState = new Map();  // sport -> { matches: Map<id, matchData>, lastPoll: number, hasLive: boolean }
+
+// SSE Endpoint - client buraya bağlanır, güncellemeler push edilir
+app.get('/api/sse/live/:sport', (req, res) => {
+  const sport = req.params.sport;
+  if (!validateSport(sport)) return res.status(400).end();
+
+  // SSE headers
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no'
+  });
+  res.write(':\n\n'); // keepalive comment
+
+  // Client'ı kaydet
+  if (!sseClients.has(sport)) sseClients.set(sport, new Set());
+  sseClients.get(sport).add(res);
+  console.log(`[SSE] +1 ${sport} (toplam: ${sseClients.get(sport).size})`);
+
+  // İlk bağlantıda mevcut canlı veriyi hemen gönder
+  const state = liveState.get(sport);
+  if (state && state.matches.size > 0) {
+    const matches = [...state.matches.values()];
+    try { res.write(`data: ${JSON.stringify({ type: 'full', matches })}\n\n`); } catch(e) {}
+  }
+
+  // Bağlantı kapanınca temizle
+  req.on('close', () => {
+    const clients = sseClients.get(sport);
+    if (clients) {
+      clients.delete(res);
+      console.log(`[SSE] -1 ${sport} (kalan: ${clients.size})`);
+    }
+  });
+});
+
+// Belirli bir spor için tüm bağlı clientlara veri gönder
+function sseBroadcast(sport, data) {
+  const clients = sseClients.get(sport);
+  if (!clients || clients.size === 0) return;
+  const msg = `data: ${JSON.stringify(data)}\n\n`;
+  const dead = [];
+  clients.forEach(res => {
+    try { res.write(msg); } catch(e) { dead.push(res); }
+  });
+  dead.forEach(r => clients.delete(r));
+}
+
+// Akıllı arka plan poller - sadece bağlı client varsa çalışır
+async function pollLiveSport(sport) {
+  const clients = sseClients.get(sport);
+  if (!clients || clients.size === 0) return; // Kimse dinlemiyorsa API çağrısı yapma
+
+  try {
+    const data = await api(`/sport/${sport}/events/live`);
+    const events = data.events || [];
+    
+    if (!liveState.has(sport)) {
+      liveState.set(sport, { matches: new Map(), lastPoll: 0, hasLive: false });
+    }
+    const state = liveState.get(sport);
+    const oldMatches = state.matches;
+    const newMatches = new Map();
+    const changes = [];
+
+    events.forEach(e => {
+      const m = formatEvent(e);
+      // eventPool'a da ekle (schedule ile tutarlılık için)
+      e._sport = sport;
+      eventPool.set(e.id, e);
+      
+      newMatches.set(m.id, m);
+      
+      // Değişiklik tespiti
+      const old = oldMatches.get(m.id);
+      if (!old) {
+        // Yeni canlı maç başladı
+        changes.push({ type: 'new', match: m });
+      } else {
+        // Skor veya dakika değişti mi?
+        if (old.homeScore !== m.homeScore || old.awayScore !== m.awayScore || old.minute !== m.minute || old.status !== m.status) {
+          changes.push({ type: 'update', match: m });
+        }
+      }
+    });
+
+    // Biten maçları tespit et
+    oldMatches.forEach((m, id) => {
+      if (!newMatches.has(id)) {
+        changes.push({ type: 'finished', match: { ...m, status: 'finished' } });
+      }
+    });
+
+    state.matches = newMatches;
+    state.hasLive = newMatches.size > 0;
+    state.lastPoll = Date.now();
+
+    // Değişiklik varsa broadcast et
+    if (changes.length > 0) {
+      sseBroadcast(sport, { type: 'delta', changes, liveCount: newMatches.size, timestamp: Date.now() });
+    }
+
+    // Her 60 saniyede bir full state gönder (yeni bağlanan clientlar için)
+    if (Date.now() % 60000 < 20000) {
+      sseBroadcast(sport, { type: 'full', matches: [...newMatches.values()], timestamp: Date.now() });
+    }
+
+  } catch(err) {
+    // API hatası - keepalive gönder
+    sseBroadcast(sport, { type: 'heartbeat', timestamp: Date.now() });
+  }
+}
+
+// Ana polling döngüsü - akıllı aralıklar
+const pollTimers = new Map();
+
+function startSmartPoller() {
+  ALLOWED_SPORTS.forEach(sport => {
+    let interval = 30000; // Başlangıç: 30sn
+    
+    const tick = async () => {
+      const clients = sseClients.get(sport);
+      const clientCount = clients ? clients.size : 0;
+      
+      if (clientCount === 0) {
+        // Kimse dinlemiyor - yavaşla
+        interval = 120000;
+      } else {
+        await pollLiveSport(sport);
+        const state = liveState.get(sport);
+        if (state && state.hasLive) {
+          // Canlı maç var - hızlı poll
+          interval = 15000; // 15 saniye
+        } else {
+          // Canlı maç yok - yavaş poll
+          interval = 60000; // 60 saniye
+        }
+      }
+      
+      // Bir sonraki tick'i planla
+      if (pollTimers.has(sport)) clearTimeout(pollTimers.get(sport));
+      pollTimers.set(sport, setTimeout(tick, interval));
+    };
+
+    // İlk tick'i başlat (her spor farklı zamanda başlasın)
+    const sportIdx = [...ALLOWED_SPORTS].indexOf(sport);
+    setTimeout(tick, 2000 + sportIdx * 500);
+  });
+}
+
+// SSE durumu endpoint - debug için
+app.get('/api/sse/status', (req, res) => {
+  const status = {};
+  sseClients.forEach((clients, sport) => {
+    const state = liveState.get(sport);
+    status[sport] = {
+      clients: clients.size,
+      liveMatches: state ? state.matches.size : 0,
+      hasLive: state ? state.hasLive : false,
+      lastPoll: state ? new Date(state.lastPoll).toISOString() : null
+    };
+  });
+  res.json(status);
+});
+
 app.get('*', (_, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.listen(PORT, () => console.log(`🟢 VivoScore Güvenli Mod Aktif: Port ${PORT}`));
+app.listen(PORT, () => { 
+  console.log(`🟢 VivoScore Güvenli Mod Aktif: Port ${PORT}`);
+  console.log('🔴 SSE Canlı Skor Sistemi Başlatılıyor...');
+  startSmartPoller();
+});
