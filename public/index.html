@@ -83,7 +83,8 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .auth-btn { width: 100%; padding: 12px; background: var(--brand); color: #fff; font-weight: 800; font-size: 14px; border-radius: var(--radius-sm); transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;}
 .auth-btn:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px var(--brand-dim); }
 .user-info-box { display: none; align-items: center; gap: 10px; padding: 10px; background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border);}
-.user-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--brand); display:flex; align-items:center; justify-content:center; background:var(--brand); color:#fff; font-weight:800; font-size:16px; }
+.user-avatar { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; border: 2px solid var(--brand); display:flex; align-items:center; justify-content:center; background:var(--brand); color:#fff; font-weight:800; font-size:16px; flex-shrink: 0; position: relative; transition: 0.2s; }
+.user-avatar:hover { border-color: var(--text); transform: scale(1.05); }
 .user-details { flex: 1; min-width: 0; }
 .user-name { font-size: 13px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .user-logout { font-size: 11px; color: var(--red); cursor: pointer; margin-top: 2px; font-weight: 600; }
@@ -284,7 +285,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
 .standings-table tbody tr:hover { background: var(--surface2); }
 .st-team { display: flex; align-items: center; gap: 8px; text-align: left; font-weight: 700; }
 .st-team img { width: 20px; height: 20px; object-fit: contain; }
-.st-pos { font-weight: 800; width: 24px; }
+.st-pos { font-weight: 800; width: 40px; display: flex; align-items: center; justify-content: center; gap: 2px; }
 .st-pts { font-weight: 800; color: var(--brand); font-size: 14px; }
 .standings-nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
 .standings-nav::-webkit-scrollbar { display:none; }
@@ -358,7 +359,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     .app { flex-direction: column; }
     
     .sidebar { 
-        order: 3; width: 100%; height: auto; min-height: 65px; flex-direction: row; border-right: none; 
+        order: 3; width: 100%; height: auto; min-height: 62px; flex-direction: row; border-right: none; 
         border-top: 1px solid var(--border); padding: 0; padding-bottom: env(safe-area-inset-bottom); background: var(--surface); z-index: 50;
     }
     .sidebar-header { display: none; }
@@ -371,9 +372,10 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     #sportList { display: flex; flex-direction: row; align-items: center; gap: 4px; }
     
     .nav-label { display: none; }
-    .sport-item { margin: 0; padding: 8px 12px; flex-direction: row; align-items: center; justify-content: center; border-radius: 8px; height: 45px; }
-    .sport-item .flag { font-size: 22px; width: auto; margin: 0; line-height: 1; }
-    .sport-item span:not(.flag) { display: none; }
+    .sport-item { margin: 0; padding: 6px 10px; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; height: 54px; min-width: 52px; gap: 2px; }
+    .sport-item .flag { font-size: 20px; width: auto; margin: 0; line-height: 1; }
+    .sport-item span:not(.flag) { display: block; font-size: 9px; font-weight: 700; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50px; text-align: center; line-height: 1; }
+    .sport-item.active span:not(.flag) { color: var(--brand); }
     
     .user-profile-section { padding: 0 10px; margin: 0; margin-left: auto; border: none !important; display: flex; align-items: center; }
     .auth-btn { padding: 8px; font-size: 0; background: transparent; color: var(--text2); height: 45px; display: flex; align-items: center; justify-content: center; }
@@ -404,6 +406,7 @@ body.hide-scores .detail-score:hover { filter: blur(0); opacity: 1; }
     
     .search-shortcut { display: none; }
     .hide-mobile { display: none !important; }
+    .hide-desktop { display: block !important; }
     
     .date-btn { padding: 6px 2px; font-size: 11px; flex: 1; text-align: center; }
     .date-btn .day { font-size: 10px; margin-top: 2px; }
@@ -772,7 +775,6 @@ var Auth = {
     var displayName = meta.username || meta.full_name || meta.name || '';
     
     if (!displayName) {
-      // Kullanıcı adı yok — seçim ekranı göster
       el.innerHTML = '<div style="padding:4px 0;">' +
         '<div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600;">Kullanıcı adı seçin</div>' +
         '<div style="display:flex;gap:6px;">' +
@@ -785,9 +787,98 @@ var Auth = {
       return;
     }
     
-    var avatarHtml = '<div class="user-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;font-weight:800;font-size:16px;">' + esc(displayName).charAt(0).toUpperCase() + '</div>';
-    var mobileLogout = 'onclick="if(window.innerWidth <= 768) Auth.logout()"';
-    el.innerHTML = '<div class="user-info-box" style="display:flex;" ' + mobileLogout + '>' + avatarHtml + '<div class="user-details"><div class="user-name" title="'+email+'">' + esc(displayName) + '</div><div class="user-logout" onclick="Auth.logout()">Çıkış Yap</div></div></div>';
+    var avatarUrl = meta.avatar_url || '';
+    var avatarHtml = '';
+    if (avatarUrl) {
+      avatarHtml = '<div class="user-avatar" style="cursor:pointer;position:relative;" onclick="Auth.triggerAvatarUpload()" title="Fotoğrafı değiştir"><img src="' + esc(avatarUrl) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.parentElement.innerHTML=\'' + esc(displayName).charAt(0).toUpperCase() + '\'"></div>';
+    } else {
+      avatarHtml = '<div class="user-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;font-weight:800;font-size:16px;cursor:pointer;position:relative;" onclick="Auth.triggerAvatarUpload()" title="Fotoğraf ekle">' + esc(displayName).charAt(0).toUpperCase() + '<div style="position:absolute;bottom:-2px;right:-2px;width:14px;height:14px;background:var(--surface);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;">📷</div></div>';
+    }
+    
+    var mobileLogout = 'onclick="if(window.innerWidth <= 768) Auth.triggerAvatarUpload()"';
+    el.innerHTML = '<input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="Auth.handleAvatarUpload(this)">' +
+      '<div class="user-info-box" style="display:flex;">' + avatarHtml + '<div class="user-details"><div class="user-name" title="'+email+'">' + esc(displayName) + '</div><div class="user-logout" onclick="Auth.logout()">Çıkış Yap</div></div></div>';
+  },
+  
+  triggerAvatarUpload: function() {
+    var input = document.getElementById('avatarFileInput');
+    if (input) input.click();
+  },
+  
+  handleAvatarUpload: function(input) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    if (!file.type.startsWith('image/')) return;
+    if (file.size > 5 * 1024 * 1024) { alert('Dosya 5MB\'dan küçük olmalı.'); return; }
+    
+    // Canvas ile 128x128 resize
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement('canvas');
+        var size = 128;
+        canvas.width = size;
+        canvas.height = size;
+        var ctx = canvas.getContext('2d');
+        
+        // Kare crop (ortadan kes)
+        var sx = 0, sy = 0, sw = img.width, sh = img.height;
+        if (img.width > img.height) { sx = (img.width - img.height) / 2; sw = img.height; }
+        else { sy = (img.height - img.width) / 2; sh = img.width; }
+        
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
+        
+        canvas.toBlob(function(blob) {
+          if (!blob) return;
+          Auth._uploadAvatar(blob);
+        }, 'image/jpeg', 0.85);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  },
+  
+  _uploadAvatar: function(blob) {
+    var sb = getSupabase();
+    if (!sb || !this.user) return;
+    
+    // Yükleniyor göstergesi
+    var avatarEl = document.querySelector('.user-avatar');
+    if (avatarEl) { avatarEl.style.opacity = '0.5'; avatarEl.innerHTML = '<div class="spinner" style="width:20px;height:20px;"></div>'; }
+    
+    var userId = this.user.id;
+    var filePath = userId + '/avatar.jpg';
+    
+    sb.storage.from('avatars').upload(filePath, blob, { 
+      cacheControl: '3600', 
+      upsert: true,
+      contentType: 'image/jpeg'
+    }).then(function(res) {
+      if (res.error) {
+        console.error('Avatar upload error:', res.error);
+        Auth.renderUser();
+        return;
+      }
+      // Public URL al
+      var urlRes = sb.storage.from('avatars').getPublicUrl(filePath);
+      var publicUrl = urlRes.data ? urlRes.data.publicUrl : '';
+      if (!publicUrl) { Auth.renderUser(); return; }
+      
+      // Timestamp ekle (cache bust)
+      publicUrl += '?t=' + Date.now();
+      
+      // user_metadata'ya kaydet
+      sb.auth.updateUser({ data: { avatar_url: publicUrl } }).then(function(updateRes) {
+        if (updateRes.error) { console.error('Avatar meta error:', updateRes.error); }
+        else { Auth.user = updateRes.data.user; }
+        Auth.renderUser();
+      });
+    }).catch(function(err) {
+      console.error('Avatar error:', err);
+      Auth.renderUser();
+    });
   },
   setUsername: function() {
     var input = document.getElementById('usernameSetInput');
@@ -882,15 +973,15 @@ var safeStorage = {
 };
 
 var SPORTS = [
-  { id: 'football', name: 'Futbol', icon: '⚽' },
-  { id: 'basketball', name: 'Basketbol', icon: '🏀' },
-  { id: 'mma', name: 'UFC / MMA', icon: '🥊' },
-  { id: 'tennis', name: 'Tenis', icon: '🎾' },
-  { id: 'esports', name: 'Espor', icon: '🎮' },
-  { id: 'volleyball', name: 'Voleybol', icon: '🏐' },
-  { id: 'ice-hockey', name: 'Buz Hokeyi', icon: '🏒' },
-  { id: 'american-football', name: 'Amerikan Futbolu', icon: '🏈' },
-  { id: 'motorsport', name: 'Motor Sporları', icon: '🏎️' }
+  { id: 'football', name: 'Futbol', short: 'Futbol', icon: '⚽' },
+  { id: 'basketball', name: 'Basketbol', short: 'Basket', icon: '🏀' },
+  { id: 'mma', name: 'UFC / MMA', short: 'MMA', icon: '🥊' },
+  { id: 'tennis', name: 'Tenis', short: 'Tenis', icon: '🎾' },
+  { id: 'esports', name: 'Espor', short: 'Espor', icon: '🎮' },
+  { id: 'volleyball', name: 'Voleybol', short: 'Voley', icon: '🏐' },
+  { id: 'ice-hockey', name: 'Buz Hokeyi', short: 'Hokey', icon: '🏒' },
+  { id: 'american-football', name: 'Amerikan Futbolu', short: 'NFL', icon: '🏈' },
+  { id: 'motorsport', name: 'Motor Sporları', short: 'Motor', icon: '🏎️' }
 ];
 
 var POPULAR_LEAGUES = {
@@ -1329,7 +1420,7 @@ var V = {
     var html = '';
     for(var i=0; i<SPORTS.length; i++) {
       var s = SPORTS[i]; var activeCls = (s.id === this.state.selectedSport) ? ' active' : '';
-      html += '<div class="sport-item'+activeCls+'" onclick="V.selectSport(\''+s.id+'\')" onmouseenter="V.showPopMenu(event, \''+s.id+'\')" onmouseleave="V.hidePopMenu()"><span class="flag">'+s.icon+'</span><span>'+s.name+'</span></div>';
+      html += '<div class="sport-item'+activeCls+'" onclick="V.selectSport(\''+s.id+'\')" onmouseenter="V.showPopMenu(event, \''+s.id+'\')" onmouseleave="V.hidePopMenu()"><span class="flag">'+s.icon+'</span><span class="hide-desktop">'+(s.short || s.name)+'</span><span class="hide-mobile">'+s.name+'</span></div>';
     }
     el.innerHTML = html;
   },
@@ -1501,6 +1592,21 @@ var V = {
           
           var rows = group.rows || group.teamStandings || [];
           if (rows.length === 0 && Array.isArray(group)) { rows = group; }
+          var totalRows = rows.length;
+          
+          // Lig bazlı bölge renklendirmesi
+          var ZONE_RULES = {
+            '17':  { cl: 4, el: 5, conf: 0, relPlay: 0, rel: 3 },  // Premier League
+            '8':   { cl: 4, el: 5, conf: 6, relPlay: 0, rel: 3 },  // LaLiga
+            '35':  { cl: 4, el: 5, conf: 6, relPlay: 16, rel: 2 },  // Bundesliga
+            '23':  { cl: 4, el: 5, conf: 6, relPlay: 0, rel: 3 },  // Serie A
+            '52':  { cl: 3, el: 4, conf: 5, relPlay: 16, rel: 4 },  // Süper Lig
+            '53':  { cl: 0, el: 0, conf: 0, relPlay: 0, rel: 4, promo: 2, promoPlay: 3 }, // 1. Lig
+            '7':   { cl: 8, el: 0, conf: 0, playoff: 24, rel: 0 },  // Şampiyonlar Ligi
+            '679': { cl: 0, el: 8, conf: 0, playoff: 24, rel: 0 },  // Avrupa Ligi
+            '17015': { cl: 0, el: 0, conf: 8, playoff: 24, rel: 0 }, // Konferans Ligi
+          };
+          var zoneRule = ZONE_RULES[String(activeLg)] || null;
           
           rows.forEach(function(r) {
              if(!r) return;
@@ -1517,8 +1623,32 @@ var V = {
              var Av = A - Y;
              var Pts = r.points !== undefined ? r.points : '-';
              
-             html += '<tr>' +
-                     '<td class="st-pos">' + pos + '</td>' +
+             // Bölge rengi hesapla
+             var zoneStyle = '';
+             var zoneDot = '';
+             var posNum = parseInt(pos) || 0;
+             if (zoneRule && posNum > 0) {
+               if (zoneRule.promo && posNum <= zoneRule.promo) {
+                 zoneStyle = 'border-left:3px solid var(--green);'; zoneDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px;" title="Doğrudan Yükselme"></span>';
+               } else if (zoneRule.promoPlay && posNum <= zoneRule.promoPlay) {
+                 zoneStyle = 'border-left:3px solid var(--brand);'; zoneDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--brand);margin-right:6px;" title="Yükselme Playoff"></span>';
+               } else if (zoneRule.cl && posNum <= zoneRule.cl) {
+                 zoneStyle = 'border-left:3px solid var(--green);'; zoneDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px;" title="Şampiyonlar Ligi"></span>';
+               } else if (zoneRule.el && posNum <= zoneRule.el) {
+                 zoneStyle = 'border-left:3px solid var(--brand);'; zoneDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--brand);margin-right:6px;" title="Avrupa Ligi"></span>';
+               } else if (zoneRule.conf && posNum <= zoneRule.conf) {
+                 zoneStyle = 'border-left:3px solid var(--yellow);'; zoneDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--yellow);margin-right:6px;" title="Konferans Ligi"></span>';
+               } else if (zoneRule.playoff && posNum <= zoneRule.playoff) {
+                 zoneStyle = 'border-left:3px solid var(--brand);'; zoneDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--brand);margin-right:6px;" title="Playoff"></span>';
+               } else if (zoneRule.rel && posNum > totalRows - zoneRule.rel) {
+                 zoneStyle = 'border-left:3px solid var(--red);'; zoneDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:6px;" title="Küme Düşme"></span>';
+               } else if (zoneRule.relPlay && posNum === totalRows - zoneRule.rel) {
+                 zoneStyle = 'border-left:3px solid var(--orange);'; zoneDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--orange);margin-right:6px;" title="Küme Düşme Playoff"></span>';
+               }
+             }
+             
+             html += '<tr style="' + zoneStyle + '">' +
+                     '<td class="st-pos">' + zoneDot + pos + '</td>' +
                      '<td><div class="st-team" style="cursor:pointer" onclick="Search.pickTeam(' + teamId + ')"><img src="https://api.sofascore.app/api/v1/team/'+teamId+'/image" onerror="this.style.display=\'none\'"> ' + esc(teamName) + '</div></td>' +
                      '<td>' + O + '</td>' +
                      '<td>' + G + '</td>' +
@@ -1530,7 +1660,25 @@ var V = {
                      '<td class="st-pts">' + Pts + '</td>' +
                      '</tr>';
           });
-          html += '</tbody></table></div>';
+          
+          // Renk açıklamaları (legend)
+          if (zoneRule) {
+            var legendParts = [];
+            if (zoneRule.cl) legendParts.push('<span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);"></span><span>Şampiyonlar Ligi</span></span>');
+            if (zoneRule.el) legendParts.push('<span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--brand);"></span><span>Avrupa Ligi</span></span>');
+            if (zoneRule.conf) legendParts.push('<span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);"></span><span>Konferans Ligi</span></span>');
+            if (zoneRule.promo) legendParts.push('<span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);"></span><span>Doğrudan Yükselme</span></span>');
+            if (zoneRule.promoPlay) legendParts.push('<span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--brand);"></span><span>Yükselme Playoff</span></span>');
+            if (zoneRule.playoff) legendParts.push('<span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--brand);"></span><span>Playoff</span></span>');
+            if (zoneRule.rel) legendParts.push('<span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);"></span><span>Küme Düşme</span></span>');
+            if (legendParts.length > 0) {
+              html += '</tbody></table><div style="display:flex;flex-wrap:wrap;gap:12px;padding:10px 14px;font-size:11px;font-weight:600;color:var(--text2);border-top:1px solid var(--border);">' + legendParts.join('') + '</div></div>';
+            } else {
+              html += '</tbody></table></div>';
+            }
+          } else {
+            html += '</tbody></table></div>';
+          }
        });
        
        if(!html) {
