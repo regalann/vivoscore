@@ -842,7 +842,7 @@ var Auth = {
   
   _uploadAvatar: function(blob) {
     var sb = getSupabase();
-    if (!sb || !this.user) return;
+    if (!sb || !this.user) { alert('Supabase bağlantısı yok.'); return; }
     
     // Yükleniyor göstergesi
     var avatarEl = document.querySelector('.user-avatar');
@@ -857,26 +857,50 @@ var Auth = {
       contentType: 'image/jpeg'
     }).then(function(res) {
       if (res.error) {
-        console.error('Avatar upload error:', res.error);
+        alert('Yükleme hatası: ' + (res.error.message || JSON.stringify(res.error)));
         Auth.renderUser();
         return;
       }
+      
       // Public URL al
       var urlRes = sb.storage.from('avatars').getPublicUrl(filePath);
-      var publicUrl = urlRes.data ? urlRes.data.publicUrl : '';
-      if (!publicUrl) { Auth.renderUser(); return; }
+      var publicUrl = (urlRes.data && urlRes.data.publicUrl) ? urlRes.data.publicUrl : '';
+      
+      if (!publicUrl) { 
+        alert('Public URL alınamadı: ' + JSON.stringify(urlRes));
+        Auth.renderUser(); 
+        return; 
+      }
       
       // Timestamp ekle (cache bust)
       publicUrl += '?t=' + Date.now();
       
-      // user_metadata'ya kaydet
-      sb.auth.updateUser({ data: { avatar_url: publicUrl } }).then(function(updateRes) {
-        if (updateRes.error) { console.error('Avatar meta error:', updateRes.error); }
-        else { Auth.user = updateRes.data.user; }
-        Auth.renderUser();
-      });
+      // URL'nin erişilebilir olup olmadığını test et
+      var testImg = new Image();
+      testImg.onload = function() {
+        // Resim yüklendi, metadata'ya kaydet
+        sb.auth.updateUser({ data: { avatar_url: publicUrl } }).then(function(updateRes) {
+          if (updateRes.error) { 
+            alert('Metadata kaydetme hatası: ' + (updateRes.error.message || JSON.stringify(updateRes.error)));
+          } else { 
+            Auth.user = updateRes.data.user; 
+          }
+          Auth.renderUser();
+        });
+      };
+      testImg.onerror = function() {
+        // Resim URL'si erişilemez - bucket public olmayabilir
+        alert('Avatar yüklendi ama URL erişilemez. Supabase Dashboard\'da "avatars" bucket\'ının PUBLIC olduğundan emin ol.\n\nURL: ' + publicUrl);
+        // Yine de kaydet, belki CORS sorunu
+        sb.auth.updateUser({ data: { avatar_url: publicUrl } }).then(function(updateRes) {
+          if (!updateRes.error) Auth.user = updateRes.data.user;
+          Auth.renderUser();
+        });
+      };
+      testImg.src = publicUrl;
+      
     }).catch(function(err) {
-      console.error('Avatar error:', err);
+      alert('Beklenmeyen hata: ' + (err.message || err));
       Auth.renderUser();
     });
   },
